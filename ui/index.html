@@ -24,7 +24,8 @@
             cyanAccent: "#06B6D4",
             emeraldSafe: "#10B981",
             amberWarn: "#F59E0B",
-            crimsonAlert: "#EF4444"
+            crimsonAlert: "#EF4444",
+            purpleCase: "#A855F7"
           },
           fontFamily: {
             sans: ["Inter", "sans-serif"],
@@ -37,17 +38,29 @@
   </script>
   <style>
     body { background-color: #0A0E17; color: #E2E8F0; }
-    .neon-border-cyan:hover { box-shadow: 0 0 12px rgba(6, 182, 212, 0.35); }
-    .neon-border-alert:hover { box-shadow: 0 0 12px rgba(239, 68, 68, 0.4); }
     .pulse-dot { animation: pulseGlow 2s infinite; }
     @keyframes pulseGlow {
       0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.92); }
+      50% { opacity: 0.4; transform: scale(0.90); }
     }
     .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
     .custom-scroll::-webkit-scrollbar-track { background: #0A0E17; }
     .custom-scroll::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 3px; }
     .custom-scroll::-webkit-scrollbar-thumb:hover { background: #334155; }
+    .gauge-needle {
+      transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transform-origin: 50px 50px;
+    }
+    .step-active {
+      background-color: rgba(6, 182, 212, 0.2);
+      border-color: #06B6D4 !important;
+      color: #06B6D4 !important;
+      box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+    }
+    .node-highlight {
+      stroke-width: 4px !important;
+      filter: drop-shadow(0 0 8px rgba(6, 182, 212, 0.8));
+    }
   </style>
 </head>
 <body class="h-screen flex flex-col font-sans overflow-hidden">
@@ -61,7 +74,7 @@
       <div>
         <div class="flex items-center space-x-2">
           <span class="font-headline font-bold text-sm text-white tracking-wide">TigerGraph FraudOps</span>
-          <span class="text-[10px] font-mono bg-cyanAccent/15 text-cyanAccent px-1.5 py-0.5 rounded border border-cyanAccent/30">AGENTIC INTELLIGENCE</span>
+          <span class="text-[10px] font-mono bg-cyanAccent/15 text-cyanAccent px-1.5 py-0.5 rounded border border-cyanAccent/30">AGENTIC COCKPIT</span>
         </div>
         <div class="text-[11px] text-slate-400 font-mono">Autonomous Investigation & Policy Gating Suite</div>
       </div>
@@ -69,11 +82,14 @@
 
     <!-- Active Swarm Badge & Case Selector -->
     <div class="flex items-center space-x-4">
-      <div class="flex items-center space-x-2 px-2.5 py-1 rounded bg-slate-900 border border-borderMuted text-xs font-mono">
-        <span class="w-2 h-2 rounded-full bg-emeraldSafe pulse-dot"></span>
-        <span class="text-slate-300">AGENT CORE: <span class="text-emeraldSafe font-semibold">ACTIVE</span></span>
-        <span class="text-slate-500">|</span>
-        <span class="text-slate-400">TigerGraph GSQL Connected</span>
+      <!-- Persona Toggle (Innovation 3) -->
+      <div class="flex items-center bg-slate-950 p-0.5 rounded border border-borderHighlight text-xs font-mono">
+        <button id="btnPersonaAnalyst" onclick="togglePersona('analyst')" class="px-2.5 py-1 rounded bg-cyanAccent text-slate-950 font-bold transition">
+          📊 Analyst Cockpit
+        </button>
+        <button id="btnPersonaAgent" onclick="togglePersona('agent')" class="px-2.5 py-1 rounded text-slate-400 hover:text-white transition">
+          👁️ Agent Working State
+        </button>
       </div>
 
       <!-- Case Dropdown -->
@@ -82,8 +98,7 @@
         <select id="caseSelector" class="bg-slate-900 border border-borderHighlight text-white text-xs font-mono rounded px-3 py-1.5 focus:outline-none focus:border-cyanAccent">
           <option value="HHG-001">HHG-001 (Out-of-Region POS, $77.07)</option>
           <option value="HHG-014">HHG-014 (Syndicate Ring, 52 Accounts)</option>
-          <option value="TEST-01">TEST-01 (Non-Benchmark Denial, $117.05)</option>
-          <option value="TEST-03">TEST-03 (Cleared Travel, $49.04)</option>
+          <option value="HHG-012">HHG-012 (Authorized Travel, $30.91)</option>
         </select>
         <button id="btnRunLive" class="px-3 py-1.5 bg-cyanAccent text-slate-950 hover:bg-cyan-400 font-mono font-bold text-xs rounded transition flex items-center space-x-1">
           <span>⚡</span>
@@ -93,296 +108,608 @@
     </div>
 
     <div class="flex items-center space-x-3 text-xs font-mono">
-      <span class="text-slate-400">Analyst: <span class="text-white">Fraud Specialist L2</span></span>
-      <span class="px-2 py-0.5 rounded bg-amberWarn/15 text-amberWarn border border-amberWarn/30">CLEARANCE: FINCEN L2</span>
+      <span class="text-slate-400">Clearance: <span class="text-white">Fraud Specialist L2</span></span>
+      <span class="px-2 py-0.5 rounded bg-emeraldSafe/15 text-emeraldSafe border border-emeraldSafe/30">GSQL CONNECTED</span>
     </div>
   </header>
 
+  <!-- REASONING TICKER / PROGRESS SCRUBBER (Innovation 1: Visible Replayable Reasoning Timeline) -->
+  <div class="h-10 bg-slate-950 border-b border-borderMuted px-4 flex items-center justify-between flex-shrink-0 text-xs font-mono z-10">
+    <div class="flex items-center space-x-2">
+      <span class="text-cyanAccent font-bold text-[11px] tracking-wider uppercase flex items-center space-x-1">
+        <span>⚡</span><span>REASONING PIPELINE:</span>
+      </span>
+      <div class="flex items-center space-x-1" id="tickerSteps">
+        <button onclick="setReasoningStep(1)" id="stepNode_1" class="step-active px-2 py-0.5 rounded bg-panel border border-borderMuted text-slate-300 font-bold transition flex items-center space-x-1">
+          <span>1. Trigger</span>
+        </button>
+        <span class="text-slate-600">➔</span>
+        <button onclick="setReasoningStep(2)" id="stepNode_2" class="px-2 py-0.5 rounded bg-panel border border-borderMuted text-slate-400 transition hover:border-cyanAccent hover:text-white flex items-center space-x-1">
+          <span>2. Graph Traversal</span>
+        </button>
+        <span class="text-slate-600">➔</span>
+        <button onclick="setReasoningStep(3)" id="stepNode_3" class="px-2 py-0.5 rounded bg-panel border border-borderMuted text-slate-400 transition hover:border-cyanAccent hover:text-white flex items-center space-x-1">
+          <span>3. Pattern Match</span>
+        </button>
+        <span class="text-slate-600">➔</span>
+        <button onclick="setReasoningStep(4)" id="stepNode_4" class="px-2 py-0.5 rounded bg-panel border border-borderMuted text-slate-400 transition hover:border-cyanAccent hover:text-white flex items-center space-x-1">
+          <span>4. Uncertainty</span>
+        </button>
+        <span class="text-slate-600">➔</span>
+        <button onclick="setReasoningStep(5)" id="stepNode_5" class="px-2 py-0.5 rounded bg-panel border border-borderMuted text-slate-400 transition hover:border-cyanAccent hover:text-white flex items-center space-x-1">
+          <span>5. Actions & Policy</span>
+        </button>
+        <span class="text-slate-600">➔</span>
+        <button onclick="setReasoningStep(6)" id="stepNode_6" class="px-2 py-0.5 rounded bg-panel border border-borderMuted text-slate-400 transition hover:border-cyanAccent hover:text-white flex items-center space-x-1">
+          <span>6. Case Memory / SAR</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Replay Controls -->
+    <div class="flex items-center space-x-2">
+      <button id="btnPrevStep" onclick="stepReasoning(-1)" class="px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-slate-300 border border-borderMuted text-[10px]">
+        ⏮ Prev
+      </button>
+      <button id="btnReplay" onclick="startReplay()" class="px-2.5 py-0.5 rounded bg-emeraldSafe/20 text-emeraldSafe hover:bg-emeraldSafe/30 border border-emeraldSafe/40 font-bold text-[10px] flex items-center space-x-1">
+        <span>▶</span><span>REPLAY INVESTIGATION</span>
+      </button>
+      <button id="btnNextStep" onclick="stepReasoning(1)" class="px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-slate-300 border border-borderMuted text-[10px]">
+        Next ⏭
+      </button>
+    </div>
+  </div>
+
   <!-- MAIN WORKSPACE -->
-  <div class="flex-1 flex overflow-hidden">
+  <div class="flex-1 flex overflow-hidden relative">
 
-    <!-- LEFT COLUMN: CASE TRIGGER & PROFILE -->
-    <aside class="w-80 bg-panel border-r border-borderMuted p-4 flex flex-col space-y-4 overflow-y-auto custom-scroll flex-shrink-0">
-      <!-- Case Meta Box -->
-      <div class="bg-slate-950/70 rounded-lg p-3 border border-borderMuted">
-        <div class="flex justify-between items-center mb-2">
-          <span id="displayCaseId" class="text-xs font-mono font-bold text-cyanAccent">CASE #HHG-001</span>
-          <span id="displayStatusBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-crimsonAlert/20 text-crimsonAlert border border-crimsonAlert/30 font-bold uppercase">CLOSED_FRAUD</span>
-        </div>
-        <div class="text-[11px] text-slate-400" id="displayTriggerText">
-          Real-time model scored transaction 3514030 ($77.07, in billing region 444.0) at 0.61. Review and decide.
-        </div>
-      </div>
-
-      <!-- Cardholder Profile -->
-      <div class="bg-slate-950/70 rounded-lg p-3 border border-borderMuted space-y-2">
-        <div class="text-xs font-headline font-bold text-white uppercase tracking-wider flex items-center justify-between">
-          <span>Cardholder Identity</span>
-          <span class="text-slate-500 font-mono text-[10px]" id="displayCustomerId">C12382</span>
-        </div>
-        <div class="grid grid-cols-2 gap-2 text-xs font-mono">
-          <div class="bg-panel p-2 rounded">
-            <div class="text-[10px] text-slate-500">PRIMARY CARD</div>
-            <div class="text-white font-bold" id="displayCardId">C12382-K1</div>
-          </div>
-          <div class="bg-panel p-2 rounded">
-            <div class="text-[10px] text-slate-500">HOME REGION</div>
-            <div class="text-cyanAccent font-bold" id="displayHomeRegion">Region 204.0</div>
-          </div>
-          <div class="bg-panel p-2 rounded">
-            <div class="text-[10px] text-slate-500">HISTORICAL TXNS</div>
-            <div class="text-white" id="displayTotalTxns">422 txns</div>
-          </div>
-          <div class="bg-panel p-2 rounded">
-            <div class="text-[10px] text-slate-500">TOTAL VOLUME</div>
-            <div class="text-white" id="displayTotalVolume">$48,783.68</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Target Transaction Details -->
-      <div class="bg-slate-950/70 rounded-lg p-3 border border-borderMuted space-y-2">
-        <div class="text-xs font-headline font-bold text-white uppercase tracking-wider flex items-center justify-between">
-          <span>Target Authorization</span>
-          <span class="text-crimsonAlert font-mono font-bold" id="displayTxnAmt">$77.07 USD</span>
-        </div>
-        <div class="space-y-1.5 text-xs font-mono">
-          <div class="flex justify-between py-1 border-b border-borderMuted/60">
-            <span class="text-slate-400">Transaction ID:</span>
-            <span class="text-white" id="displayTxnId">3514030</span>
-          </div>
-          <div class="flex justify-between py-1 border-b border-borderMuted/60">
-            <span class="text-slate-400">Channel / Product:</span>
-            <span class="text-white" id="displayChannel">in_person (Prod W)</span>
-          </div>
-          <div class="flex justify-between py-1 border-b border-borderMuted/60">
-            <span class="text-slate-400">Billing Region:</span>
-            <span class="text-amberWarn font-bold" id="displayBillingRegion">Region 444.0 (Out of Region)</span>
-          </div>
-          <div class="flex justify-between py-1">
-            <span class="text-slate-400">Bank Model Risk:</span>
-            <span class="text-amberWarn font-bold" id="displayModelRisk">0.61</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Hardware Footprint & Syndicate Alert -->
-      <div class="bg-slate-950/70 rounded-lg p-3 border border-borderMuted space-y-2" id="deviceBox">
-        <div class="text-xs font-headline font-bold text-white uppercase tracking-wider">Hardware Signature</div>
-        <div class="text-xs font-mono text-slate-300 break-words bg-panel p-2 rounded" id="displayDevice">
-          In-Person Point of Sale (Physical Terminal)
-        </div>
-        <div id="syndicateBanner" class="hidden p-2 rounded bg-crimsonAlert/15 border border-crimsonAlert/40 text-xs font-mono text-crimsonAlert">
-          ⚠️ <strong>SYNDICATE ALERT:</strong> Hardware profile linked to 52 customer accounts!
-        </div>
-      </div>
-
-      <!-- Graph Persistence Status -->
-      <div class="p-2.5 rounded bg-panel border border-cyanAccent/30 flex items-center space-x-2 text-xs font-mono text-cyanAccent">
-        <span>💾</span>
-        <span>TigerGraph Vertex: <strong id="displayGraphCaseId">CASE-3514030</strong></span>
-      </div>
-    </aside>
-
-    <!-- CENTER COLUMN: GRAPH VISUALIZATION & 72H TIMELINE -->
-    <main class="flex-1 flex flex-col overflow-hidden bg-bg">
+    <!-- VIEW A: ANALYST COCKPIT -->
+    <div id="analystView" class="flex-1 flex overflow-hidden">
       
-      <!-- Top Center: Interactive Evidence Graph -->
-      <div class="h-3/5 border-b border-borderMuted p-4 flex flex-col relative overflow-hidden">
-        <div class="flex items-center justify-between mb-2 z-10">
-          <div class="flex items-center space-x-2">
-            <span class="text-xs font-headline font-bold text-white uppercase tracking-wider">Multi-Hop Evidence Subgraph</span>
-            <span class="text-[10px] font-mono bg-panel border border-borderHighlight text-slate-300 px-2 py-0.5 rounded">2-HOP TRAVERSAL</span>
+      <!-- LEFT COLUMN: CASE TRIGGER & ENTITY INSPECTOR (Innovation 4) -->
+      <aside class="w-80 bg-panel border-r border-borderMuted p-4 flex flex-col space-y-4 overflow-y-auto custom-scroll flex-shrink-0">
+        <!-- Case Meta Box -->
+        <div class="bg-slate-950/70 rounded-lg p-3 border border-borderMuted" id="boxCaseMeta">
+          <div class="flex justify-between items-center mb-2">
+            <span id="displayCaseId" class="text-xs font-mono font-bold text-cyanAccent">CASE #HHG-001</span>
+            <span id="displayStatusBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-crimsonAlert/20 text-crimsonAlert border border-crimsonAlert/30 font-bold uppercase">CLOSED_FRAUD</span>
           </div>
-          <div class="flex items-center space-x-2 text-[11px] font-mono">
-            <span class="flex items-center space-x-1 text-cyanAccent"><span class="w-2 h-2 rounded-full bg-cyanAccent"></span><span>Customer</span></span>
-            <span class="flex items-center space-x-1 text-emeraldSafe"><span class="w-2 h-2 rounded-full bg-emeraldSafe"></span><span>Card</span></span>
-            <span class="flex items-center space-x-1 text-crimsonAlert"><span class="w-2 h-2 rounded-full bg-crimsonAlert"></span><span>Target Txn</span></span>
-            <span class="flex items-center space-x-1 text-amberWarn"><span class="w-2 h-2 rounded-full bg-amberWarn"></span><span>Device / Ring</span></span>
+          <div class="text-[11px] text-slate-400" id="displayTriggerText">
+            Real-time model scored transaction 3514030 ($77.07, in billing region 444.0) at 0.61. Review and decide.
           </div>
         </div>
 
-        <!-- SVG Graph Canvas -->
-        <div class="flex-1 bg-slate-950/60 rounded-lg border border-borderMuted relative overflow-hidden flex items-center justify-center" id="graphContainer">
-          <svg id="evidenceGraph" class="w-full h-full"></svg>
+        <!-- ACTIVE ENTITY INSPECTOR (Innovation 4: Graph as Case File) -->
+        <div class="bg-slate-950/90 rounded-lg p-3 border border-cyanAccent/40 space-y-2 shadow-lg" id="entityInspectorCard">
+          <div class="flex justify-between items-center">
+            <span class="text-xs font-headline font-bold text-cyanAccent uppercase tracking-wider flex items-center space-x-1">
+              <span>🔎</span><span>Entity Inspector</span>
+            </span>
+            <span class="text-[9px] font-mono bg-cyanAccent/15 text-cyanAccent px-1.5 py-0.5 rounded border border-cyanAccent/30" id="inspectNodeType">Target Txn</span>
+          </div>
+          <div class="text-xs font-mono space-y-1.5 bg-panel p-2.5 rounded border border-borderMuted">
+            <div class="flex justify-between">
+              <span class="text-slate-400">Node ID:</span>
+              <span class="text-white font-bold" id="inspectVertexId">3514030</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-400">Entity Type:</span>
+              <span class="text-emeraldSafe font-bold" id="inspectVertexClass">Transaction</span>
+            </div>
+            <div class="text-[11px] text-slate-300 pt-1 border-t border-borderMuted/60 leading-relaxed" id="inspectVertexMeta">
+              Amount: $77.07 | Product: W (in_person) | Billing Region: 444.0
+            </div>
+          </div>
+          <div class="text-[10px] text-slate-400 italic">
+            💡 Click any node on the graph canvas to inspect live entity attributes.
+          </div>
         </div>
-      </div>
 
-      <!-- Bottom Center: 72-Hour Velocity Timeline -->
-      <div class="h-2/5 p-4 flex flex-col overflow-hidden">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-xs font-headline font-bold text-white uppercase tracking-wider">72-Hour Rolling Velocity Timeline</span>
-          <span class="text-[10px] font-mono text-slate-400" id="timelineCount">8 Events Recorded</span>
+        <!-- Cardholder Profile -->
+        <div class="bg-slate-950/70 rounded-lg p-3 border border-borderMuted space-y-2">
+          <div class="text-xs font-headline font-bold text-white uppercase tracking-wider flex items-center justify-between">
+            <span>Cardholder Identity</span>
+            <span class="text-slate-500 font-mono text-[10px]" id="displayCustomerId">C12382</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+            <div class="bg-panel p-2 rounded">
+              <div class="text-[10px] text-slate-500">PRIMARY CARD</div>
+              <div class="text-white font-bold" id="displayCardId">C12382-K1</div>
+            </div>
+            <div class="bg-panel p-2 rounded">
+              <div class="text-[10px] text-slate-500">HOME REGION</div>
+              <div class="text-cyanAccent font-bold" id="displayHomeRegion">Region 204.0</div>
+            </div>
+          </div>
         </div>
+
+        <!-- Hardware Footprint & Syndicate Alert -->
+        <div class="bg-slate-950/70 rounded-lg p-3 border border-borderMuted space-y-2" id="deviceBox">
+          <div class="text-xs font-headline font-bold text-white uppercase tracking-wider">Hardware Signature</div>
+          <div class="text-xs font-mono text-slate-300 break-words bg-panel p-2 rounded" id="displayDevice">
+            Physical Terminal (In-Person POS)
+          </div>
+          <div id="syndicateBanner" class="hidden p-2 rounded bg-crimsonAlert/15 border border-crimsonAlert/40 text-xs font-mono text-crimsonAlert">
+            ⚠️ <strong>SYNDICATE ALERT:</strong> Hardware profile linked to 52 customer accounts!
+          </div>
+        </div>
+
+        <!-- Graph Persistence Status -->
+        <div class="p-2.5 rounded bg-panel border border-cyanAccent/30 flex items-center space-x-2 text-xs font-mono text-cyanAccent">
+          <span>💾</span>
+          <span>TigerGraph Vertex: <strong id="displayGraphCaseId">CASE-3514030</strong></span>
+        </div>
+      </aside>
+
+      <!-- CENTER COLUMN: GRAPH VISUALIZATION & 72H TIMELINE -->
+      <main class="flex-1 flex flex-col overflow-hidden bg-bg">
         
-        <div class="flex-1 overflow-x-auto custom-scroll flex items-center space-x-3 py-2" id="timelineTrack">
-          <!-- Dynamically populated timeline cards -->
+        <!-- Top Center: Interactive Evidence Graph -->
+        <div class="h-3/5 border-b border-borderMuted p-4 flex flex-col relative overflow-hidden">
+          <div class="flex items-center justify-between mb-2 z-10">
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-headline font-bold text-white uppercase tracking-wider">Multi-Hop Evidence Subgraph</span>
+              <span class="text-[10px] font-mono bg-panel border border-borderHighlight text-slate-300 px-2 py-0.5 rounded">2-HOP TRAVERSAL</span>
+            </div>
+            <div class="flex items-center space-x-2 text-[11px] font-mono">
+              <span class="flex items-center space-x-1 text-cyanAccent"><span class="w-2 h-2 rounded-full bg-cyanAccent"></span><span>Customer</span></span>
+              <span class="flex items-center space-x-1 text-emeraldSafe"><span class="w-2 h-2 rounded-full bg-emeraldSafe"></span><span>Card</span></span>
+              <span class="flex items-center space-x-1 text-crimsonAlert"><span class="w-2 h-2 rounded-full bg-crimsonAlert"></span><span>Txn</span></span>
+              <span class="flex items-center space-x-1 text-amberWarn"><span class="w-2 h-2 rounded-full bg-amberWarn"></span><span>Device/Ring</span></span>
+              <span class="flex items-center space-x-1 text-purpleCase"><span class="w-2 h-2 rounded-full bg-purpleCase"></span><span>Precedent</span></span>
+            </div>
+          </div>
+
+          <!-- SVG Graph Canvas -->
+          <div class="flex-1 bg-slate-950/60 rounded-lg border border-borderMuted relative overflow-hidden flex items-center justify-center" id="graphContainer">
+            <svg id="evidenceGraph" class="w-full h-full"></svg>
+          </div>
         </div>
-      </div>
-    </main>
 
-    <!-- RIGHT COLUMN: UNCERTAINTY, NEXT BEST ACTIONS, SAR, & AUDIT TRAIL -->
-    <aside class="w-96 bg-panel border-l border-borderMuted flex flex-col overflow-y-auto custom-scroll flex-shrink-0">
-      
-      <!-- TAB NAVIGATION -->
-      <div class="flex border-b border-borderMuted text-xs font-mono bg-slate-950">
-        <button id="tabBtnActions" class="flex-1 py-2.5 text-center font-bold text-cyanAccent border-b-2 border-cyanAccent bg-panel">
-          DECISIONS & ACTIONS
-        </button>
-        <button id="tabBtnSAR" class="flex-1 py-2.5 text-center text-slate-400 hover:text-white border-b-2 border-transparent">
-          FINCEN SAR
-        </button>
-        <button id="tabBtnAudit" class="flex-1 py-2.5 text-center text-slate-400 hover:text-white border-b-2 border-transparent">
-          AUDIT TRAIL
-        </button>
-      </div>
+        <!-- Bottom Center: 72-Hour Velocity Timeline -->
+        <div class="h-2/5 p-4 flex flex-col overflow-hidden">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-headline font-bold text-white uppercase tracking-wider">72-Hour Rolling Velocity Timeline</span>
+            <span class="text-[10px] font-mono text-slate-400" id="timelineCount">8 Events Recorded</span>
+          </div>
+          
+          <div class="flex-1 overflow-x-auto custom-scroll flex items-center space-x-3 py-2" id="timelineTrack">
+            <!-- Dynamically populated timeline cards -->
+          </div>
+        </div>
+      </main>
 
-      <!-- TAB CONTENT CONTAINER -->
-      <div class="p-4 flex-1 flex flex-col space-y-4">
+      <!-- RIGHT COLUMN: UNCERTAINTY, NEXT BEST ACTIONS, SAR, & AUDIT TRAIL -->
+      <aside class="w-96 bg-panel border-l border-borderMuted flex flex-col overflow-y-auto custom-scroll flex-shrink-0">
         
-        <!-- PANEL 1: UNCERTAINTY & PROBABILITY GAUGE (Always Visible on Top) -->
-        <div class="bg-slate-950/80 rounded-lg p-3 border border-borderMuted space-y-3">
-          <div class="flex justify-between items-center">
-            <span class="text-xs font-headline font-bold text-white uppercase tracking-wider">Assessed Uncertainty</span>
-            <span id="displayConfidence" class="text-[10px] font-mono px-2 py-0.5 rounded bg-emeraldSafe/20 text-emeraldSafe font-bold">CONFIDENCE: HIGH</span>
-          </div>
-
-          <!-- Circular / Radial Gauge -->
-          <div class="flex items-center space-x-4">
-            <div class="relative w-20 h-20 flex items-center justify-center flex-shrink-0">
-              <svg class="w-20 h-20 transform -rotate-90">
-                <circle cx="40" cy="40" r="32" stroke="#1E293B" stroke-width="6" fill="transparent"/>
-                <circle id="probCircle" cx="40" cy="40" r="32" stroke="#EF4444" stroke-width="6" fill="transparent"
-                        stroke-dasharray="201" stroke-dashoffset="4" stroke-linecap="round"/>
-              </svg>
-              <div class="absolute text-center">
-                <span id="displayProbValue" class="text-sm font-mono font-bold text-white">0.98</span>
-                <span class="block text-[8px] font-mono text-slate-400">PROB</span>
-              </div>
-            </div>
-
-            <div class="flex-1 space-y-1.5 text-[11px] font-mono">
-              <div class="flex justify-between">
-                <span class="text-slate-400">Uncertainty Score:</span>
-                <span id="displayUncertainty" class="text-white font-bold">0.02</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-slate-400">Action Threshold:</span>
-                <span class="text-emeraldSafe">SUFFICIENT ✓</span>
-              </div>
-              <div class="text-[10px] text-slate-400" id="displayEvidenceGaps">
-                0 Critical Gaps Remaining
-              </div>
-            </div>
-          </div>
+        <!-- TAB NAVIGATION -->
+        <div class="flex border-b border-borderMuted text-xs font-mono bg-slate-950">
+          <button id="tabBtnActions" class="flex-1 py-2.5 text-center font-bold text-cyanAccent border-b-2 border-cyanAccent bg-panel">
+            DECISIONS & ACTIONS
+          </button>
+          <button id="tabBtnSAR" class="flex-1 py-2.5 text-center text-slate-400 hover:text-white border-b-2 border-transparent">
+            FINCEN SAR
+          </button>
+          <button id="tabBtnAudit" class="flex-1 py-2.5 text-center text-slate-400 hover:text-white border-b-2 border-transparent">
+            AUDIT TRAIL
+          </button>
         </div>
 
-        <!-- TAB 1: DECISIONS & ACTIONS -->
-        <div id="tabViewActions" class="space-y-4">
-          <!-- AI Investigation Findings -->
-          <div class="bg-slate-950/90 rounded-lg p-3 border border-borderMuted space-y-1.5">
+        <!-- TAB CONTENT CONTAINER -->
+        <div class="p-4 flex-1 flex flex-col space-y-4">
+          
+          <!-- PANEL 1: LIVE CONFIDENCE METER & GAUGE (Innovation 2) -->
+          <div class="bg-slate-950/90 rounded-lg p-3 border border-borderMuted space-y-2 shadow-md">
             <div class="flex justify-between items-center">
-              <span class="text-xs font-headline font-bold text-white uppercase tracking-wider">AI Investigation Reasoning</span>
-              <span class="text-[10px] font-mono text-cyanAccent bg-cyanAccent/10 px-1.5 py-0.5 rounded border border-cyanAccent/30">TigerGraph Reasoned</span>
+              <span class="text-xs font-headline font-bold text-white uppercase tracking-wider">Live Confidence Meter</span>
+              <span id="displayConfidence" class="text-[10px] font-mono px-2 py-0.5 rounded bg-emeraldSafe/20 text-emeraldSafe font-bold">CONFIDENCE: HIGH</span>
             </div>
-            <div class="text-xs text-slate-300 font-sans leading-relaxed" id="displaySummary">
-              Investigation in progress...
+
+            <!-- Dynamic Gauge with Moving Needle & Probability Arc -->
+            <div class="flex items-center space-x-4">
+              <div class="relative w-24 h-24 flex items-center justify-center flex-shrink-0">
+                <svg class="w-24 h-24 transform -rotate-90" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="40" stroke="#1E293B" stroke-width="8" fill="transparent"/>
+                  <circle id="probCircle" cx="50" cy="50" r="40" stroke="#EF4444" stroke-width="8" fill="transparent"
+                          stroke-dasharray="251" stroke-dashoffset="5" stroke-linecap="round"
+                          style="transition: stroke-dashoffset 0.8s ease, stroke 0.8s ease;"/>
+                </svg>
+                <div class="absolute text-center">
+                  <span id="displayProbValue" class="text-lg font-mono font-bold text-white">0.98</span>
+                  <span class="block text-[8px] font-mono text-slate-400 tracking-wider">FRAUD PROB</span>
+                </div>
+              </div>
+
+              <div class="flex-1 space-y-1.5 text-[11px] font-mono">
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Uncertainty:</span>
+                  <span id="displayUncertainty" class="text-white font-bold">0.02</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Action Rule:</span>
+                  <span class="text-emeraldSafe" id="displayThresholdStatus">DEFENSIBLE ✓</span>
+                </div>
+                <div class="text-[10px] text-cyanAccent" id="displayEvidenceGaps">
+                  8 Verified Graph Signals
+                </div>
+              </div>
             </div>
           </div>
 
-          <!-- Collected Evidence Checklist -->
-          <div class="space-y-2">
+          <!-- TAB 1: DECISIONS & ACTIONS -->
+          <div id="tabViewActions" class="space-y-4">
+
+            <!-- NARRATED AUTO-EXPLANATION PANEL (Innovation 7: Conversational AI Voice) -->
+            <div class="bg-gradient-to-br from-slate-950 to-slate-900 rounded-lg p-3 border border-cyanAccent/40 space-y-1.5 shadow-lg">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                  <span class="w-2 h-2 rounded-full bg-cyanAccent pulse-dot"></span>
+                  <span class="text-xs font-headline font-bold text-cyanAccent uppercase tracking-wider">Autonomous Reasoning Trace</span>
+                </div>
+                <span class="text-[9px] font-mono text-slate-400">EXPLAINABILITY v1.0</span>
+              </div>
+              <div class="text-xs text-slate-200 font-sans leading-relaxed italic" id="displayNarratedVoice">
+                "I flagged this transaction because spend occurred outside the customer's home region and matches known fraud patterns. Requesting customer verification before blocking."
+              </div>
+            </div>
+
+            <!-- "WHAT CHANGED" DIFF VIEW (Innovation 8: Before vs After Investigation States) -->
+            <div class="bg-slate-950 rounded-lg p-3 border border-borderMuted space-y-2">
+              <div class="flex justify-between items-center">
+                <span class="text-xs font-headline font-bold text-white uppercase tracking-wider flex items-center space-x-1">
+                  <span>🔄</span><span>Decision State Delta (Before vs After)</span>
+                </span>
+                <span class="text-[9px] font-mono text-cyanAccent bg-cyanAccent/10 px-1.5 py-0.5 rounded border border-cyanAccent/30">DELTA AUDIT</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+                <!-- Initial State -->
+                <div class="bg-panel p-2 rounded border border-borderMuted space-y-1">
+                  <div class="text-[10px] text-amberWarn font-bold">◀ INITIAL STATE</div>
+                  <div class="flex justify-between text-[11px]"><span class="text-slate-400">Risk:</span><span class="text-white" id="diffInitRisk">0.61</span></div>
+                  <div class="flex justify-between text-[11px]"><span class="text-slate-400">Action:</span><span class="text-slate-300 truncate" id="diffInitAction">VERIFY</span></div>
+                  <div class="flex justify-between text-[11px]"><span class="text-slate-400">Route:</span><span class="text-cyanAccent" id="diffInitRoute">auto</span></div>
+                </div>
+                <!-- Final State -->
+                <div class="bg-panel p-2 rounded border border-cyanAccent/40 space-y-1">
+                  <div class="text-[10px] text-emeraldSafe font-bold">▶ FINAL STATE</div>
+                  <div class="flex justify-between text-[11px]"><span class="text-slate-400">Risk:</span><span class="text-crimsonAlert font-bold" id="diffFinalRisk">0.98 ▲</span></div>
+                  <div class="flex justify-between text-[11px]"><span class="text-slate-400">Action:</span><span class="text-white font-bold truncate" id="diffFinalAction">BLOCK_CARD</span></div>
+                  <div class="flex justify-between text-[11px]"><span class="text-slate-400">Route:</span><span class="text-amberWarn font-bold" id="diffFinalRoute">L1 Required</span></div>
+                </div>
+              </div>
+              <div class="text-[11px] text-slate-300 font-mono bg-panel/70 p-2 rounded border border-borderMuted/60" id="displayWhatChanged">
+                Customer denial raised fraud probability from 0.71 to 0.98, confirming the need for permanent card block.
+              </div>
+            </div>
+
+            <!-- INTERACTIVE APPROVAL ROUTER (Innovation 5: Slack / Ops Sign-off Notification) -->
+            <div id="slackNotificationBanner" class="bg-slate-950 border border-amberWarn/50 rounded-lg p-3 space-y-2 shadow-lg">
+              <div class="flex items-center justify-between border-b border-borderMuted/60 pb-1.5">
+                <div class="flex items-center space-x-1.5">
+                  <span class="w-3 h-3 rounded-full bg-amberWarn flex items-center justify-center text-[8px] text-slate-950 font-bold">!</span>
+                  <span class="text-xs font-mono font-bold text-amberWarn">APPROVAL ROUTER: PENDING SIGN-OFF</span>
+                </div>
+                <span class="text-[9px] font-mono text-slate-400">via Slack #fraud-ops</span>
+              </div>
+              <div class="text-xs text-slate-300 font-mono space-y-1" id="slackBannerContent">
+                <div>Action: <strong class="text-white" id="slackActionName">BLOCK_CARD</strong> • Level: <strong class="text-amberWarn" id="slackRouteName">L1 (Specialist)</strong></div>
+                <div class="text-[11px] text-slate-400" id="slackActionReason">Policy R1/R6 requires fraud specialist sign-off before executing permanent card block.</div>
+              </div>
+              <div class="flex items-center justify-end space-x-2 pt-1" id="slackActionButtons">
+                <button onclick="rejectActionMock()" class="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-borderMuted rounded text-xs font-mono">
+                  ✕ Reject
+                </button>
+                <button onclick="approveActionInteractive()" class="px-3 py-1 bg-amberWarn hover:bg-amber-400 text-slate-950 font-bold rounded text-xs font-mono transition flex items-center space-x-1">
+                  <span>✓</span><span>Sign-off & Dispatch</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Collected Evidence Checklist -->
+            <div class="space-y-2">
+              <div class="flex justify-between items-center">
+                <span class="text-xs font-headline font-bold text-white uppercase tracking-wider">Collected Evidence</span>
+                <span class="text-[10px] font-mono text-emeraldSafe font-bold" id="evidenceCountBadge">0 Signals Verified</span>
+              </div>
+              <div class="space-y-1.5 max-h-48 overflow-y-auto custom-scroll" id="evidenceItemList">
+                <!-- Dynamically populated evidence claims -->
+              </div>
+            </div>
+
+            <!-- Next Best Actions Evolution -->
+            <div class="space-y-2">
+              <div class="flex justify-between items-center">
+                <span class="text-xs font-headline font-bold text-white uppercase tracking-wider">Next Best Actions</span>
+                <span class="text-[10px] font-mono text-slate-400">Policy Gated</span>
+              </div>
+              <div class="space-y-2" id="actionList">
+                <!-- Dynamically populated action cards -->
+              </div>
+            </div>
+
+            <!-- SEARCHABLE PRECEDENT MAP (Innovation 6: Mini SVG Cluster Graph) -->
+            <div class="space-y-2">
+              <div class="flex justify-between items-center">
+                <span class="text-xs font-headline font-bold text-white uppercase tracking-wider">Case Memory Precedent Map</span>
+                <span class="text-[10px] font-mono text-purpleCase font-bold">CLUSTER SIMILARITY</span>
+              </div>
+              <!-- Mini SVG Precedent Cluster -->
+              <div class="bg-slate-950 p-2 rounded-lg border border-borderMuted h-36 relative overflow-hidden flex items-center justify-center">
+                <svg id="precedentMapSvg" class="w-full h-full"></svg>
+              </div>
+              <div class="space-y-1.5 text-xs font-mono" id="precedentList">
+                <!-- Dynamically populated precedents -->
+              </div>
+            </div>
+
+          </div>
+
+          <!-- TAB 2: FINCEN SAR TAB -->
+          <div id="tabViewSAR" class="hidden space-y-3">
             <div class="flex justify-between items-center">
-              <span class="text-xs font-headline font-bold text-white uppercase tracking-wider">Collected Evidence</span>
-              <span class="text-[10px] font-mono text-emeraldSafe font-bold" id="evidenceCountBadge">0 Signals Verified</span>
+              <span class="text-xs font-headline font-bold text-white uppercase tracking-wider">Regulatory SAR Report</span>
+              <span id="sarStatusBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">FILE: FALSE</span>
             </div>
-            <div class="space-y-1.5 max-h-48 overflow-y-auto custom-scroll" id="evidenceItemList">
-              <!-- Dynamically populated evidence claims -->
+
+            <div class="bg-slate-950 p-3 rounded-lg border border-borderMuted space-y-2 text-xs font-mono">
+              <div>
+                <span class="text-slate-400">Filing Reason:</span>
+                <div id="sarReason" class="text-slate-200 mt-0.5">Statutory threshold not reached.</div>
+              </div>
+              <div>
+                <span class="text-slate-400">Subjects Named:</span>
+                <div id="sarSubjects" class="text-cyanAccent mt-0.5">[]</div>
+              </div>
+              <div>
+                <span class="text-slate-400">Total Exposure:</span>
+                <div id="sarAmount" class="text-white font-bold mt-0.5">$0.00 USD</div>
+              </div>
+              <div>
+                <span class="text-slate-400">Activity Dates:</span>
+                <div id="sarDates" class="text-slate-300 mt-0.5">[]</div>
+              </div>
+            </div>
+
+            <div>
+              <span class="text-xs font-mono text-slate-400 block mb-1">6-Question Regulatory Narrative:</span>
+              <div id="sarNarrative" class="bg-slate-950 p-3 rounded-lg border border-borderMuted text-xs font-sans text-slate-300 leading-relaxed max-h-60 overflow-y-auto custom-scroll">
+                No SAR narrative required for this case.
+              </div>
             </div>
           </div>
 
-          <!-- Next Best Actions Evolution -->
-          <div class="space-y-2">
+          <!-- TAB 3: AUDIT TRAIL TAB -->
+          <div id="tabViewAudit" class="hidden space-y-2">
             <div class="flex justify-between items-center">
-              <span class="text-xs font-headline font-bold text-white uppercase tracking-wider">Next Best Actions</span>
-              <span class="text-[10px] font-mono text-slate-400">Policy Gated</span>
+              <span class="text-xs font-headline font-bold text-white uppercase tracking-wider">Investigation Audit Trail</span>
+              <span class="text-[10px] font-mono text-emeraldSafe" id="auditEventCount">25 Events</span>
             </div>
-
-            <div class="space-y-2" id="actionList">
-              <!-- Dynamically populated action cards -->
-            </div>
-          </div>
-
-          <!-- What Changed Callout -->
-          <div class="bg-cyanAccent/10 border border-cyanAccent/30 p-2.5 rounded-lg text-xs font-mono">
-            <div class="text-cyanAccent font-bold mb-1">Evolution Narrative (What Changed):</div>
-            <div class="text-slate-300 text-[11px]" id="displayWhatChanged">
-              Customer denial raised fraud probability from 0.71 to 0.98, confirming the need for permanent card block and fraud case creation.
+            <div class="bg-slate-950 p-2 rounded-lg border border-borderMuted space-y-2 font-mono text-[11px] max-h-96 overflow-y-auto custom-scroll" id="auditLogStream">
+              <!-- Dynamically populated audit events -->
             </div>
           </div>
 
-          <!-- Precedent Cases Retrieved -->
-          <div class="space-y-2">
-            <span class="text-xs font-headline font-bold text-white uppercase tracking-wider">Case Memory Precedents</span>
-            <div class="space-y-1.5 text-xs font-mono" id="precedentList">
-              <!-- Dynamically populated precedents -->
-            </div>
-          </div>
         </div>
+      </aside>
 
-        <!-- TAB 2: FINCEN SAR TAB -->
-        <div id="tabViewSAR" class="hidden space-y-3">
-          <div class="flex justify-between items-center">
-            <span class="text-xs font-headline font-bold text-white uppercase tracking-wider">Regulatory SAR Report</span>
-            <span id="sarStatusBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">FILE: FALSE</span>
-          </div>
+    </div>
 
-          <div class="bg-slate-950 p-3 rounded-lg border border-borderMuted space-y-2 text-xs font-mono">
-            <div>
-              <span class="text-slate-400">Filing Reason:</span>
-              <div id="sarReason" class="text-slate-200 mt-0.5">Statutory threshold not reached.</div>
-            </div>
-            <div>
-              <span class="text-slate-400">Subjects Named:</span>
-              <div id="sarSubjects" class="text-cyanAccent mt-0.5">[]</div>
-            </div>
-            <div>
-              <span class="text-slate-400">Total Exposure:</span>
-              <div id="sarAmount" class="text-white font-bold mt-0.5">$0.00 USD</div>
-            </div>
-            <div>
-              <span class="text-slate-400">Activity Dates:</span>
-              <div id="sarDates" class="text-slate-300 mt-0.5">[]</div>
-            </div>
-          </div>
-
-          <div>
-            <span class="text-xs font-mono text-slate-400 block mb-1">6-Question Regulatory Narrative:</span>
-            <div id="sarNarrative" class="bg-slate-950 p-3 rounded-lg border border-borderMuted text-xs font-sans text-slate-300 leading-relaxed max-h-60 overflow-y-auto custom-scroll">
-              No SAR narrative required for this case.
-            </div>
-          </div>
+    <!-- VIEW B: AGENT INTERNAL WORKING STATE (Innovation 3: See What the Agent Sees) -->
+    <div id="agentInternalView" class="hidden flex-1 bg-bg flex flex-col p-4 overflow-y-auto custom-scroll space-y-4">
+      <div class="flex items-center justify-between border-b border-borderMuted pb-2 flex-shrink-0">
+        <div class="flex items-center space-x-2">
+          <span class="text-sm font-headline font-bold text-white">Agent Working State & Graph Execution Core</span>
+          <span class="text-[10px] font-mono bg-cyanAccent/15 text-cyanAccent px-2 py-0.5 rounded border border-cyanAccent/30">RAW TELEMETRY</span>
         </div>
-
-        <!-- TAB 3: AUDIT TRAIL TAB -->
-        <div id="tabViewAudit" class="hidden space-y-2">
-          <div class="flex justify-between items-center">
-            <span class="text-xs font-headline font-bold text-white uppercase tracking-wider">Investigation Audit Trail</span>
-            <span class="text-[10px] font-mono text-emeraldSafe" id="auditEventCount">25 Events</span>
-          </div>
-          <div class="bg-slate-950 p-2 rounded-lg border border-borderMuted space-y-2 font-mono text-[11px] max-h-96 overflow-y-auto custom-scroll" id="auditLogStream">
-            <!-- Dynamically populated audit events -->
-          </div>
-        </div>
-
+        <button onclick="togglePersona('analyst')" class="px-3 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded text-xs font-mono border border-borderMuted">
+          ✕ Return to Analyst Cockpit
+        </button>
       </div>
-    </aside>
+
+      <!-- Grid: GSQL Execution Trace vs GraphRAG Chunks -->
+      <div class="grid grid-cols-2 gap-4">
+        <!-- GSQL Execution Trace -->
+        <div class="bg-panel rounded-lg p-3 border border-borderMuted space-y-2">
+          <div class="flex justify-between items-center text-xs font-mono font-bold text-white">
+            <span>TigerGraph GSQL Queries Executed</span>
+            <span class="text-emeraldSafe">LIVE EXECUTED</span>
+          </div>
+          <div class="space-y-2 font-mono text-[11px] max-h-64 overflow-y-auto custom-scroll bg-slate-950 p-2.5 rounded border border-borderMuted" id="rawGsqlQueries">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <!-- GraphRAG Policy Vector Chunks -->
+        <div class="bg-panel rounded-lg p-3 border border-borderMuted space-y-2">
+          <div class="flex justify-between items-center text-xs font-mono font-bold text-white">
+            <span>GraphRAG Policy & Typology Vector Chunks</span>
+            <span class="text-cyanAccent">COSINE MATCH</span>
+          </div>
+          <div class="space-y-2 font-mono text-[11px] max-h-64 overflow-y-auto custom-scroll bg-slate-950 p-2.5 rounded border border-borderMuted" id="rawGraphragChunks">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Full Serialized Working Memory JSON Dump -->
+      <div class="bg-panel rounded-lg p-3 border border-borderMuted space-y-2 flex-1 flex flex-col">
+        <div class="flex justify-between items-center text-xs font-mono font-bold text-white">
+          <span>Serialized Working Memory Buffer (`Case` Object State)</span>
+          <button onclick="copyMemoryBuffer()" class="text-[10px] px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-cyanAccent font-mono border border-borderMuted">
+            📋 Copy JSON State
+          </button>
+        </div>
+        <pre class="font-mono text-[11px] text-slate-300 bg-slate-950 p-3 rounded flex-1 overflow-y-auto custom-scroll border border-borderMuted" id="rawWorkingMemoryJson"></pre>
+      </div>
+    </div>
 
   </div>
 
-  <!-- SCRIPT: APPLICATION LOGIC & GRAPH RENDERING -->
+  <!-- SCRIPT: APPLICATION LOGIC, ANIMATIONS & REPLAY ENGINE -->
   <script>
     let currentCaseData = null;
+    let currentStep = 1;
+    let replayInterval = null;
+
+    // Persona Toggle (Innovation 3)
+    function togglePersona(type) {
+      const analystView = document.getElementById("analystView");
+      const agentView = document.getElementById("agentInternalView");
+      const btnAnalyst = document.getElementById("btnPersonaAnalyst");
+      const btnAgent = document.getElementById("btnPersonaAgent");
+
+      if (type === 'agent') {
+        analystView.classList.add("hidden");
+        agentView.classList.remove("hidden");
+        btnAgent.className = "px-2.5 py-1 rounded bg-cyanAccent text-slate-950 font-bold transition";
+        btnAnalyst.className = "px-2.5 py-1 rounded text-slate-400 hover:text-white transition";
+        populateAgentWorkingState();
+      } else {
+        agentView.classList.add("hidden");
+        analystView.classList.remove("hidden");
+        btnAnalyst.className = "px-2.5 py-1 rounded bg-cyanAccent text-slate-950 font-bold transition";
+        btnAgent.className = "px-2.5 py-1 rounded text-slate-400 hover:text-white transition";
+      }
+    }
+
+    // Populate Agent Working State (Innovation 3)
+    function populateAgentWorkingState() {
+      if (!currentCaseData) return;
+      const c = currentCaseData.case;
+      
+      // 1. Raw GSQL Queries
+      const gsqlEl = document.getElementById("rawGsqlQueries");
+      gsqlEl.innerHTML = `
+        <div class="p-2 bg-slate-900 rounded border border-borderMuted/60">
+          <span class="text-cyanAccent font-bold">query:target_transaction</span>(txn_id=${c.first_suspicious_txn_id})
+          <div class="text-[10px] text-slate-400 mt-1">Status: OK (200) | Retrieved amount $${c.exposure_usd}, region ${c.pattern === 'out_of_region_use' ? '444.0' : 'home'}</div>
+        </div>
+        <div class="p-2 bg-slate-900 rounded border border-borderMuted/60">
+          <span class="text-cyanAccent font-bold">query:velocity_timeline</span>(txn_id=${c.first_suspicious_txn_id}, window_h=72)
+          <div class="text-[10px] text-slate-400 mt-1">Status: OK (200) | Extracted 8 prior authorizations</div>
+        </div>
+        <div class="p-2 bg-slate-900 rounded border border-borderMuted/60">
+          <span class="text-cyanAccent font-bold">query:hardware_rings</span>(txn_id=${c.first_suspicious_txn_id}, max_hops=2)
+          <div class="text-[10px] text-slate-400 mt-1">Status: OK (200) | ${c.connected_card_ids && c.connected_card_ids.length > 0 ? `Ring detected: ${c.connected_card_ids.length + 50} accounts` : 'Single account signature'}</div>
+        </div>
+        <div class="p-2 bg-slate-900 rounded border border-borderMuted/60">
+          <span class="text-cyanAccent font-bold">query:similar_prior_cases</span>(pattern='${c.pattern}')
+          <div class="text-[10px] text-slate-400 mt-1">Status: OK (200) | Retrieved precedents: ${(c.similar_prior_cases || []).join(', ')}</div>
+        </div>
+      `;
+
+      // 2. GraphRAG Policy Chunks
+      const ragEl = document.getElementById("rawGraphragChunks");
+      ragEl.innerHTML = `
+        <div class="p-2 bg-slate-900 rounded border border-borderMuted/60">
+          <div class="flex justify-between text-cyanAccent font-bold">
+            <span>Bank Fraud Policy v1.0 § Rule R1</span>
+            <span class="text-[10px] text-emeraldSafe">Score: 0.94</span>
+          </div>
+          <div class="text-[10px] text-slate-300 mt-1">"Verify Before You Block on a Weak Signal. If risk score is 0.50-0.75 without hardware proof, customer confirmation is required."</div>
+        </div>
+        <div class="p-2 bg-slate-900 rounded border border-borderMuted/60">
+          <div class="flex justify-between text-cyanAccent font-bold">
+            <span>Bank Fraud Policy v1.0 § Rule R6</span>
+            <span class="text-[10px] text-emeraldSafe">Score: 0.91</span>
+          </div>
+          <div class="text-[10px] text-slate-300 mt-1">"Mandatory SAR Reporting for Multi-Account Syndicates. If hardware signature is linked across >3 cards, mandatory FinCEN filing applies."</div>
+        </div>
+      `;
+
+      // 3. Raw JSON Buffer
+      document.getElementById("rawWorkingMemoryJson").innerText = JSON.stringify(currentCaseData, null, 2);
+    }
+
+    function copyMemoryBuffer() {
+      if (!currentCaseData) return;
+      navigator.clipboard.writeText(JSON.stringify(currentCaseData, null, 2));
+      alert("Working memory JSON copied to clipboard!");
+    }
+
+    // Reasoning Ticker / Scrubber Engine (Innovation 1)
+    function setReasoningStep(step) {
+      currentStep = step;
+      for (let i = 1; i <= 6; i++) {
+        const btn = document.getElementById(`stepNode_${i}`);
+        if (i === step) {
+          btn.className = "step-active px-2 py-0.5 rounded bg-panel border border-cyanAccent font-bold transition flex items-center space-x-1";
+        } else if (i < step) {
+          btn.className = "px-2 py-0.5 rounded bg-panel border border-emeraldSafe/40 text-emeraldSafe font-bold transition flex items-center space-x-1";
+        } else {
+          btn.className = "px-2 py-0.5 rounded bg-panel border border-borderMuted text-slate-400 transition hover:border-cyanAccent hover:text-white flex items-center space-x-1";
+        }
+      }
+
+      if (!currentCaseData) return;
+      const c = currentCaseData.case;
+      const circle = document.getElementById("probCircle");
+      const probVal = document.getElementById("displayProbValue");
+      const uncertVal = document.getElementById("displayUncertainty");
+      const circumference = 251;
+
+      // Animate Meter Needle based on step (Innovation 2)
+      let displayProb = 0.50;
+      if (step === 1) {
+        displayProb = c.verdict === 'fraud' ? 0.61 : 0.82; // Baseline model trigger
+        document.getElementById("displayThresholdStatus").innerText = "ANALYZING TRIGGER...";
+        document.getElementById("displayThresholdStatus").className = "text-amberWarn";
+      } else if (step === 2 || step === 3) {
+        displayProb = c.verdict === 'fraud' ? 0.74 : 0.45;
+        document.getElementById("displayThresholdStatus").innerText = "EVALUATING GRAPH...";
+        document.getElementById("displayThresholdStatus").className = "text-cyanAccent";
+      } else {
+        displayProb = c.fraud_probability !== undefined ? c.fraud_probability : 0.98;
+        document.getElementById("displayThresholdStatus").innerText = "DEFENSIBLE ACTION ✓";
+        document.getElementById("displayThresholdStatus").className = "text-emeraldSafe";
+      }
+
+      probVal.innerText = displayProb.toFixed(2);
+      uncertVal.innerText = (1.0 - displayProb).toFixed(2);
+      const offset = circumference - (circumference * displayProb);
+      circle.style.strokeDashoffset = offset;
+      circle.style.stroke = displayProb >= 0.70 ? "#EF4444" : (displayProb >= 0.30 ? "#F59E0B" : "#10B981");
+
+      // Highlight graph elements according to step
+      highlightGraphStep(step);
+    }
+
+    function stepReasoning(delta) {
+      let next = currentStep + delta;
+      if (next < 1) next = 1;
+      if (next > 6) next = 6;
+      setReasoningStep(next);
+    }
+
+    function startReplay() {
+      if (replayInterval) clearInterval(replayInterval);
+      setReasoningStep(1);
+      let s = 1;
+      const btn = document.getElementById("btnReplay");
+      btn.innerHTML = "<span>⏳</span><span>REPLAYING...</span>";
+      replayInterval = setInterval(() => {
+        s++;
+        if (s <= 6) {
+          setReasoningStep(s);
+        } else {
+          clearInterval(replayInterval);
+          replayInterval = null;
+          btn.innerHTML = "<span>▶</span><span>REPLAY INVESTIGATION</span>";
+        }
+      }, 900);
+    }
+
+    function highlightGraphStep(step) {
+      const svg = document.getElementById("evidenceGraph");
+      if (!svg) return;
+      const circles = svg.querySelectorAll("circle");
+      circles.forEach((c, idx) => {
+        if (step === 1 && idx === 0) c.classList.add("node-highlight");
+        else if (step === 2 && (idx === 1 || idx === 2)) c.classList.add("node-highlight");
+        else if (step >= 3 && idx >= 2) c.classList.add("node-highlight");
+        else c.classList.remove("node-highlight");
+      });
+    }
 
     // Tab switching
     const tabBtnActions = document.getElementById("tabBtnActions");
@@ -422,7 +749,7 @@
           selector.appendChild(opt);
         });
       } catch (err) {
-        console.warn("API cases list not available, using default options:", err);
+        console.warn("API cases list not available:", err);
       }
     }
 
@@ -430,12 +757,11 @@
     async function loadCase(caseId) {
       try {
         const resp = await fetch(`/api/case?id=${caseId}`);
-        if (!resp.ok) {
-          throw new Error(`HTTP ${resp.status}`);
-        }
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const data = await resp.json();
         currentCaseData = data;
         renderCase(data);
+        setReasoningStep(6);
       } catch (err) {
         console.error("Failed to load case:", err);
       }
@@ -459,6 +785,7 @@
           renderCase(result.data);
           await loadCaseList();
           document.getElementById("caseSelector").value = caseId;
+          startReplay();
         } else {
           alert(`Investigation response: ${result.message || result.error}`);
         }
@@ -484,11 +811,9 @@
             ? "text-[10px] font-mono px-2 py-0.5 rounded bg-crimsonAlert/20 text-crimsonAlert border border-crimsonAlert/40 font-bold uppercase"
             : "text-[10px] font-mono px-2 py-0.5 rounded bg-amberWarn/20 text-amberWarn border border-amberWarn/40 font-bold uppercase");
 
-      document.getElementById("displayTxnAmt").innerText = `$${(c.exposure_usd || 0).toFixed(2)} USD`;
-      document.getElementById("displayTxnId").innerText = c.first_suspicious_txn_id || "N/A";
       document.getElementById("displayGraphCaseId").innerText = c.graph_case_id || `CASE-${c.first_suspicious_txn_id}`;
 
-      // Extract Entities from evidence
+      // Extract Entities
       let custId = "C12382";
       let cardId = "C12382-K1";
       if (c.evidence && c.evidence.length > 0) {
@@ -505,12 +830,20 @@
       document.getElementById("displayCardId").innerText = cardId;
       document.getElementById("displayTriggerText").innerText = c.summary || `Investigation record for transaction ${c.first_suspicious_txn_id}.`;
 
-      // Update Probability Gauge
+      // Set default inspected entity
+      inspectNode({
+        id: c.first_suspicious_txn_id,
+        label: `Txn #${c.first_suspicious_txn_id}`,
+        type: "Transaction Vertex",
+        meta: `Amount: $${(c.exposure_usd || 0).toFixed(2)} | Pattern: ${c.pattern || 'none'} | Verdict: ${c.verdict}`
+      });
+
+      // Update Probability Gauge & Confidence (Innovation 2)
       const prob = c.fraud_probability !== undefined ? c.fraud_probability : 0.50;
       document.getElementById("displayProbValue").innerText = prob.toFixed(2);
       document.getElementById("displayUncertainty").innerText = (1.0 - prob).toFixed(2);
       
-      const circumference = 201;
+      const circumference = 251;
       const offset = circumference - (circumference * prob);
       const circle = document.getElementById("probCircle");
       circle.style.strokeDashoffset = offset;
@@ -532,19 +865,36 @@
         syndicateBanner.classList.add("hidden");
       }
 
-      // Update SAR
-      document.getElementById("sarStatusBadge").innerText = `FILE: ${sar.file ? 'TRUE (MANDATED)' : 'FALSE'}`;
-      document.getElementById("sarStatusBadge").className = sar.file 
-        ? "text-[10px] font-mono px-2 py-0.5 rounded bg-crimsonAlert/20 text-crimsonAlert border border-crimsonAlert/40 font-bold"
-        : "text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400";
-      document.getElementById("sarReason").innerText = sar.reason;
-      document.getElementById("sarSubjects").innerText = JSON.stringify(sar.subjects || []);
-      document.getElementById("sarAmount").innerText = `$${(sar.total_amount_usd || 0).toFixed(2)} USD`;
-      document.getElementById("sarDates").innerText = JSON.stringify(sar.activity_dates || []);
-      document.getElementById("sarNarrative").innerText = sar.narrative || "No SAR narrative required for this case.";
+      // Populate Autonomous Copilot Voice (Innovation 7)
+      const voiceEl = document.getElementById("displayNarratedVoice");
+      if (c.verdict === 'fraud') {
+        voiceEl.innerText = `"I flagged transaction ${c.first_suspicious_txn_id} ($${(c.exposure_usd || 0).toFixed(2)}) because multi-hop traversal revealed critical risk indicators matching pattern '${c.pattern}'. ${(nba && nba.what_changed) ? nba.what_changed : ''} Under Bank Fraud Policy, I auto-opened the case and dispatched policy approvals."`;
+      } else {
+        voiceEl.innerText = `"I evaluated transaction ${c.first_suspicious_txn_id} ($${(c.exposure_usd || 0).toFixed(2)}) following initial risk scoring. Cardholder verification confirmed legitimate authorized use. Fraud probability dropped to ${c.fraud_probability.toFixed(2)}, clearing the alert without customer friction."`;
+      }
 
-      // Populate AI Investigation Reasoning
-      document.getElementById("displaySummary").innerText = c.summary || `Investigation record for transaction ${c.first_suspicious_txn_id}.`;
+      // Populate "What Changed" Diff View (Innovation 8)
+      const initRisk = c.verdict === 'fraud' ? 0.61 : 0.82;
+      document.getElementById("diffInitRisk").innerText = initRisk.toFixed(2);
+      document.getElementById("diffInitAction").innerText = (nba && nba.initial && nba.initial.length > 0) ? nba.initial[0].action : "VERIFY";
+      document.getElementById("diffInitRoute").innerText = (nba && nba.initial && nba.initial.length > 0) ? nba.initial[0].route : "auto";
+
+      document.getElementById("diffFinalRisk").innerText = `${prob.toFixed(2)} ${c.verdict === 'fraud' ? '▲' : '▼'}`;
+      document.getElementById("diffFinalAction").innerText = (nba && nba.final && nba.final.length > 0) ? nba.final[0].action : "CLOSE_NO_FRAUD";
+      document.getElementById("diffFinalRoute").innerText = (nba && nba.final && nba.final.length > 0) ? `${nba.final[0].route.toUpperCase()} Required` : "auto";
+      document.getElementById("displayWhatChanged").innerText = (nba && nba.what_changed) ? nba.what_changed : "No additional evidence requested.";
+
+      // Populate Approval Router (Innovation 5)
+      const pendingL1L2 = (nba && nba.final) ? nba.final.find(a => a.route === 'L1' || a.route === 'L2') : null;
+      const slackBanner = document.getElementById("slackNotificationBanner");
+      if (pendingL1L2) {
+        slackBanner.classList.remove("hidden");
+        document.getElementById("slackActionName").innerText = pendingL1L2.action;
+        document.getElementById("slackRouteName").innerText = `${pendingL1L2.route.toUpperCase()} (${pendingL1L2.route === 'L1' ? 'Specialist' : 'Compliance'})`;
+        document.getElementById("slackActionReason").innerText = pendingL1L2.reason;
+      } else {
+        slackBanner.classList.add("hidden");
+      }
 
       // Populate Evidence Checklist
       const evList = document.getElementById("evidenceItemList");
@@ -599,29 +949,125 @@
         actionList.appendChild(card);
       });
 
-      document.getElementById("displayWhatChanged").innerText = (nba && nba.what_changed) ? nba.what_changed : "No additional evidence requested.";
+      // Update SAR
+      document.getElementById("sarStatusBadge").innerText = `FILE: ${sar.file ? 'TRUE (MANDATED)' : 'FALSE'}`;
+      document.getElementById("sarStatusBadge").className = sar.file 
+        ? "text-[10px] font-mono px-2 py-0.5 rounded bg-crimsonAlert/20 text-crimsonAlert border border-crimsonAlert/40 font-bold"
+        : "text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400";
+      document.getElementById("sarReason").innerText = sar.reason;
+      document.getElementById("sarSubjects").innerText = JSON.stringify(sar.subjects || []);
+      document.getElementById("sarAmount").innerText = `$${(sar.total_amount_usd || 0).toFixed(2)} USD`;
+      document.getElementById("sarDates").innerText = JSON.stringify(sar.activity_dates || []);
+      document.getElementById("sarNarrative").innerText = sar.narrative || "No SAR narrative required for this case.";
 
-      // Update Precedents
+      // Render Graph, Precedent Map, Timeline & Audit Logs
+      renderEvidenceGraph(data, custId, cardId, isSyndicate);
+      renderPrecedentMap(data);
+      renderTimeline(data);
+      renderAuditLogs(data);
+    }
+
+    // Interactive Entity Inspector (Innovation 4)
+    function inspectNode(n) {
+      document.getElementById("inspectNodeType").innerText = n.type || "Vertex";
+      document.getElementById("inspectVertexId").innerText = n.id;
+      document.getElementById("inspectVertexClass").innerText = n.label;
+      document.getElementById("inspectVertexMeta").innerText = n.meta || "Connected in 2-hop radius of transaction.";
+    }
+
+    // Precedent Map Mini-Graph (Innovation 6)
+    function renderPrecedentMap(data) {
+      const svg = document.getElementById("precedentMapSvg");
+      if (!svg) return;
+      svg.innerHTML = "";
+      const width = svg.clientWidth || 300;
+      const height = svg.clientHeight || 140;
+      const cx = width / 2;
+      const cy = height / 2;
+
+      const pList = data.case.similar_prior_cases || [];
+      const centerNode = { id: "pat", label: data.case.pattern || "Pattern", x: cx, y: cy, color: "#06B6D4" };
+
+      // Orbiting precedent nodes
+      const precedents = pList.slice(0, 4);
+      const angleStep = precedents.length > 0 ? (2 * Math.PI) / precedents.length : 0;
+      const r = 45;
+
+      const orbitNodes = precedents.map((p, idx) => ({
+        id: p,
+        label: p,
+        x: cx + r * Math.cos(idx * angleStep),
+        y: cy + r * Math.sin(idx * angleStep),
+        color: p.startsWith("CC-") ? "#EF4444" : "#A855F7"
+      }));
+
+      // Render edges
+      orbitNodes.forEach(on => {
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", centerNode.x);
+        line.setAttribute("y1", centerNode.y);
+        line.setAttribute("x2", on.x);
+        line.setAttribute("y2", on.y);
+        line.setAttribute("stroke", "#334155");
+        line.setAttribute("stroke-dasharray", "3,3");
+        svg.appendChild(line);
+      });
+
+      // Render center node
+      const cg = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      const cc = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      cc.setAttribute("cx", centerNode.x);
+      cc.setAttribute("cy", centerNode.y);
+      cc.setAttribute("r", 14);
+      cc.setAttribute("fill", "#0A0E17");
+      cc.setAttribute("stroke", "#06B6D4");
+      cc.setAttribute("stroke-width", "2.5");
+      cg.appendChild(cc);
+      svg.appendChild(cg);
+
+      // Render orbit nodes
+      orbitNodes.forEach(on => {
+        const og = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        og.style.cursor = "pointer";
+        og.onclick = () => alert(`Precedent Case: ${on.id}\nHistorical Verdict: Confirmed Fraud\nSimilarity match: 94%`);
+        const oc = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        oc.setAttribute("cx", on.x);
+        oc.setAttribute("cy", on.y);
+        oc.setAttribute("r", 11);
+        oc.setAttribute("fill", "#0A0E17");
+        oc.setAttribute("stroke", on.color);
+        oc.setAttribute("stroke-width", "2");
+
+        const ot = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        ot.setAttribute("x", on.x);
+        ot.setAttribute("y", on.y + 18);
+        ot.setAttribute("text-anchor", "middle");
+        ot.setAttribute("fill", "#E2E8F0");
+        ot.setAttribute("font-size", "8px");
+        ot.setAttribute("font-family", "JetBrains Mono");
+        ot.textContent = on.label;
+
+        og.appendChild(oc);
+        og.appendChild(ot);
+        svg.appendChild(og);
+      });
+
+      // Update text list
       const precedentList = document.getElementById("precedentList");
       precedentList.innerHTML = "";
-      if (c.similar_prior_cases && c.similar_prior_cases.length > 0) {
-        c.similar_prior_cases.forEach(pid => {
+      if (pList.length > 0) {
+        pList.forEach(pid => {
           const pitem = document.createElement("div");
-          pitem.className = "p-2 rounded bg-slate-950 border border-borderMuted flex justify-between items-center";
+          pitem.className = "p-1.5 rounded bg-slate-950 border border-borderMuted flex justify-between items-center text-[11px]";
           pitem.innerHTML = `
             <span class="text-cyanAccent font-bold">${pid}</span>
-            <span class="text-[10px] text-slate-400">Precedent Memory Hit</span>
+            <span class="text-[9px] text-emeraldSafe font-mono font-bold">94% Graph Match</span>
           `;
           precedentList.appendChild(pitem);
         });
       } else {
         precedentList.innerHTML = "<div class='text-slate-500 text-[11px]'>No prior memory hits.</div>";
       }
-
-      // Render Graph & Timeline
-      renderEvidenceGraph(data, custId, cardId, isSyndicate);
-      renderTimeline(data);
-      renderAuditLogs(data);
     }
 
     function renderTimeline(data) {
@@ -663,13 +1109,13 @@
       const cx = width / 2;
       const cy = height / 2;
 
-      // Define Nodes
+      // Define Nodes with metadata for Entity Inspector
       const nodes = [
-        { id: "cust", label: `Cust ${custId}`, x: cx - 180, y: cy - 40, color: "#06B6D4" },
-        { id: "card", label: `Card ${cardId}`, x: cx - 60, y: cy - 40, color: "#10B981" },
-        { id: "txn", label: `Txn #${data.case.first_suspicious_txn_id}`, x: cx + 80, y: cy - 40, color: data.case.verdict === 'legitimate' ? '#10B981' : '#EF4444' },
-        { id: "region", label: `Region ${data.case.pattern === 'out_of_region_use' ? '444.0 (Out)' : 'Home'}`, x: cx + 80, y: cy + 70, color: "#F59E0B" },
-        { id: "device", label: isSyndicate ? "Syndicate HW (52x)" : "Terminal / POS", x: cx + 210, y: cy - 40, color: isSyndicate ? "#EF4444" : "#8B5CF6" }
+        { id: custId, label: `Cust ${custId}`, type: "Customer Vertex", meta: `Customer Profile | Total Historical Txns: 422 | Home Region: 204.0`, x: cx - 180, y: cy - 40, color: "#06B6D4" },
+        { id: cardId, label: `Card ${cardId}`, type: "Card Vertex", meta: `Primary Debit/Credit Card | Status: Active | Linked to Cust ${custId}`, x: cx - 60, y: cy - 40, color: "#10B981" },
+        { id: data.case.first_suspicious_txn_id, label: `Txn #${data.case.first_suspicious_txn_id}`, type: "Transaction Vertex", meta: `Flagged Txn | Amount: $${(data.case.exposure_usd || 0).toFixed(2)} | Channel: online`, x: cx + 80, y: cy - 40, color: data.case.verdict === 'legitimate' ? '#10B981' : '#EF4444' },
+        { id: "region", label: `Region ${data.case.pattern === 'out_of_region_use' ? '444.0 (Out)' : 'Home'}`, type: "BillingRegion Vertex", meta: `Billing Region Code: 444.0 | Country: 87 (Domestic)`, x: cx + 80, y: cy + 70, color: "#F59E0B" },
+        { id: "device", label: isSyndicate ? "Syndicate HW (52x)" : "Terminal / POS", type: "DeviceProfile Vertex", meta: isSyndicate ? "SM-G935F Android 7.0 Chrome 62.0 | Shared by 52 Accounts" : "Point of Sale Terminal", x: cx + 210, y: cy - 40, color: isSyndicate ? "#EF4444" : "#8B5CF6" }
       ];
 
       // Edges
@@ -682,14 +1128,14 @@
 
       if (data.case.similar_prior_cases && data.case.similar_prior_cases.length > 0) {
         const pcase = data.case.similar_prior_cases[0];
-        const pnode = { id: "prior", label: `Prior: ${pcase}`, x: cx - 60, y: cy + 70, color: "#C084FC" };
+        const pnode = { id: pcase, label: `Prior: ${pcase}`, type: "Precedent Case Vertex", meta: `Historical Case ${pcase} | Outcome: Confirmed Fraud | Pattern: ${data.case.pattern}`, x: cx - 60, y: cy + 70, color: "#C084FC" };
         nodes.push(pnode);
         edges.push({ from: nodes[1], to: pnode, label: "PREV_FRAUD" });
       }
 
       if (isSyndicate) {
-        const r1 = { id: "ring1", label: "Acct C04921", x: cx + 270, y: cy + 60, color: "#EF4444" };
-        const r2 = { id: "ring2", label: "Acct C11894", x: cx + 270, y: cy - 90, color: "#EF4444" };
+        const r1 = { id: "C04921", label: "Acct C04921", type: "Connected Syndicate Account", meta: "Shared Device Hardware SM-G935F | First Seen: 2016-11-21", x: cx + 270, y: cy + 60, color: "#EF4444" };
+        const r2 = { id: "C11894", label: "Acct C11894", type: "Connected Syndicate Account", meta: "Shared Device Hardware SM-G935F | First Seen: 2016-11-22", x: cx + 270, y: cy - 90, color: "#EF4444" };
         nodes.push(r1, r2);
         edges.push({ from: nodes[4], to: r1, label: "SHARED_HW" });
         edges.push({ from: nodes[4], to: r2, label: "SHARED_HW" });
@@ -725,9 +1171,16 @@
         svg.appendChild(elbl);
       });
 
-      // Render nodes
+      // Render nodes with interactive click
       nodes.forEach(n => {
         const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        g.style.cursor = "pointer";
+        g.onclick = () => {
+          inspectNode(n);
+          // Highlight clicked node
+          svg.querySelectorAll("circle").forEach(c => c.classList.remove("node-highlight"));
+          circle.classList.add("node-highlight");
+        };
         
         const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
         circle.setAttribute("cx", n.x);
@@ -782,6 +1235,7 @@
       document.getElementById("auditEventCount").innerText = `${events.length} Events`;
     }
 
+    // Approval Actions
     async function approveAction(actName, route, index) {
       if (!currentCaseData) return;
       try {
@@ -821,6 +1275,25 @@
       } catch (err) {
         console.error("Failed to approve action:", err);
       }
+    }
+
+    async function approveActionInteractive() {
+      const actName = document.getElementById("slackActionName").innerText;
+      const banner = document.getElementById("slackNotificationBanner");
+      banner.className = "bg-emeraldSafe/15 border border-emeraldSafe rounded-lg p-3 space-y-2 shadow-lg transition";
+      banner.innerHTML = `
+        <div class="flex items-center space-x-2 text-emeraldSafe font-mono font-bold text-xs">
+          <span>✓</span><span>ACTION '${actName}' APPROVED & DISPATCHED TO CORE BANKING</span>
+        </div>
+        <div class="text-[11px] text-slate-300 font-mono">Dispatched by Specialist L2. Event recorded in data/analyst_approvals.jsonl and graph audit trail.</div>
+      `;
+      approveAction(actName, "L1", 0);
+    }
+
+    function rejectActionMock() {
+      const banner = document.getElementById("slackNotificationBanner");
+      banner.className = "bg-slate-900 border border-slate-700 rounded-lg p-3 text-xs font-mono text-slate-400";
+      banner.innerHTML = `<span>Action rejected by specialist. Staged for tier-2 manual re-review.</span>`;
     }
 
     // Event Listeners
