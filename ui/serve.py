@@ -265,6 +265,110 @@ class FraudOpsHandler(BaseHTTPRequestHandler):
                 self._send_json(500, {"error": f"Investigation failed: {e}"})
                 return
 
+        elif path == "/api/upload":
+            # Handles upload of case/transaction file or parameters
+            file_name = body.get("filename", "")
+            file_content = body.get("content", "")
+            case_id = body.get("case_id")
+            flagged_txn_id = body.get("flagged_txn_id")
+            trigger_type = body.get("trigger_type", "risk_score")
+            trigger_text = body.get("trigger_text", "")
+            sim_resp = body.get("simulated_customer_response")
+
+            # Parse file content if provided
+            if file_content:
+                if file_name.endswith(".json") or file_content.strip().startswith("{"):
+                    try:
+                        parsed_json = json.loads(file_content)
+                        # If this is already a full case answer format, persist and return
+                        if "case" in parsed_json and "next_best_actions" in parsed_json:
+                            cid = parsed_json.get("case_id", case_id or f"UPLOAD-{int(time.time())%10000:04d}")
+                            parsed_json["case_id"] = cid
+                            cases_dir = os.path.join(PROJECT_ROOT, "cases")
+                            os.makedirs(cases_dir, exist_ok=True)
+                            cfile = os.path.join(cases_dir, f"{cid}.json")
+                            with open(cfile, "w", encoding="utf-8") as f:
+                                json.dump(parsed_json, f, indent=2)
+                            self._send_json(200, {
+                                "success": True,
+                                "message": f"Pre-computed case {cid} successfully ingested.",
+                                "case_id": cid,
+                                "data": parsed_json
+                            })
+                            return
+                        else:
+                            # Extract parameters from JSON
+                            case_id = parsed_json.get("case_id", case_id)
+                            flagged_txn_id = parsed_json.get("flagged_txn_id", parsed_json.get("TransactionID", flagged_txn_id))
+                            trigger_type = parsed_json.get("trigger_type", trigger_type)
+                            trigger_text = parsed_json.get("trigger_text", trigger_text)
+                            if not sim_resp:
+                                sim_resp = parsed_json.get("simulated_customer_response")
+                    except Exception as e:
+                        self._send_json(400, {"error": f"Failed to parse JSON file: {e}"})
+                        return
+
+                elif file_name.endswith(".csv") or "," in file_content:
+                    try:
+                        import csv
+                        import io
+                        reader = csv.DictReader(io.StringIO(file_content.strip().lstrip('\ufeff')))
+                        rows = list(reader)
+                        if rows:
+                            row_dict = rows[0]
+                            lower_dict = {str(k).strip().lower(): str(v).strip() for k, v in row_dict.items() if k is not None}
+                            case_id = lower_dict.get("case_id", case_id)
+                            flagged_txn_id = (
+                                lower_dict.get("flagged_txn_id") 
+                                or lower_dict.get("transactionid") 
+                                or lower_dict.get("txn_id") 
+                                or flagged_txn_id
+                            )
+                            trigger_type = lower_dict.get("trigger_type", trigger_type)
+                            trigger_text = lower_dict.get("trigger_text", trigger_text)
+                            if not sim_resp:
+                                sim_resp = lower_dict.get("simulated_customer_response") or lower_dict.get("customer_response")
+                    except Exception as e:
+                        self._send_json(400, {"error": f"Failed to parse CSV file: {e}"})
+                        return
+
+            if not case_id:
+                case_id = f"UPLOAD-{int(time.time())%10000:04d}"
+            if not flagged_txn_id:
+                flagged_txn_id = 3514030
+            else:
+                flagged_txn_id = int(flagged_txn_id)
+
+            if not trigger_text:
+                trigger_text = f"Uploaded investigation request on transaction {flagged_txn_id} via {trigger_type}."
+
+            try:
+                agent = get_agent()
+                case_obj, submission = agent.run_investigation(
+                    trigger_type=trigger_type,
+                    trigger_text=trigger_text,
+                    flagged_txn_id=flagged_txn_id,
+                    case_id=case_id,
+                    simulated_customer_response=sim_resp,
+                    is_benchmark=False
+                )
+                cases_dir = os.path.join(PROJECT_ROOT, "cases")
+                os.makedirs(cases_dir, exist_ok=True)
+                cfile = os.path.join(cases_dir, f"{case_id}.json")
+                with open(cfile, "w", encoding="utf-8") as f:
+                    json.dump(submission, f, indent=2)
+
+                self._send_json(200, {
+                    "success": True,
+                    "message": f"Uploaded transaction investigated successfully as {case_id}.",
+                    "case_id": case_id,
+                    "data": submission
+                })
+                return
+            except Exception as e:
+                self._send_json(500, {"error": f"Investigation of uploaded case failed: {e}"})
+                return
+
         elif path == "/api/approve_action":
             case_id = body.get("case_id", "UNKNOWN")
             action = body.get("action", "UNKNOWN")

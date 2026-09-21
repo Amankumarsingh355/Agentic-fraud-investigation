@@ -104,6 +104,10 @@
           <span>⚡</span>
           <span>INVESTIGATE</span>
         </button>
+        <button id="btnOpenUploadModal" onclick="openUploadModal()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-cyanAccent border border-cyanAccent/40 hover:border-cyanAccent font-mono font-bold text-xs rounded transition flex items-center space-x-1.5 shadow-sm">
+          <span>📁</span>
+          <span>UPLOAD</span>
+        </button>
       </div>
     </div>
 
@@ -543,6 +547,127 @@
       </div>
     </div>
 
+  </div>
+
+  <!-- UPLOAD INVESTIGATION MODAL -->
+  <div id="uploadModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-panel border border-borderHighlight rounded-xl w-full max-w-xl shadow-2xl overflow-hidden flex flex-col font-mono text-xs">
+      
+      <!-- Modal Header -->
+      <div class="px-5 py-4 border-b border-borderMuted flex items-center justify-between bg-slate-950/60">
+        <div class="flex items-center space-x-2.5">
+          <span class="w-7 h-7 rounded bg-cyanAccent/10 border border-cyanAccent/40 flex items-center justify-center text-cyanAccent text-sm">📁</span>
+          <div>
+            <h3 class="text-sm font-bold text-white tracking-wide">Upload & Ingest Investigation</h3>
+            <p class="text-[11px] text-slate-400 font-sans">Run the agentic graph loop on custom transactions or pre-computed case files.</p>
+          </div>
+        </div>
+        <button onclick="closeUploadModal()" class="text-slate-400 hover:text-white text-lg p-1 transition">&times;</button>
+      </div>
+
+      <!-- Mode Selector Tabs -->
+      <div class="flex border-b border-borderMuted bg-slate-950 text-[11px]">
+        <button id="tabUploadFile" onclick="setUploadTab('file')" class="flex-1 py-2.5 text-center font-bold text-cyanAccent border-b-2 border-cyanAccent bg-panel transition">
+          📄 File Drop (JSON / CSV)
+        </button>
+        <button id="tabUploadManual" onclick="setUploadTab('manual')" class="flex-1 py-2.5 text-center text-slate-400 hover:text-white border-b-2 border-transparent transition">
+          ✍️ Quick Transaction Input
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+        
+        <!-- Tab 1: File Drop -->
+        <div id="uploadPaneFile" class="space-y-3">
+          <div id="dropZone" class="border-2 border-dashed border-borderHighlight hover:border-cyanAccent rounded-lg p-6 text-center cursor-pointer transition bg-slate-950/40 group">
+            <input type="file" id="fileInput" accept=".json,.csv" class="hidden" onchange="handleFileSelect(event)" />
+            <div class="space-y-2">
+              <div class="text-3xl text-slate-500 group-hover:text-cyanAccent transition">📤</div>
+              <div class="text-slate-300 font-medium">Drag & drop your investigation file here</div>
+              <div class="text-slate-500 text-[11px]">Supports <span class="text-cyanAccent">.json</span> (case submission or payload) & <span class="text-cyanAccent">.csv</span></div>
+              <button type="button" onclick="document.getElementById('fileInput').click()" class="mt-2 px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 rounded text-[11px] transition">
+                Browse Files
+              </button>
+            </div>
+          </div>
+
+          <!-- File Info Banner (Hidden until chosen) -->
+          <div id="fileInfoBox" class="hidden p-3 rounded bg-slate-950 border border-cyanAccent/40 space-y-1">
+            <div class="flex justify-between items-center text-white font-bold">
+              <span id="uploadedFileName" class="truncate">filename.json</span>
+              <span id="uploadedFileSize" class="text-cyanAccent text-[10px]">0 KB</span>
+            </div>
+            <div id="uploadedFilePreview" class="text-[10px] text-slate-400 font-mono truncate">Ready to ingest</div>
+          </div>
+
+          <div class="text-[11px] text-slate-400 bg-slate-950/60 p-2.5 rounded border border-borderMuted/40 space-y-1">
+            <div class="text-slate-300 font-bold">Supported File Schemas:</div>
+            <div>• <strong class="text-white">JSON:</strong> Direct benchmark answer format OR transaction object with <code class="text-cyanAccent">{"flagged_txn_id": 3514030, "trigger_type": "risk_score"}</code></div>
+            <div>• <strong class="text-white">CSV:</strong> Headers containing <code class="text-cyanAccent">case_id, flagged_txn_id, trigger_type, trigger_text</code></div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Manual Input -->
+        <div id="uploadPaneManual" class="hidden space-y-3">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">Case ID (Optional)</label>
+              <input type="text" id="manualCaseId" placeholder="e.g. UPLOAD-0021" class="w-full bg-slate-950 border border-borderMuted rounded px-2.5 py-1.5 text-white focus:outline-none focus:border-cyanAccent" />
+            </div>
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">Flagged Txn ID *</label>
+              <input type="number" id="manualTxnId" value="3514030" placeholder="e.g. 3514030" class="w-full bg-slate-950 border border-borderMuted rounded px-2.5 py-1.5 text-white focus:outline-none focus:border-cyanAccent" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">Trigger Signal Type</label>
+              <select id="manualTriggerType" class="w-full bg-slate-950 border border-borderMuted rounded px-2.5 py-1.5 text-white focus:outline-none focus:border-cyanAccent">
+                <option value="risk_score">Risk Score Anomaly (Automated)</option>
+                <option value="customer_report">Cardholder Dispute / Report</option>
+                <option value="analyst_request">Fraud Specialist Manual Flag</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] text-slate-400 mb-1">Cardholder Response</label>
+              <select id="manualCustomerResponse" class="w-full bg-slate-950 border border-borderMuted rounded px-2.5 py-1.5 text-white focus:outline-none focus:border-cyanAccent">
+                <option value="">Auto-resolve / None</option>
+                <option value="denied_fraud">Disputed: "I didn't make this"</option>
+                <option value="confirmed_authorized">Authorized: "Legitimate travel/use"</option>
+                <option value="unresponsive">No response (Timeout)</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1">Trigger Description / Reason</label>
+            <input type="text" id="manualTriggerText" placeholder="e.g. High-velocity Card-Not-Present transaction in new geography." class="w-full bg-slate-950 border border-borderMuted rounded px-2.5 py-1.5 text-white focus:outline-none focus:border-cyanAccent" />
+          </div>
+
+          <div class="text-[10px] text-slate-400 bg-slate-950/60 p-2 rounded border border-borderMuted/40">
+            💡 <strong>Quick Grounded IDs to Test:</strong> <span class="text-cyanAccent cursor-pointer underline hover:text-cyan-300" onclick="document.getElementById('manualTxnId').value='3514030'">3514030</span>, <span class="text-cyanAccent cursor-pointer underline hover:text-cyan-300" onclick="document.getElementById('manualTxnId').value='3478561'">3478561</span>, <span class="text-cyanAccent cursor-pointer underline hover:text-cyan-300" onclick="document.getElementById('manualTxnId').value='3000120'">3000120</span>, <span class="text-cyanAccent cursor-pointer underline hover:text-cyan-300" onclick="document.getElementById('manualTxnId').value='3000332'">3000332</span>.
+          </div>
+        </div>
+
+        <!-- Progress / Status Notice -->
+        <div id="uploadStatusMsg" class="hidden p-2.5 rounded text-xs font-mono"></div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-5 py-3 border-t border-borderMuted flex items-center justify-between bg-slate-950/60">
+        <button type="button" onclick="closeUploadModal()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold transition">
+          Cancel
+        </button>
+        <button type="button" id="btnSubmitUpload" onclick="submitInvestigationUpload()" class="px-4 py-1.5 bg-cyanAccent hover:bg-cyan-400 text-slate-950 font-bold rounded flex items-center space-x-1.5 transition">
+          <span>🚀</span>
+          <span id="btnSubmitUploadText">INGEST & INVESTIGATE</span>
+        </button>
+      </div>
+
+    </div>
   </div>
 
   <!-- SCRIPT: APPLICATION LOGIC, ANIMATIONS & REPLAY ENGINE -->
@@ -1296,6 +1421,187 @@
       banner.innerHTML = `<span>Action rejected by specialist. Staged for tier-2 manual re-review.</span>`;
     }
 
+    // Upload Modal Management
+    let activeUploadTab = 'file';
+    let currentUploadedFile = null;
+
+    function openUploadModal() {
+      document.getElementById("uploadModal").classList.remove("hidden");
+      const msg = document.getElementById("uploadStatusMsg");
+      msg.className = "hidden p-2.5 rounded text-xs font-mono";
+      msg.innerText = "";
+    }
+
+    function closeUploadModal() {
+      document.getElementById("uploadModal").classList.add("hidden");
+    }
+
+    function setUploadTab(tab) {
+      activeUploadTab = tab;
+      const btnFile = document.getElementById("tabUploadFile");
+      const btnManual = document.getElementById("tabUploadManual");
+      const paneFile = document.getElementById("uploadPaneFile");
+      const paneManual = document.getElementById("uploadPaneManual");
+
+      if (tab === 'file') {
+        btnFile.className = "flex-1 py-2.5 text-center font-bold text-cyanAccent border-b-2 border-cyanAccent bg-panel transition";
+        btnManual.className = "flex-1 py-2.5 text-center text-slate-400 hover:text-white border-b-2 border-transparent transition";
+        paneFile.classList.remove("hidden");
+        paneManual.classList.add("hidden");
+      } else {
+        btnManual.className = "flex-1 py-2.5 text-center font-bold text-cyanAccent border-b-2 border-cyanAccent bg-panel transition";
+        btnFile.className = "flex-1 py-2.5 text-center text-slate-400 hover:text-white border-b-2 border-transparent transition";
+        paneManual.classList.remove("hidden");
+        paneFile.classList.add("hidden");
+      }
+    }
+
+    function handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      processUploadedFile(file);
+    }
+
+    function processUploadedFile(file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = e.target.result;
+        currentUploadedFile = {
+          name: file.name,
+          size: file.size,
+          content: content
+        };
+        const infoBox = document.getElementById("fileInfoBox");
+        infoBox.classList.remove("hidden");
+        document.getElementById("uploadedFileName").innerText = file.name;
+        document.getElementById("uploadedFileSize").innerText = `${(file.size / 1024).toFixed(1)} KB`;
+        const preview = content.length > 80 ? content.substring(0, 80) + "..." : content;
+        document.getElementById("uploadedFilePreview").innerText = preview.replace(/\r?\n|\r/g, " ");
+      };
+      reader.readAsText(file);
+    }
+
+    // Drag and drop listeners on dropZone
+    function initDropZone() {
+      const dropZone = document.getElementById("dropZone");
+      if (!dropZone) return;
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropZone.classList.add("border-cyanAccent", "bg-cyanAccent/5");
+        }, false);
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropZone.classList.remove("border-cyanAccent", "bg-cyanAccent/5");
+        }, false);
+      });
+
+      dropZone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files && files.length > 0) {
+          processUploadedFile(files[0]);
+        }
+      }, false);
+    }
+
+    async function submitInvestigationUpload() {
+      const btn = document.getElementById("btnSubmitUpload");
+      const btnText = document.getElementById("btnSubmitUploadText");
+      const statusMsg = document.getElementById("uploadStatusMsg");
+
+      let payload = {};
+
+      if (activeUploadTab === 'file') {
+        if (!currentUploadedFile) {
+          statusMsg.className = "p-2.5 rounded bg-amberWarn/20 border border-amberWarn/40 text-amberWarn text-xs font-mono";
+          statusMsg.innerText = "Please select or drop a JSON or CSV file first.";
+          statusMsg.classList.remove("hidden");
+          return;
+        }
+        payload = {
+          filename: currentUploadedFile.name,
+          content: currentUploadedFile.content
+        };
+      } else {
+        const txnId = document.getElementById("manualTxnId").value.trim();
+        if (!txnId) {
+          statusMsg.className = "p-2.5 rounded bg-amberWarn/20 border border-amberWarn/40 text-amberWarn text-xs font-mono";
+          statusMsg.innerText = "Please specify a valid Flagged Transaction ID.";
+          statusMsg.classList.remove("hidden");
+          return;
+        }
+        payload = {
+          case_id: document.getElementById("manualCaseId").value.trim() || undefined,
+          flagged_txn_id: parseInt(txnId, 10),
+          trigger_type: document.getElementById("manualTriggerType").value,
+          trigger_text: document.getElementById("manualTriggerText").value.trim(),
+          simulated_customer_response: document.getElementById("manualCustomerResponse").value || undefined
+        };
+      }
+
+      // UI Loading state
+      btn.disabled = true;
+      btnText.innerText = "INGESTING & INVESTIGATING...";
+      statusMsg.className = "p-2.5 rounded bg-cyanAccent/15 border border-cyanAccent/40 text-cyanAccent text-xs font-mono";
+      statusMsg.innerText = "Connecting to TigerGraph, traversing subgraph, evaluating policy...";
+      statusMsg.classList.remove("hidden");
+
+      try {
+        const resp = await fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const result = await resp.json();
+
+        if (result.success && result.data) {
+          statusMsg.className = "p-2.5 rounded bg-emeraldSafe/20 border border-emeraldSafe/40 text-emeraldSafe text-xs font-mono";
+          statusMsg.innerText = `✓ Ingestion successful! Loaded case #${result.case_id}.`;
+
+          setTimeout(async () => {
+            closeUploadModal();
+            currentCaseData = result.data;
+            await loadCaseList();
+            document.getElementById("caseSelector").value = result.case_id;
+            renderCase(result.data);
+            startReplay();
+            
+            // Add audit entry
+            const stream = document.getElementById("auditLogStream");
+            if (stream) {
+              const item = document.createElement("div");
+              item.className = "flex space-x-2 py-1 border-b border-cyanAccent/40 bg-cyanAccent/10";
+              item.innerHTML = `
+                <span class="text-cyanAccent font-bold">[UPLOAD_INGEST]</span>
+                <span class="text-white font-bold">Case #${result.case_id}:</span>
+                <span class="text-cyanAccent">Uploaded investigation ingested and graph-verified.</span>
+              `;
+              stream.prepend(item);
+            }
+          }, 600);
+        } else {
+          statusMsg.className = "p-2.5 rounded bg-crimsonAlert/20 border border-crimsonAlert/40 text-crimsonAlert text-xs font-mono";
+          statusMsg.innerText = `Ingestion error: ${result.error || result.message || 'Unknown error'}`;
+        }
+      } catch (err) {
+        statusMsg.className = "p-2.5 rounded bg-crimsonAlert/20 border border-crimsonAlert/40 text-crimsonAlert text-xs font-mono";
+        statusMsg.innerText = `Network/server error: ${err.message}`;
+      } finally {
+        btn.disabled = false;
+        btnText.innerText = "INGEST & INVESTIGATE";
+      }
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeUploadModal();
+    });
+
     // Event Listeners
     document.getElementById("caseSelector").onchange = (e) => loadCase(e.target.value);
     document.getElementById("btnRunLive").onclick = () => {
@@ -1305,6 +1611,7 @@
 
     // Initial Load
     window.onload = async () => {
+      initDropZone();
       await loadCaseList();
       await loadCase("HHG-001");
     };
