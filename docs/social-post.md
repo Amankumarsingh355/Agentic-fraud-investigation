@@ -3,12 +3,12 @@
 ## 1. Twitter / X Thread (5 Tweets)
 
 ### Tweet 1 (Hook & Announcement)
-Thrilled to unveil our submission for the @TigerGraph × Hacker House Goa Agentic Fraud Investigation hackathon! 🐅⚡
+Thrilled to unveil our submission for the @TigerGraphDB × Hacker House Goa Agentic Fraud Investigation hackathon! 🐅⚡
 
 We built an autonomous AI fraud investigation system combining GraphRAG, 8-stage stateful agent loops, and FinCEN SAR regulatory compliance.
 
 Here's how we solved alert fatigue and multi-card syndicates 🧵👇
-#AI #GraphRAG #CyberSecurity #FinTech #TigerGraph
+#AI #GraphRAG #CyberSecurity #FinTech #TigerGraph @TigerGraphDB
 
 ---
 
@@ -17,7 +17,7 @@ Here's how we solved alert fatigue and multi-card syndicates 🧵👇
 Above 0.70, most transactions are legitimate customers traveling.
 Meanwhile, organized syndicates keep charges small ($20–$80) to score near zero.
 
-Enter TigerGraph: 2-hop GSQL queries instantly uncover hidden device rings across 50+ accounts in milliseconds! 🕸️
+Enter @TigerGraphDB: 2-hop GSQL queries instantly uncover hidden device rings across 50+ accounts in milliseconds! 🕸️
 
 ---
 
@@ -37,21 +37,25 @@ Our agent automatically writes legally compliant 6-question FinCEN narratives an
 
 ---
 
-### Tweet 5 (Benchmark Results & GitHub Repo)
+### Tweet 5 (Benchmark Results, Blog & Demo)
 📊 Benchmark Evaluation across all 20 exam cases:
 ✅ 20/20 cases passed strict schema validation (0 penalties)
 ✅ 0 crashes
 ✅ Uncovered 52-account syndicate ring on a 0.05 score
 ✅ Average turnaround: 0.17 seconds per case
 
-Check out the interactive cockpit and open-source repo! 🚀
-#TigerGraph #AgenticAI #FraudInvestigation #OpenSource
+📖 Deep-Dive Blog Post: [LINK TO BLOG POST]
+🎥 4-Minute Video Demo: [LINK TO DEMO VIDEO]
+💻 GitHub Repository: [LINK TO REPO]
+
+Huge thanks to the @TigerGraphDB team! 🚀
+#TigerGraph #AgenticAI #FraudInvestigation #FinTech #OpenSource
 
 ---
 
 ## 2. LinkedIn Post
 
-**🚀 Announcing: Autonomous Fraud Investigation with TigerGraph & GraphRAG**
+**🚀 Announcing: Autonomous Fraud Investigation with @TigerGraphDB & GraphRAG**
 
 In retail banking, fraud detection models generate thousands of risk alerts every day. But human analysts face a double-edged sword:
 1. **High false-positive friction**: Most flagged high-risk transactions turn out to be legitimate cardholders traveling or using new devices.
@@ -73,6 +77,10 @@ For the **TigerGraph × Hacker House Goa Agentic Fraud Investigation Hackathon**
 - **Syndicate Discovery**: Successfully detected a 52-account syndicate ring on case HHG-014 despite an initial model score of just 0.05.
 - **Real-Time Latency**: Average investigation turnaround time of **0.17 seconds** (down from 25–45 minutes for manual human review).
 
-A huge thank you to TigerGraph and Hacker House Goa for organizing this incredible challenge!
+🔗 Read the full technical architecture blog: [LINK TO BLOG POST]  
+🎥 Watch the 4-minute demonstration: [LINK TO DEMO VIDEO]  
+💻 Explore the open-source code: [LINK TO GITHUB REPOSITORY]  
+
+A huge thank you to @TigerGraphDB and Hacker House Goa for organizing this incredible challenge!
 
 #ArtificialIntelligence #GraphDatabase #TigerGraph #GraphRAG #FraudDetection #FinTech #Banking #CyberSecurity #MachineLearning

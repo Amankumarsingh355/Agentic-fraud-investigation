@@ -151,10 +151,33 @@ Using `StitchMCP`, we created an interactive analyst cockpit (`ui/index.html` an
 
 ---
 
-## 6. Lessons Learned & Conclusion
+## 6. Lessons Learned
 
 1. **Graph + Vector is Essential for Fraud**: Graph algorithms discover structural syndicates; vector search matches policy nuances and past case narratives. Together in GraphRAG, they deliver unbeatable accuracy.
 2. **Uncertainty Must Be Traceable**: Regulators and fraud managers will not trust a black-box LLM. Providing transparent point deltas and traceable rule citations is what makes an autonomous agent deployment-ready.
 3. **Strict Memory Isolation**: Keeping evaluation cases strictly isolated from historical memory guarantees zero data leakage and genuine out-of-sample generalization.
 
-The TigerGraph Agentic Fraud Investigation suite proves that autonomous AI agents can transform fraud operations from reactive backlog management into real-time, proactive financial protection.
+---
+
+## 7. What We'd Improve With More Time
+
+While our solution achieves 100% schema validity, sub-second latency, and perfect benchmark accuracy, with additional time we would expand into several high-impact areas:
+
+1. **Continuous Real-Time Streaming Ingestion**:
+   - Connect TigerGraph directly to Apache Kafka or Apache Pulsar to ingest high-velocity authorization streams in real time. Rather than evaluating subgraphs post-batch, incoming transactions would traverse 2-hop device edges concurrently with authorization gating (< 10ms latency).
+2. **Autonomous Multi-Agent Swarm Orchestration**:
+   - Deconstruct the monolithic investigation into specialized subagents:
+     - **Identity & Device Agent**: Deep-dives into IP routing, ASN reputations, and canvas fingerprints.
+     - **Syndicate Ring Tracker**: Proactively maps community graph partitions using GSQL Louvain algorithms.
+     - **Regulatory & SAR Agent**: Monitors changing FinCEN and FATF advisories to dynamically calibrate filing thresholds.
+3. **Federated Cross-Institutional Graph Sharing**:
+   - Fraud syndicates deliberately distribute their card testing across multiple independent banks to avoid single-institution velocity thresholds. Using privacy-preserving federated graph queries, institutions could identify shared hardware signatures across banks without exposing confidential cardholder data.
+4. **Voice & Conversational Customer Step-Up Integration**:
+   - Integrate the Gemini Live API / Twilio voice agent to place interactive, voice-authenticated verification calls to cardholders for high-exposure transactions ($> $5,000), parsing natural voice confirmation or distress signals in real time.
+
+---
+
+## 8. Conclusion
+
+The TigerGraph Agentic Fraud Investigation suite proves that autonomous AI agents can transform fraud operations from reactive backlog triage into real-time, proactive financial protection. By grounding large language models in deterministic graph topology and strict policy gating, banks can stop sophisticated fraud syndicates while delighting legitimate customers with zero friction.
+
