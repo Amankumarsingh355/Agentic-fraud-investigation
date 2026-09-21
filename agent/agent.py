@@ -2,7 +2,7 @@
 Autonomous Fraud Investigation Agent
 Implements the end-to-end stateful investigation loop:
 Trigger -> Investigate -> Gather Evidence -> Assess Uncertainty -> Gather More Evidence -> Take Next Actions -> Explain Decision -> Update Case Memory
-Strictly enforces policy gating and inspectable confidence logic.
+Strictly enforces policy gating, inspectable confidence logic, and dynamic case memory feedback.
 """
 
 import os
@@ -21,6 +21,8 @@ from graph.subgraph_extractor import SubgraphExtractor
 from graph.similar_cases_engine import SimilarCasesEngine
 from graph.load_vector_store import VectorRetriever
 from graph.graphrag_synthesizer import GraphRAGSynthesizer
+from graph.case_memory import CaseMemoryManager
+from graph.pattern_registry import PatternRegistry
 
 class FraudInvestigationAgent:
     def __init__(self):
@@ -32,7 +34,9 @@ class FraudInvestigationAgent:
         self.similar_engine = SimilarCasesEngine()
         self.vector_retriever = VectorRetriever()
         self.synthesizer = GraphRAGSynthesizer()
-        print("FraudInvestigationAgent ready.")
+        self.case_memory_manager = CaseMemoryManager()
+        self.pattern_registry = PatternRegistry()
+        print("FraudInvestigationAgent ready with Dynamic Case Memory & Pattern Registry.")
 
     def run_investigation(
         self,
@@ -98,12 +102,17 @@ class FraudInvestigationAgent:
             details=subgraph["card_timeline_72h"]
         )
         
+        device_profile_str = None
+        proxy_status_str = None
         if subgraph.get("identity_device"):
+            dev_obj = subgraph["identity_device"]
+            device_profile_str = dev_obj.get("device_profile")
+            proxy_status_str = dev_obj.get("proxy_status")
             case.add_evidence(
                 evidence_type="hardware_profile",
                 source="TigerGraph / Device",
-                title=f"Device Fingerprint: {subgraph['identity_device'].get('device_profile')}",
-                details=subgraph["identity_device"]
+                title=f"Device Fingerprint: {device_profile_str}",
+                details=dev_obj
             )
 
         # -------------------------------------------------------------
@@ -127,21 +136,61 @@ class FraudInvestigationAgent:
             details=rings
         )
         
-        # Record findings
+        # Check Pattern Registry for recurring entities from prior cases (Phase 6 feedback)
+        registry_matches = self.pattern_registry.check_entity(
+            device_profile=device_profile_str,
+            proxy_status=proxy_status_str
+        )
+        for rm in registry_matches:
+            case.add_finding(
+                finding_type="RECURRING_FRAUD_ENTITY",
+                description=f"Entity alert: {rm['risk_signal']} (Associated cases: {rm['associated_cases']}).",
+                severity="CRITICAL",
+                graph_proof=rm
+            )
+            case.add_evidence(
+                evidence_type="recurring_entity_memory",
+                source="Pattern Feedback Registry",
+                title=f"Recurring Entity Matched Prior Case {rm['first_case_id']}",
+                details=rm,
+                score=0.95
+            )
+        
+        # Determine dominant pattern
+        dominant_pattern = "none"
         if patterns["card_testing"]["flagged"]:
+            dominant_pattern = "card_testing"
             case.add_finding(
                 finding_type="CARD_TESTING",
                 description=f"Rapid micro-authorizations under $10 detected prior to larger charge.",
                 severity="HIGH",
                 graph_proof=patterns["card_testing"]
             )
-        if patterns["out_of_region"]["flagged"]:
+        elif patterns["out_of_region"]["flagged"]:
+            dominant_pattern = "out_of_region_use"
             case.add_finding(
                 finding_type="OUT_OF_REGION",
                 description=f"In-person POS activity in region {patterns['out_of_region']['current_region']} differing from home region {patterns['out_of_region']['home_region']}.",
                 severity="MEDIUM",
                 graph_proof=patterns["out_of_region"]
             )
+        elif patterns["cnp_new_device"]["flagged"]:
+            dominant_pattern = "card_not_present_new_device"
+            case.add_finding(
+                finding_type="CNP_NEW_DEVICE",
+                description="Card-Not-Present transaction from newly authenticated hardware device.",
+                severity="HIGH",
+                graph_proof=patterns["cnp_new_device"]
+            )
+        elif patterns["account_takeover"]["flagged"]:
+            dominant_pattern = "account_takeover"
+            case.add_finding(
+                finding_type="ACCOUNT_TAKEOVER",
+                description="Cross-channel device shift and credential variance detected.",
+                severity="CRITICAL",
+                graph_proof=patterns["account_takeover"]
+            )
+            
         if rings["has_shared_ring"]:
             case.add_finding(
                 finding_type="SYNDICATE_RING",
@@ -151,7 +200,7 @@ class FraudInvestigationAgent:
             )
 
         # Retrieve relevant policies & precedents
-        policy_hits = self.vector_retriever.search(f"{trigger_type} {target['amount']} block verify card", top_k=2)
+        policy_hits = self.vector_retriever.search(f"{trigger_type} {dominant_pattern} {target['amount']} block verify card", top_k=2)
         for ph in policy_hits:
             case.add_evidence(
                 evidence_type="policy_citation",
@@ -161,16 +210,21 @@ class FraudInvestigationAgent:
                 score=ph["score"]
             )
             
+        # Hybrid retrieval across static historical memory AND dynamic case memory
         memory_hits = self.similar_engine.find_similar_cases(
-            query_text=f"{trigger_text} amount ${target['amount']}",
+            query_text=f"{trigger_text} {dominant_pattern} amount ${target['amount']}",
+            target_pattern=dominant_pattern if dominant_pattern != "none" else None,
             target_exposure=target["amount"],
-            top_k=2
+            target_customer=cust_id,
+            top_k=3
         )
         for mh in memory_hits:
+            src = "TigerGraph Dynamic Case Memory" if mh.get("is_dynamic") else "TigerGraph Case Memory (Historical)"
+            prefix = "[DYNAMIC MEMORY] " if mh.get("is_dynamic") else ""
             case.add_evidence(
                 evidence_type="case_precedent",
-                source="TigerGraph Case Memory (Historical)",
-                title=f"Precedent Case {mh['case_id']} ({mh['outcome']})",
+                source=src,
+                title=f"{prefix}Precedent Case {mh['case_id']} ({mh['outcome']}, {mh['pattern']})",
                 details=mh["notes_snippet"],
                 score=mh["hybrid_score"]
             )
@@ -184,6 +238,17 @@ class FraudInvestigationAgent:
             trigger_risk_score=risk_score,
             customer_verification_status="pending"
         )
+        
+        # If recurring entity matched prior fraud case, boost corroboration
+        if registry_matches:
+            init_assessment["fraud_probability"] = min(0.98, init_assessment["fraud_probability"] + 0.35)
+            init_assessment["has_sufficient_evidence"] = True
+            init_assessment["criteria_breakdown"]["corroborating_signals"].append({
+                "signal": "Recurring Entity Precedent Match",
+                "delta": +0.35,
+                "detail": f"Entity was previously confirmed fraudulent in case {registry_matches[0]['first_case_id']}."
+            })
+            
         case.update_risk_assessment(
             fraud_probability=init_assessment["fraud_probability"],
             uncertainty_score=init_assessment["uncertainty_score"],
@@ -278,7 +343,7 @@ class FraudInvestigationAgent:
         case.set_explanation(explanation)
 
         # -------------------------------------------------------------
-        # STAGE 8: UPDATE CASE MEMORY
+        # STAGE 8: UPDATE CASE MEMORY & PERSIST TO GRAPH
         # -------------------------------------------------------------
         if any(a["status"] == "PENDING_HUMAN_APPROVAL" for a in case.actions):
             case.set_status("RESOLVED", reason="Investigation completed. Pending human authority sign-off on staged actions.")
@@ -287,20 +352,26 @@ class FraudInvestigationAgent:
         else:
             case.set_status("RESOLVED", reason="Investigation completed and policy actions executed.")
             
+        # Persist to Dynamic Graph Memory
+        persisted_record = self.case_memory_manager.persist_case(
+            case_obj=case,
+            subgraph=subgraph,
+            is_benchmark=False
+        )
+        
         case.add_audit_event(
             stage="UPDATE_CASE_MEMORY",
             event_type="CASE_PERSISTED",
-            description=f"Case {case.case_id} state committed to memory (Namespace: case_memory).",
+            description=f"Case {case.case_id} state and graph edges committed to memory (Namespace: case_memory).",
             actor="CASE_MEMORY_MANAGER"
         )
         
         return case
 
     def _generate_explanation(self, case: Case, subgraph: Dict[str, Any], assessment: Dict[str, Any]) -> str:
-        """Generates a transparent, auditable natural language explanation."""
+        """Generates a transparent, auditable natural language explanation citing precedents."""
         target = subgraph["target_transaction"]
         cust = subgraph["customer_profile"]
-        rings = subgraph["shared_hardware_ring"]
         
         lines = []
         lines.append(f"### Investigation Summary for Case {case.case_id}")
@@ -321,6 +392,15 @@ class FraudInvestigationAgent:
             lines.append("#### Identified Evidence Gaps")
             for gap in assessment["evidence_gaps"]:
                 lines.append(f"- *Gap*: {gap}")
+                
+        # Cite Prior Precedents from Memory
+        precedents = [e for e in case.evidence_list if e.get("type") in ["case_precedent", "recurring_entity_memory"]]
+        if precedents:
+            lines.append("")
+            lines.append("#### Case Memory Precedents Informing Decision")
+            for p in precedents:
+                lines.append(f"- **{p['title']}** (Score: {p.get('score')} | Source: *{p.get('source')}*):")
+                lines.append(f"  \"{str(p.get('details'))[:200]}...\"")
                 
         lines.append("")
         lines.append("#### Policy Gated Actions & Next Steps")
