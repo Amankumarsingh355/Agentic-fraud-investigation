@@ -30,3 +30,4 @@ Thumbs.db
 # Scratch and temp files
 scratch/
 test_*.csv
+graph/tigergraph-mcp/
