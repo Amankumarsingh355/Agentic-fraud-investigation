@@ -12,8 +12,8 @@
 | **Phase 5** | **Agent Core: Investigation Loop** | **COMPLETED** | Stateful 8-stage investigation loop, inspectable uncertainty/confidence engine, strict policy gating (`auto`, `L1`, `L2`), realistic action stubs, gate passed across 3 non-benchmark cases in `docs/phase5-agent-report.md`. |
 | **Phase 6** | **Case Memory & Dynamic Knowledge Feedback** | **COMPLETED** | Graph persistence of case outcomes, hybrid case memory retrieval, pattern library feedback registry, gate verified: running same type of case twice retrieves memory from first run in `docs/phase6-memory-report.md`. |
 | **Phase 7** | **Explainability & Output Format** | **COMPLETED** | Exact 3-part JSON submission format (`case`, `sar`, `next_best_actions`), two-stage action evolution (`initial` vs `final` + `what_changed`), FinCEN SAR 6-question narrative generator, graph persistence confirmed, gate passed with 0 schema errors in `docs/phase7-output-format-report.md`. |
-| **Phase 8** | **Benchmark Evaluation (20 Cases)** | Planned | Execute agent across all 20 benchmark cases and output schema-validated `cases/<case_id>.json`. |
-| **Phase 9** | **Interactive UI / Dashboard** | Planned | Analyst dashboard with graph visualization, progression timeline, and action approval. |
+| **Phase 8** | **UI / UX Analyst Dashboard** | **COMPLETED** | StitchMCP project `8720938275256246642` (`Obsidian Vector`), interactive SVG evidence graph, 72h velocity timeline, uncertainty radial gauge, policy sign-off workflow, live HTTP/REST server in `ui/serve.py`, gate verified in `docs/phase8-ui-report.md`. |
+| **Phase 9** | **Benchmark Evaluation (20 Cases)** | In Progress | Execute agent across all 20 benchmark cases and output schema-validated `cases/<case_id>.json`. |
 | **Phase 10** | **Submission Deliverables & Final Polish** | Planned | Technical blog post, demo script/video, social media post, and code audit. |
 
 ---
@@ -44,3 +44,30 @@
   - Validated SAR generation on syndicate case `HHG-014` (Txn `3478561`):
     - `sar.file = True`, Rule R6 triggered, 8 subjects resolved, full 6-question narrative generated with **0 validation errors**.
   - Detailed report saved to `docs/phase7-output-format-report.md`.
+
+---
+
+## Phase 8 Detail Log: UI / UX Analyst Dashboard
+
+- **Stitch Design System & Screen Generation**:
+  - Leveraged `StitchMCP` to scaffold project `projects/8720938275256246642` and generated cyber-analyst screen `c14071494d6e48c1b33613e72f51e620`.
+  - Applied the `Obsidian Vector` design theme: deep obsidian background (`#0A0E17`), telemetry cyan accents (`#06B6D4`), elevated slate panels (`#101726`), emerald safe states (`#10B981`), and crimson fraud alerts (`#EF4444`).
+- **Interactive Single-Page Application (`ui/index.html`)**:
+  - **Dynamic Case Selector**: Populates dropdown from `/api/cases` with status indicators (`✓` generated, `○` pending), pattern labels, and exposure amounts.
+  - **Interactive 2-Hop Subgraph (SVG)**: Visualizes Customer, Card, Target Txn, Billing Region, and Device/Terminal nodes. Dynamically expands into syndicate ring topology with red dashed `SHARED_HW` edges when syndicate patterns are detected.
+  - **72-Hour Rolling Velocity Timeline**: Chronologically visualizes preceding authorization events relative to the flagged transaction.
+  - **Uncertainty & Probability Radial Gauge**: Real-time SVG circular gauge illustrating fraud probability, uncertainty scores, and confidence classifications.
+  - **Interactive Policy Sign-off Workflow**: Policy-gated actions render with a **"✓ Sign-off & Execute"** button; analyst approvals dispatch live via POST `/api/approve_action` and update UI badges in real time.
+  - **FinCEN SAR Tab & Audit Trail**: Full regulatory 6-question filing tab and chronological audit trail logging all investigation stages.
+- **RESTful API Backend (`ui/serve.py`)**:
+  - Threading HTTP server delivering static assets and REST endpoints (`/api/cases`, `/api/case`, `/api/investigate`, `/api/approve_action`).
+  - Supports on-demand live investigation trigger and persistent approval auditing in `data/analyst_approvals.jsonl`.
+- **Phase 8 Verification Gate (`ui/test_ui.py`)**:
+  - Executed automated test suite across 5 test vectors:
+    1. HTML dashboard delivery (`GET /`) - Status 200 OK.
+    2. Case list retrieval (`GET /api/cases`) - 23 cases enumerated.
+    3. Case record schema check (`GET /api/case?id=HHG-001`) - Validated with 0 errors.
+    4. Analyst sign-off workflow (`POST /api/approve_action`) - Approval logged & executed.
+    5. Live Agent Investigation Trigger (`POST /api/investigate`) - Executed `HHG-003` end-to-end, validated with 0 schema errors.
+  - Verification report recorded in `docs/phase8-ui-report.md`.
+

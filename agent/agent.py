@@ -36,15 +36,19 @@ class FraudInvestigationAgent:
     def __init__(self):
         print("Initializing FraudInvestigationAgent...")
         self.extractor = SubgraphExtractor()
+        self.vector_retriever = VectorRetriever()
+        self.similar_engine = SimilarCasesEngine(retriever=self.vector_retriever)
+        self.synthesizer = GraphRAGSynthesizer(
+            extractor=self.extractor,
+            similar_engine=self.similar_engine,
+            vector_retriever=self.vector_retriever
+        )
         self.uncertainty_engine = UncertaintyEngine()
         self.policy_engine = PolicyEngine()
         self.action_executor = ActionExecutor()
         self.sar_generator = SARGenerator()
         self.decision_engine = DecisionEngine()
         self.case_formatter = CaseFormatter()
-        self.similar_engine = SimilarCasesEngine()
-        self.vector_retriever = VectorRetriever()
-        self.synthesizer = GraphRAGSynthesizer()
         self.case_memory_manager = CaseMemoryManager()
         self.pattern_registry = PatternRegistry()
         print("FraudInvestigationAgent ready with Explainability & Exact Submission Formatter.")

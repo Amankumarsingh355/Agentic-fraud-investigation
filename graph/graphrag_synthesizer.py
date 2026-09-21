@@ -17,11 +17,11 @@ from graph.similar_cases_engine import SimilarCasesEngine
 from graph.load_vector_store import VectorRetriever
 
 class GraphRAGSynthesizer:
-    def __init__(self):
+    def __init__(self, extractor=None, similar_engine=None, vector_retriever=None):
         print("Initializing GraphRAGSynthesizer...")
-        self.extractor = SubgraphExtractor()
-        self.similar_engine = SimilarCasesEngine()
-        self.vector_retriever = VectorRetriever()
+        self.extractor = extractor or SubgraphExtractor()
+        self.similar_engine = similar_engine or SimilarCasesEngine(retriever=vector_retriever)
+        self.vector_retriever = vector_retriever or VectorRetriever()
         print("GraphRAGSynthesizer ready.")
         
     def synthesize_investigation_dossier(

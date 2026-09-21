@@ -20,8 +20,8 @@ from graph.load_vector_store import VectorRetriever
 MEMORY_FILE = os.path.join("data", "dynamic_case_memory.json")
 
 class SimilarCasesEngine:
-    def __init__(self, data_path=os.path.join("data", "closed_cases_history.csv"), memory_file: str = MEMORY_FILE):
-        self.retriever = VectorRetriever()
+    def __init__(self, data_path=os.path.join("data", "closed_cases_history.csv"), memory_file: str = MEMORY_FILE, retriever=None):
+        self.retriever = retriever or VectorRetriever()
         self.memory_file = memory_file
         self.df_cc = pd.read_csv(data_path)
         self.case_lookup = self.df_cc.set_index("case_id").to_dict(orient="index")
