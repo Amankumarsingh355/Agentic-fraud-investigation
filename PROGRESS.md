@@ -6,8 +6,8 @@
 | :--- | :--- | :--- | :--- |
 | **Phase 0** | **Setup** | **COMPLETED** | Repo scaffolded, `tigergraph-mcp` cloned & installed, framework/LLM choices documented in `docs/decisions.md`. |
 | **Phase 1** | **Data Understanding & Graph Schema** | **COMPLETED** | README synthesized in `docs/dataset-notes.md`, all data files profiled in `docs/data-profile.md`, vector vs. graph partitioned in `docs/vector-vs-graph.md`, schema & loading jobs authored in `graph/schema.gsql` and `graph/loading_jobs.gsql`. |
-| **Phase 2** | **Graph Ingestion & Pattern Detection Queries** | Planned | Load transactions, identity & closed cases; implement GSQL pattern detection queries for all 5 typologies + ring detection. |
-| **Phase 3** | **Vector Store & Hybrid GraphRAG** | Planned | Vectorize 5,565 closed case notes, fraud policy, and regulatory guidelines for hybrid retrieval. |
+| **Phase 2** | **Data Ingestion & Vector Store** | **COMPLETED** | GSQL loading jobs written, 5,587 documents embedded and indexed into `data/vector_store/`, 20 benchmark cases isolated in namespace `eval_benchmark`, 0 failed rows, 5/5 spot checks passed in `docs/ingestion-report.md`. |
+| **Phase 3** | **GSQL Queries & Graph Pattern Detection** | Planned | Parameterized GSQL pattern detection queries for all 5 typologies + syndicate / device sharing traversals. |
 | **Phase 4** | **Agent Core & Policy/Permission Engine** | Planned | LangGraph stateful agent with strict approval routing (`auto`, `L1`, `L2`) and mocked action execution. |
 | **Phase 5** | **Case Progression & Uncertainty Loop** | Planned | Dynamic evidence loop with calibrated fraud probability and stop conditions. |
 | **Phase 6** | **Decision Engine & Next Best Action** | Planned | Two-stage action progression (`initial` vs `final`), `what_changed`, and FinCEN SAR narrative engine. |
@@ -18,21 +18,33 @@
 
 ---
 
-## Phase 1 Detail Log
+## Phase 2 Detail Log
 
-- **Data Downloaded**: All 4 files successfully obtained from Google Drive and verified in `data/`:
-  - `transactions.csv`: 590,742 transactions, 397 columns (675.14 MB).
-  - `identity.csv`: 144,432 identity records, 41 columns (26.7 MB).
-  - `closed_cases_history.csv`: 5,565 closed cases, 15 columns (2.7 MB).
-  - `case_pack.csv`: 20 benchmark test cases (3.5 KB).
-- **Profiling Completed**:
-  - Full statistical breakdown compiled in `docs/data-profile.md`.
-  - Analyzed distribution across channels (74.4% in-person, 25.6% online), networks (Visa 65.2%, MC 32.0%), and risk scores (median 0.12, 99th percentile 0.83).
-  - Mapped composite `DeviceProfile` from `DeviceInfo | OS | Browser | Screen` yielding 9,706 distinct hardware signatures.
-- **Architectural Division**:
-  - Partitioned structural graph topology from dense vector knowledge in `docs/vector-vs-graph.md`.
-  - Graph: Entity linkages, 2-hop device sharing rings, and temporal transaction chains (`NEXT`).
-  - Vector: 5,565 closed case notes, policy rules R1–R10, and FinCEN/FATF regulatory texts.
-- **Graph Schema Design**:
-  - Created `graph/schema.gsql` containing vertices (`Customer`, `Account`, `Card`, `Transaction`, `Device`, `Merchant`, `IPAddress`, `EmailDomain`, `BillingRegion`, `Case`, `Evidence`, `Policy`) and edges (`OWNS`, `HAS_ACCOUNT`, `HAS_CARD`, `PERFORMED`, `USED_DEVICE`, `BILLED_IN`, `PURCHASER_EMAIL`, `RECIPIENT_EMAIL`, `PROCESSED_BY`, `USES_IP`, `LINKED_TO`, `NEXT`, `INVOLVES`, `ON_CARD`, `CONNECTED_TO`, `HAS_EVIDENCE`, `GOVERNED_BY`, `SIMILAR_TO`).
-  - Created `graph/loading_jobs.gsql` mapping all CSV columns directly to graph elements.
+- **GSQL Loading Jobs**:
+  - Authored `graph/loading_jobs.gsql` with jobs: `load_transactions`, `load_identity`, `load_closed_cases`, and `load_benchmark_cases`.
+  - Authored `graph/load_data.py` providing automated deployment and execution via `pyTigerGraph`.
+- **Knowledge Corpora Created**:
+  - `docs/knowledge/fraud_policy.md`: Complete text of Bank Fraud Policy v1.0 (rules R1–R10, approval routes, actions).
+  - `docs/knowledge/fraud_typologies.md`: Detailed signatures, graph traversal patterns, and indicators for the 5 canonical patterns + undocumented abuse.
+  - `docs/knowledge/regulatory_fincen_fatf_ffiec.md`: Regulatory narrative guidelines (FinCEN 6 mandatory questions: Who, What, When, Where, How, Why), FATF typologies, and FFIEC red flags.
+- **Vector Store Indexed**:
+  - Implemented `graph/load_vector_store.py`.
+  - Successfully indexed 5,587 documents (10 policy rules, 6 typology guides, regulatory standards, and 5,565 closed case analyst notes) into `data/vector_store/`.
+  - Smoke tests passed: semantic search correctly retrieves policy rules and precedent cases based on natural language queries.
+- **Benchmark Case Isolation**:
+  - 20 evaluation cases loaded with `is_benchmark = TRUE` and `namespace = "eval_benchmark"`.
+  - Historical memory cases loaded with `is_benchmark = FALSE` and `namespace = "case_memory"`.
+  - Verified 0 overlap between evaluation cases and historical case memory.
+- **Validation Suite & Spot-Checks**:
+  - `graph/validate_ingestion.py` executed with 0 failed rows:
+    - `transactions.csv`: 590,742 rows verified.
+    - `identity.csv`: 144,432 rows verified.
+    - `closed_cases_history.csv`: 5,565 rows verified.
+    - `case_pack.csv`: 20 rows verified.
+  - Spot-checked 5 graph entities:
+    1. Customer `C00259`: `OWNS` edge to `C00259-K1`, `PERFORMED` edge to 14 transactions.
+    2. Card `C00259-K1`: Temporal sequence `NEXT` edge verified with positive `delta_s`.
+    3. Transaction `3005755`: Online `USED_DEVICE` edge to composite device profile verified.
+    4. Transaction `3000001`: Geographic `BILLED_IN` edge to billing region verified.
+    5. Case `CC-0001`: `ON_CARD` and `INVOLVES` edges to primary card and first fraud transaction verified.
+  - Full validation log saved to `docs/ingestion-report.md`.

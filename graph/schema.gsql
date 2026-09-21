@@ -135,7 +135,9 @@ CREATE VERTEX Case (
     actions_taken STRING,
     report_filed STRING,         // Yes, No
     summary STRING,
-    analyst_notes STRING
+    analyst_notes STRING,
+    is_benchmark BOOL DEFAULT FALSE,
+    namespace STRING DEFAULT "case_memory"
 ) WITH STATS="OUTDEGREE_BY_EDGETYPE";
 
 // Evidence Item Entity

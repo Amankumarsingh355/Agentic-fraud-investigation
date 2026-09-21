@@ -143,7 +143,9 @@ CREATE LOADING JOB load_closed_cases FOR GRAPH FraudGraph {
         $"actions_taken",
         $"report_filed",
         $"analyst_notes",
-        $"analyst_notes"
+        $"analyst_notes",
+        false,                    // is_benchmark: false (Historical Ground Truth Case Memory)
+        "case_memory"            // namespace: case_memory
     ) USING HEADER="true", SEPARATOR=",";
 
     // Load Edges
@@ -163,4 +165,41 @@ CREATE LOADING JOB load_closed_cases FOR GRAPH FraudGraph {
         $"case_id",
         $"connected_card_ids"
     ) WHERE $"connected_card_ids" IS NOT EMPTY USING HEADER="true", SEPARATOR=",";
+}
+
+CREATE LOADING JOB load_benchmark_cases FOR GRAPH FraudGraph {
+    DEFINE FILENAME bp_file;
+
+    // Load 20 Benchmark Cases into strictly isolated namespace
+    LOAD bp_file TO VERTEX Case VALUES (
+        $"case_id",
+        $"customer_id",
+        $"card_id",
+        $"opened_at",
+        $"opened_at",
+        "pending_eval",
+        "uncertain",
+        0.5,
+        "pending",
+        "",
+        0.0,
+        1,
+        "",
+        "No",
+        $"trigger_text",
+        $"trigger_text",
+        true,                     // is_benchmark: true (EVAL-ONLY, ISOLATED)
+        "eval_benchmark"          // namespace: eval_benchmark (NEVER queried as memory)
+    ) USING HEADER="true", SEPARATOR=",";
+
+    // Load Edges
+    LOAD bp_file TO EDGE ON_CARD VALUES (
+        $"case_id",
+        $"card_id"
+    ) USING HEADER="true", SEPARATOR=",";
+
+    LOAD bp_file TO EDGE INVOLVES VALUES (
+        $"case_id",
+        $"flagged_txn_id"
+    ) USING HEADER="true", SEPARATOR=",";
 }

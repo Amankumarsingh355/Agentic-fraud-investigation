@@ -9,6 +9,7 @@ data/transactions.csv
 data/identity.csv
 data/closed_cases_history.csv
 data/case_pack.csv
+data/vector_store/*.pkl
 *.csv
 
 # Environment and secrets
