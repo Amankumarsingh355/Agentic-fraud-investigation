@@ -1,0 +1,273 @@
+// ============================================================================
+// TigerGraph GSQL Schema: Fraud Investigation & Next-Best Action Graph
+// Hackathon: TigerGraph Agentic Fraud Investigation (Hacker House Goa 2026)
+// Dataset: HHGOA_IEEE (Derived from IEEE-CIS Fraud Detection / Vesta Corp)
+// ============================================================================
+
+DROP GRAPH FraudGraph
+DROP VERTEX Customer
+DROP VERTEX Account
+DROP VERTEX Card
+DROP VERTEX Transaction
+DROP VERTEX Device
+DROP VERTEX Merchant
+DROP VERTEX IPAddress
+DROP VERTEX EmailDomain
+DROP VERTEX BillingRegion
+DROP VERTEX Case
+DROP VERTEX Evidence
+DROP VERTEX Policy
+
+// ----------------------------------------------------------------------------
+// 1. VERTEX DEFINITIONS
+// ----------------------------------------------------------------------------
+
+// Customer Entity
+// Maps to: customer_id (e.g., C01234)
+CREATE VERTEX Customer (
+    PRIMARY_ID customer_id STRING,
+    total_cards INT DEFAULT 1,
+    home_region STRING,
+    created_at DATETIME
+) WITH STATS="OUTDEGREE_BY_EDGETYPE";
+
+// Customer Financial Account
+// Maps to: account_id (representing the customer account ledger)
+CREATE VERTEX Account (
+    PRIMARY_ID account_id STRING,
+    customer_id STRING,
+    status STRING DEFAULT "active",
+    risk_level STRING DEFAULT "low",
+    created_at DATETIME
+) WITH STATS="OUTDEGREE_BY_EDGETYPE";
+
+// Card Entity
+// Maps to: card_id (e.g. C01234-K1), card1..card6, card4 (network), card6 (type)
+CREATE VERTEX Card (
+    PRIMARY_ID card_id STRING,
+    customer_id STRING,
+    card1 INT,
+    card2 DOUBLE,
+    card3 DOUBLE,
+    card4 STRING,      // visa, mastercard, discover, american express
+    card5 DOUBLE,
+    card6 STRING,      // debit, credit
+    is_blocked BOOL DEFAULT FALSE,
+    monitoring_until DATETIME
+) WITH STATS="OUTDEGREE_BY_EDGETYPE";
+
+// Transaction Entity
+// Maps to: TransactionID, TransactionAmt, ts, channel, ProductCD, risk_score, addr1, addr2, dist1, dist2
+CREATE VERTEX Transaction (
+    PRIMARY_ID txn_id STRING,
+    customer_id STRING,
+    amount DOUBLE,
+    ts DATETIME,
+    channel STRING,          // in_person vs online
+    product_cd STRING,       // W, C, H, R, S
+    risk_score DOUBLE,       // 0.0 to 1.0 from bank model
+    addr1 DOUBLE,            // Billing region code
+    addr2 DOUBLE,            // Country code (87 = domestic home country)
+    dist1 DOUBLE,
+    dist2 DOUBLE,
+    is_flagged BOOL DEFAULT FALSE
+) WITH STATS="OUTDEGREE_BY_EDGETYPE";
+
+// Device & Hardware Profile Entity
+// Maps to: DeviceInfo, DeviceType, id_30 (OS), id_31 (Browser), id_33 (Screen), id_15 (is_new), id_23 (proxy)
+CREATE VERTEX Device (
+    PRIMARY_ID device_id STRING, // Compound: DeviceInfo|OS|Browser|Screen
+    device_info STRING,          // e.g. SAMSUNG SM-G892A Build/NRD90M, Windows, iOS Device
+    device_type STRING,          // mobile, desktop
+    os STRING,                   // Android 7.0, iOS 11.1.2, Windows 10
+    browser STRING,              // samsung browser 6.2, chrome 62.0, mobile safari
+    screen STRING,               // 2220x1080, 1920x1080
+    is_new BOOL DEFAULT FALSE,   // Derived from id_15 == "New"
+    proxy_rating STRING          // Transparent, Anonymous, Hidden from id_23
+) WITH STATS="OUTDEGREE_BY_EDGETYPE";
+
+// Merchant / Merchant Category Entity
+// Derived from: ProductCD, R_emaildomain, and merchant velocity clusters
+CREATE VERTEX Merchant (
+    PRIMARY_ID merchant_id STRING,
+    product_cd STRING,
+    domain STRING,
+    risk_category STRING DEFAULT "standard"
+) WITH STATS="OUTDEGREE_BY_EDGETYPE";
+
+// IP Address / Network Profile
+// Maps to: id_23 proxy categorization, IP ratings id_01 - id_11
+CREATE VERTEX IPAddress (
+    PRIMARY_ID ip_id STRING,
+    proxy_type STRING,           // IP_PROXY:TRANSPARENT, ANONYMOUS, HIDDEN
+    trust_score DOUBLE
+) WITH STATS="OUTDEGREE_BY_EDGETYPE";
+
+// Email Domain Entity
+// Maps to: P_emaildomain (purchaser), R_emaildomain (recipient)
+CREATE VERTEX EmailDomain (
+    PRIMARY_ID domain_name STRING,
+    is_disposable BOOL DEFAULT FALSE
+) WITH STATS="OUTDEGREE_BY_EDGETYPE";
+
+// Billing Region Entity
+// Maps to: addr1 (region code), addr2 (country code: 87 is home country)
+CREATE VERTEX BillingRegion (
+    PRIMARY_ID region_id STRING,
+    country_code DOUBLE DEFAULT 87.0
+) WITH STATS="OUTDEGREE_BY_EDGETYPE";
+
+// Investigation Case / Case Memory Entity
+// Maps to: closed_cases_history.csv and dynamically closed cases from case_pack.csv
+CREATE VERTEX Case (
+    PRIMARY_ID case_id STRING,
+    customer_id STRING,
+    card_id STRING,
+    opened_at DATETIME,
+    closed_at DATETIME,
+    outcome STRING,              // confirmed_fraud, cleared, open, escalated
+    verdict STRING,              // fraud, legitimate, uncertain
+    fraud_probability DOUBLE,
+    pattern STRING,              // card_testing, card_not_present_fraud, etc.
+    pattern_description STRING,
+    exposure_usd DOUBLE,
+    n_txns INT,
+    actions_taken STRING,
+    report_filed STRING,         // Yes, No
+    summary STRING,
+    analyst_notes STRING
+) WITH STATS="OUTDEGREE_BY_EDGETYPE";
+
+// Evidence Item Entity
+// Grounded facts attached to an ongoing or closed case
+CREATE VERTEX Evidence (
+    PRIMARY_ID evidence_id STRING,
+    claim STRING,
+    source STRING,               // graph, document, customer, external
+    ref STRING,                  // query name, policy rule, evidence request
+    created_at DATETIME
+) WITH STATS="OUTDEGREE_BY_EDGETYPE";
+
+// Policy & Typology Knowledge Entity
+// Maps to: Bank Fraud Policy Rules (R1 - R10) and canonical typologies
+CREATE VERTEX Policy (
+    PRIMARY_ID rule_id STRING,   // R1, R2, ..., R10
+    rule_name STRING,
+    pattern_name STRING,
+    approval_route STRING,       // auto, L1, L2
+    min_exposure DOUBLE DEFAULT 0.0,
+    description STRING
+) WITH STATS="OUTDEGREE_BY_EDGETYPE";
+
+
+// ----------------------------------------------------------------------------
+// 2. EDGE DEFINITIONS
+// ----------------------------------------------------------------------------
+
+// Customer owns Card
+CREATE DIRECTED EDGE OWNS (FROM Customer, TO Card) 
+WITH REVERSE_EDGE="OWNED_BY";
+
+// Customer has Account
+CREATE DIRECTED EDGE HAS_ACCOUNT (FROM Customer, TO Account) 
+WITH REVERSE_EDGE="ACCOUNT_OF";
+
+// Account has Card
+CREATE DIRECTED EDGE HAS_CARD (FROM Account, TO Card) 
+WITH REVERSE_EDGE="CARD_OF_ACCOUNT";
+
+// Card performed Transaction
+CREATE DIRECTED EDGE PERFORMED (FROM Card, TO Transaction) 
+WITH REVERSE_EDGE="PERFORMED_BY";
+
+// Transaction used Device (Online transactions only)
+CREATE DIRECTED EDGE USED_DEVICE (FROM Transaction, TO Device) 
+WITH REVERSE_EDGE="DEVICE_USED_IN";
+
+// Transaction billed in BillingRegion
+CREATE DIRECTED EDGE BILLED_IN (FROM Transaction, TO BillingRegion) 
+WITH REVERSE_EDGE="REGION_TXNS";
+
+// Transaction purchaser email domain
+CREATE DIRECTED EDGE PURCHASER_EMAIL (FROM Transaction, TO EmailDomain) 
+WITH REVERSE_EDGE="PURCHASER_OF_TXNS";
+
+// Transaction recipient email domain
+CREATE DIRECTED EDGE RECIPIENT_EMAIL (FROM Transaction, TO EmailDomain) 
+WITH REVERSE_EDGE="RECIPIENT_OF_TXNS";
+
+// Transaction processed by Merchant
+CREATE DIRECTED EDGE PROCESSED_BY (FROM Transaction, TO Merchant) 
+WITH REVERSE_EDGE="MERCHANT_TXNS";
+
+// Device connected via IP / Proxy
+CREATE DIRECTED EDGE USES_IP (FROM Device, TO IPAddress) 
+WITH REVERSE_EDGE="IP_OF_DEVICES";
+
+// Device directly linked to Card (Cross-card device sharing syndicate detection)
+CREATE UNDIRECTED EDGE LINKED_TO (FROM Device, TO Card, first_seen DATETIME, last_seen DATETIME);
+
+// Transaction sequential chain (Ordered chronologically by ts within a Card)
+// Critical for velocity checks and Card Testing pattern detection
+CREATE DIRECTED EDGE NEXT (FROM Transaction, TO Transaction, delta_s DOUBLE);
+
+// Case involves Transaction
+CREATE DIRECTED EDGE INVOLVES (FROM Case, TO Transaction) 
+WITH REVERSE_EDGE="PART_OF_CASE";
+
+// Case opened on Card
+CREATE DIRECTED EDGE ON_CARD (FROM Case, TO Card) 
+WITH REVERSE_EDGE="CARD_CASES";
+
+// Case connected to secondary compromised Card (Rings / device sharing)
+CREATE DIRECTED EDGE CONNECTED_TO (FROM Case, TO Card) 
+WITH REVERSE_EDGE="LINKED_CASES";
+
+// Case has Evidence
+CREATE DIRECTED EDGE HAS_EVIDENCE (FROM Case, TO Evidence) 
+WITH REVERSE_EDGE="EVIDENCE_OF_CASE";
+
+// Case governed by Policy Rule
+CREATE DIRECTED EDGE GOVERNED_BY (FROM Case, TO Policy) 
+WITH REVERSE_EDGE="POLICY_CASES";
+
+// Case similarity (Case memory retrieval edge)
+CREATE UNDIRECTED EDGE SIMILAR_TO (FROM Case, TO Case, similarity_score DOUBLE);
+
+
+// ----------------------------------------------------------------------------
+// 3. GRAPH DEFINITION
+// ----------------------------------------------------------------------------
+
+CREATE GRAPH FraudGraph (
+    Customer,
+    Account,
+    Card,
+    Transaction,
+    Device,
+    Merchant,
+    IPAddress,
+    EmailDomain,
+    BillingRegion,
+    Case,
+    Evidence,
+    Policy,
+    OWNS,
+    HAS_ACCOUNT,
+    HAS_CARD,
+    PERFORMED,
+    USED_DEVICE,
+    BILLED_IN,
+    PURCHASER_EMAIL,
+    RECIPIENT_EMAIL,
+    PROCESSED_BY,
+    USES_IP,
+    LINKED_TO,
+    NEXT,
+    INVOLVES,
+    ON_CARD,
+    CONNECTED_TO,
+    HAS_EVIDENCE,
+    GOVERNED_BY,
+    SIMILAR_TO
+);

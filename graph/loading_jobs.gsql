@@ -1,0 +1,166 @@
+// ============================================================================
+// TigerGraph GSQL Loading Jobs: Loading HHGOA_IEEE into FraudGraph
+// ============================================================================
+
+USE GRAPH FraudGraph
+
+CREATE LOADING JOB load_transactions FOR GRAPH FraudGraph {
+    DEFINE FILENAME txn_file;
+    
+    // Load Customer vertices
+    LOAD txn_file TO VERTEX Customer VALUES (
+        $"customer_id",
+        1,
+        $"addr1",
+        $"ts"
+    ) USING HEADER="true", SEPARATOR=",";
+
+    // Load Card vertices
+    LOAD txn_file TO VERTEX Card VALUES (
+        gsql_concat($"customer_id", "-K1"), // Default primary card; updated via case mappings
+        $"customer_id",
+        $"card1",
+        $"card2",
+        $"card3",
+        $"card4",
+        $"card5",
+        $"card6",
+        false,
+        _
+    ) USING HEADER="true", SEPARATOR=",";
+
+    // Load Transaction vertices
+    LOAD txn_file TO VERTEX Transaction VALUES (
+        $"TransactionID",
+        $"customer_id",
+        $"TransactionAmt",
+        $"ts",
+        $"channel",
+        $"ProductCD",
+        $"risk_score",
+        $"addr1",
+        $"addr2",
+        $"dist1",
+        $"dist2",
+        false
+    ) USING HEADER="true", SEPARATOR=",";
+
+    // Load BillingRegion vertices
+    LOAD txn_file TO VERTEX BillingRegion VALUES (
+        $"addr1",
+        $"addr2"
+    ) WHERE $"addr1" IS NOT EMPTY USING HEADER="true", SEPARATOR=",";
+
+    // Load EmailDomain vertices (Purchaser & Recipient)
+    LOAD txn_file TO VERTEX EmailDomain VALUES (
+        $"P_emaildomain",
+        false
+    ) WHERE $"P_emaildomain" IS NOT EMPTY USING HEADER="true", SEPARATOR=",";
+
+    LOAD txn_file TO VERTEX EmailDomain VALUES (
+        $"R_emaildomain",
+        false
+    ) WHERE $"R_emaildomain" IS NOT EMPTY USING HEADER="true", SEPARATOR=",";
+
+    // Load Edges
+    LOAD txn_file TO EDGE OWNS VALUES (
+        $"customer_id",
+        gsql_concat($"customer_id", "-K1")
+    ) USING HEADER="true", SEPARATOR=",";
+
+    LOAD txn_file TO EDGE PERFORMED VALUES (
+        gsql_concat($"customer_id", "-K1"),
+        $"TransactionID"
+    ) USING HEADER="true", SEPARATOR=",";
+
+    LOAD txn_file TO EDGE BILLED_IN VALUES (
+        $"TransactionID",
+        $"addr1"
+    ) WHERE $"addr1" IS NOT EMPTY USING HEADER="true", SEPARATOR=",";
+
+    LOAD txn_file TO EDGE PURCHASER_EMAIL VALUES (
+        $"TransactionID",
+        $"P_emaildomain"
+    ) WHERE $"P_emaildomain" IS NOT EMPTY USING HEADER="true", SEPARATOR=",";
+
+    LOAD txn_file TO EDGE RECIPIENT_EMAIL VALUES (
+        $"TransactionID",
+        $"R_emaildomain"
+    ) WHERE $"R_emaildomain" IS NOT EMPTY USING HEADER="true", SEPARATOR=",";
+}
+
+CREATE LOADING JOB load_identity FOR GRAPH FraudGraph {
+    DEFINE FILENAME id_file;
+
+    // Load Device vertices
+    LOAD id_file TO VERTEX Device VALUES (
+        gsql_concat($"DeviceInfo", "|", $"id_30", "|", $"id_31", "|", $"id_33"),
+        $"DeviceInfo",
+        $"DeviceType",
+        $"id_30",
+        $"id_31",
+        $"id_33",
+        evaluate($"id_15" == "New", true, false),
+        $"id_23"
+    ) USING HEADER="true", SEPARATOR=",";
+
+    // Load IPAddress vertices (when proxy present)
+    LOAD id_file TO VERTEX IPAddress VALUES (
+        $"id_23",
+        $"id_23",
+        0.0
+    ) WHERE $"id_23" IS NOT EMPTY USING HEADER="true", SEPARATOR=",";
+
+    // Load Edges
+    LOAD id_file TO EDGE USED_DEVICE VALUES (
+        $"TransactionID",
+        gsql_concat($"DeviceInfo", "|", $"id_30", "|", $"id_31", "|", $"id_33")
+    ) USING HEADER="true", SEPARATOR=",";
+
+    LOAD id_file TO EDGE USES_IP VALUES (
+        gsql_concat($"DeviceInfo", "|", $"id_30", "|", $"id_31", "|", $"id_33"),
+        $"id_23"
+    ) WHERE $"id_23" IS NOT EMPTY USING HEADER="true", SEPARATOR=",";
+}
+
+CREATE LOADING JOB load_closed_cases FOR GRAPH FraudGraph {
+    DEFINE FILENAME cc_file;
+
+    // Load Case vertices
+    LOAD cc_file TO VERTEX Case VALUES (
+        $"case_id",
+        $"customer_id",
+        $"card_id",
+        $"opened_at",
+        $"closed_at",
+        $"outcome",
+        evaluate($"outcome" == "confirmed_fraud", "fraud", "legitimate"),
+        evaluate($"outcome" == "confirmed_fraud", 1.0, 0.0),
+        $"pattern",
+        "",
+        $"exposure_usd",
+        $"n_txns",
+        $"actions_taken",
+        $"report_filed",
+        $"analyst_notes",
+        $"analyst_notes"
+    ) USING HEADER="true", SEPARATOR=",";
+
+    // Load Edges
+    LOAD cc_file TO EDGE ON_CARD VALUES (
+        $"case_id",
+        $"card_id"
+    ) USING HEADER="true", SEPARATOR=",";
+
+    // Involves first fraud transaction
+    LOAD cc_file TO EDGE INVOLVES VALUES (
+        $"case_id",
+        $"first_fraud_txn_id"
+    ) WHERE $"first_fraud_txn_id" IS NOT EMPTY USING HEADER="true", SEPARATOR=",";
+
+    // Connected to additional compromised cards
+    LOAD cc_file TO EDGE CONNECTED_TO VALUES (
+        $"case_id",
+        $"connected_card_ids"
+    ) WHERE $"connected_card_ids" IS NOT EMPTY USING HEADER="true", SEPARATOR=",";
+}

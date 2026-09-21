@@ -1,0 +1,31 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Large dataset files (stored in data/ but excluded from git)
+data/*.csv
+data/transactions.csv
+data/identity.csv
+data/closed_cases_history.csv
+data/case_pack.csv
+*.csv
+
+# Environment and secrets
+.env
+*.env.local
+*.log
+
+# Python virtual environment
+venv/
+.venv/
+env/
+ENV/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Scratch and temp files
+scratch/
+test_*.csv
