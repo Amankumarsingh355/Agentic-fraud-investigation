@@ -375,23 +375,24 @@
     "flagged_txn_id": 3514030,
     "is_benchmark": true,
     "namespace": "eval_benchmark",
-    "narrative": "### Investigation Summary for Case HHG-001\n**Transaction**: `3514030` | **Amount**: `$77.07` | **Trigger**: `risk_score`\n\n**Assessed Fraud Probability**: `0.98` | **Confidence**: `HIGH` (Uncertainty: `0.02`)\n\n#### Traceable Evidence & Reasoning\n- **Trigger Prior**: Bank Risk Model Score (0.61) (+0.41): Real-time automated transaction scoring model.\n- **Corroborating Signal**: Out-of-Region In-Person POS (+0.20): Physical card used in region 444.0 away from established home 204.0.\n- **Corroborating Signal**: Explicit Customer Denial of Charge (Rule R2) (+0.90): Cardholder explicitly stated they did not authorize this purchase.\n- **Mitigating Signal**: Established Customer History (-0.10): Customer has 422 historical transactions totaling $48,783.68.\n\n#### Case Memory Precedents Informing Decision\n- **[DYNAMIC MEMORY] Precedent Case MEM-RUN-1 (confirmed_fraud, out_of_region_use)** (Score: 0.55 | Source: *TigerGraph Dynamic Case Memory*):\n  \"### Investigation Summary for Case MEM-RUN-1\n**Transaction**: `3000332` | **Amount**: `$117.05` | **Trigger**: `risk_score`\n\n**Assessed Fraud Probability**: `0.98` | **Confidence**: `HIGH` (Uncertaint...\"\n- **Precedent Case CC-1541 (confirmed_fraud, out_of_region_use)** (Score: 0.4891 | Source: *TigerGraph Case Memory (Historical)*):\n  \"Case CC-1541: cardholder C02250 reported unrecognized activity on card C02250-K2. 1 transaction(s) between 2016-08-01 and 2016-08-01 totaling $77.02 were confirmed fraudulent. Card-present use in a bi...\"\n- **Precedent Case CC-2923 (confirmed_fraud, out_of_region_use)** (Score: 0.4869 | Source: *TigerGraph Case Memory (Historical)*):\n  \"Case CC-2923: cardholder C00088 reported unrecognized activity on card C00088-K1. 1 transaction(s) between 2016-08-31 and 2016-08-31 totaling $77.00 were confirmed fraudulent. Card-present use in a bi...\"\n\n#### Policy Gated Actions & Next Steps\n- **CREATE_CASE** (`auto` - EXECUTED): Customer explicitly denied transaction. Open formal fraud case. (Governing: *Rule R2*)\n- **BLOCK_CARD** (`L1` - PENDING_HUMAN_APPROVAL): Compromised card replacement required for customer-reported fraud ($77.07 exposure). (Governing: *Rule R2*)",
+    "narrative": "### Investigation Summary for Case HHG-001\n**Transaction**: `3514030` | **Amount**: `$77.07` | **Trigger**: `risk_score`\n\n**Assessed Fraud Probability**: `0.71` | **Confidence**: `LOW` (Uncertainty: `0.65`)\n\n#### Traceable Evidence & Reasoning\n- **Trigger Prior**: Bank Risk Model Score (0.61) (+0.41): Real-time automated transaction scoring model.\n- **Corroborating Signal**: Out-of-Region In-Person POS (+0.20): Physical card used in region 444.0 away from established home 204.0.\n- **Mitigating Signal**: Established Customer History (-0.10): Customer has 422 historical transactions totaling $48,783.68.\n\n#### Identified Evidence Gaps\n- *Gap*: Missing confirmation whether out-of-region spend is legitimate travel vs cloned card.\n\n#### Case Memory Precedents Informing Decision\n- **[DYNAMIC MEMORY] Precedent Case MEM-RUN-1 (confirmed_fraud, out_of_region_use)** (Score: 0.55 | Source: *TigerGraph Dynamic Case Memory*):\n  \"### Investigation Summary for Case MEM-RUN-1\n**Transaction**: `3000332` | **Amount**: `$117.05` | **Trigger**: `risk_score`\n\n**Assessed Fraud Probability**: `0.98` | **Confidence**: `HIGH` (Uncertaint...\"\n- **Precedent Case CC-1541 (confirmed_fraud, out_of_region_use)** (Score: 0.4891 | Source: *TigerGraph Case Memory (Historical)*):\n  \"Case CC-1541: cardholder C02250 reported unrecognized activity on card C02250-K2. 1 transaction(s) between 2016-08-01 and 2016-08-01 totaling $77.02 were confirmed fraudulent. Card-present use in a bi...\"\n- **Precedent Case CC-2923 (confirmed_fraud, out_of_region_use)** (Score: 0.4869 | Source: *TigerGraph Case Memory (Historical)*):\n  \"Case CC-2923: cardholder C00088 reported unrecognized activity on card C00088-K1. 1 transaction(s) between 2016-08-31 and 2016-08-31 totaling $77.00 were confirmed fraudulent. Card-present use in a bi...\"\n\n#### Policy Gated Actions & Next Steps\n- **CREATE_CASE** (`auto` - EXECUTED): Out-of-region in-person spend recorded. (Governing: *Rule R1 / Section 4*)\n- **VERIFY_WITH_CUSTOMER** (`auto` - EXECUTED): Verify out-of-region POS charge in Region 444.0 with cardholder before taking blocking action. (Governing: *Rule R1*)\n- **MONITOR_CARD** (`auto` - EXECUTED): Temporarily monitor card while awaiting cardholder verification response. (Governing: *Rule R1*)",
     "actions_taken": [
       "CREATE_CASE",
-      "BLOCK_CARD"
+      "VERIFY_WITH_CUSTOMER",
+      "MONITOR_CARD"
     ],
     "graph_vertices": {
       "Case": {
         "case_id": "HHG-001",
-        "opened_at": "2026-09-21T12:36:19.784161",
-        "closed_at": "2026-09-21T12:36:19.886549",
+        "opened_at": "2026-09-21T12:59:08.193632",
+        "closed_at": "2026-09-21T12:59:08.231448",
         "status": "RESOLVED",
         "outcome": "confirmed_fraud",
         "pattern": "out_of_region_use",
         "exposure_usd": 77.07,
         "is_benchmark": true,
         "namespace": "eval_benchmark",
-        "narrative": "### Investigation Summary for Case HHG-001\n**Transaction**: `3514030` | **Amount**: `$77.07` | **Trigger**: `risk_score`\n\n**Assessed Fraud Probability**: `0.98` | **Confidence**: `HIGH` (Uncertainty: `0.02`)\n\n#### Traceable Evidence & Reasoning\n- **Trigger Prior**: Bank Risk Model Score (0.61) (+0.41): Real-time automated transaction scoring model.\n- **Corroborating Signal**: Out-of-Region In-Person POS (+0.20): Physical card used in region 444.0 away from established home 204.0.\n- **Corroborating Signal**: Explicit Customer Denial of Charge (Rule R2) (+0.90): Cardholder explicitly stated they did not authorize this purchase.\n- **Mitigating Signal**: Established Customer History (-0.10): Customer has 422 historical transactions totaling $48,783.68.\n\n#### Case Memory Precedents Informing Decision\n- **[DYNAMIC MEMORY] Precedent Case MEM-RUN-1 (confirmed_fraud, out_of_region_use)** (Score: 0.55 | Source: *TigerGraph Dynamic Case Memory*):\n  \"### Investigation Summary for Case MEM-RUN-1\n**Transaction**: `3000332` | **Amount**: `$117.05` | **Trigger**: `risk_score`\n\n**Assessed Fraud Probability**: `0.98` | **Confidence**: `HIGH` (Uncertaint...\"\n- **Precedent Case CC-1541 (confirmed_fraud, out_of_region_use)** (Score: 0.4891 | Source: *TigerGraph Case Memory (Historical)*):\n  \"Case CC-1541: cardholder C02250 reported unrecognized activity on card C02250-K2. 1 transaction(s) between 2016-08-01 and 2016-08-01 totaling $77.02 were confirmed fraudulent. Card-present use in a bi...\"\n- **Precedent Case CC-2923 (confirmed_fraud, out_of_region_use)** (Score: 0.4869 | Source: *TigerGraph Case Memory (Historical)*):\n  \"Case CC-2923: cardholder C00088 reported unrecognized activity on card C00088-K1. 1 transaction(s) between 2016-08-31 and 2016-08-31 totaling $77.00 were confirmed fraudulent. Card-present use in a bi...\"\n\n#### Policy Gated Actions & Next Steps\n- **CREATE_CASE** (`auto` - EXECUTED): Customer explicitly denied transaction. Open formal fraud case. (Governing: *Rule R2*)\n- **BLOCK_CARD** (`L1` - PENDING_HUMAN_APPROVAL): Compromised card replacement required for customer-reported fraud ($77.07 exposure). (Governing: *Rule R2*)"
+        "narrative": "### Investigation Summary for Case HHG-001\n**Transaction**: `3514030` | **Amount**: `$77.07` | **Trigger**: `risk_score`\n\n**Assessed Fraud Probability**: `0.71` | **Confidence**: `LOW` (Uncertainty: `0.65`)\n\n#### Traceable Evidence & Reasoning\n- **Trigger Prior**: Bank Risk Model Score (0.61) (+0.41): Real-time automated transaction scoring model.\n- **Corroborating Signal**: Out-of-Region In-Person POS (+0.20): Physical card used in region 444.0 away from established home 204.0.\n- **Mitigating Signal**: Established Customer History (-0.10): Customer has 422 historical transactions totaling $48,783.68.\n\n#### Identified Evidence Gaps\n- *Gap*: Missing confirmation whether out-of-region spend is legitimate travel vs cloned card.\n\n#### Case Memory Precedents Informing Decision\n- **[DYNAMIC MEMORY] Precedent Case MEM-RUN-1 (confirmed_fraud, out_of_region_use)** (Score: 0.55 | Source: *TigerGraph Dynamic Case Memory*):\n  \"### Investigation Summary for Case MEM-RUN-1\n**Transaction**: `3000332` | **Amount**: `$117.05` | **Trigger**: `risk_score`\n\n**Assessed Fraud Probability**: `0.98` | **Confidence**: `HIGH` (Uncertaint...\"\n- **Precedent Case CC-1541 (confirmed_fraud, out_of_region_use)** (Score: 0.4891 | Source: *TigerGraph Case Memory (Historical)*):\n  \"Case CC-1541: cardholder C02250 reported unrecognized activity on card C02250-K2. 1 transaction(s) between 2016-08-01 and 2016-08-01 totaling $77.02 were confirmed fraudulent. Card-present use in a bi...\"\n- **Precedent Case CC-2923 (confirmed_fraud, out_of_region_use)** (Score: 0.4869 | Source: *TigerGraph Case Memory (Historical)*):\n  \"Case CC-2923: cardholder C00088 reported unrecognized activity on card C00088-K1. 1 transaction(s) between 2016-08-31 and 2016-08-31 totaling $77.00 were confirmed fraudulent. Card-present use in a bi...\"\n\n#### Policy Gated Actions & Next Steps\n- **CREATE_CASE** (`auto` - EXECUTED): Out-of-region in-person spend recorded. (Governing: *Rule R1 / Section 4*)\n- **VERIFY_WITH_CUSTOMER** (`auto` - EXECUTED): Verify out-of-region POS charge in Region 444.0 with cardholder before taking blocking action. (Governing: *Rule R1*)\n- **MONITOR_CARD** (`auto` - EXECUTED): Temporarily monitor card while awaiting cardholder verification response. (Governing: *Rule R1*)"
       },
       "Evidence": [
         {
@@ -463,13 +464,6 @@
           "source": "TigerGraph Case Memory (Historical)",
           "title": "Precedent Case CC-2923 (confirmed_fraud, out_of_region_use)",
           "score": 0.4869
-        },
-        {
-          "evidence_id": "HHG-001-EV-011",
-          "evidence_type": "customer_verification_response",
-          "source": "Cardholder SMS/Push Channel",
-          "title": "Customer Verification Response: denied_fraud",
-          "score": null
         }
       ]
     },
@@ -532,24 +526,24 @@
         {
           "from": "HHG-001",
           "to": "HHG-001-EV-010"
-        },
-        {
-          "from": "HHG-001",
-          "to": "HHG-001-EV-011"
         }
       ],
       "APPLIED_POLICY": [
         {
           "from": "HHG-001",
-          "to": "Rule R2"
+          "to": "Rule R1 / Section 4"
         },
         {
           "from": "HHG-001",
-          "to": "Rule R2"
+          "to": "Rule R1"
+        },
+        {
+          "from": "HHG-001",
+          "to": "Rule R1"
         }
       ]
     },
-    "persisted_at": "2026-09-21T12:36:19.886639"
+    "persisted_at": "2026-09-21T12:59:08.231466"
   },
   "HHG-014": {
     "case_id": "HHG-014",
@@ -779,23 +773,22 @@
     "flagged_txn_id": 3478782,
     "is_benchmark": true,
     "namespace": "eval_benchmark",
-    "narrative": "### Investigation Summary for Case HHG-002\n**Transaction**: `3478782` | **Amount**: `$292.36` | **Trigger**: `risk_score`\n\n**Assessed Fraud Probability**: `0.98` | **Confidence**: `HIGH` (Uncertainty: `0.02`)\n\n#### Traceable Evidence & Reasoning\n- **Trigger Prior**: Bank Risk Model Score (0.79) (+0.59): Real-time automated transaction scoring model.\n- **Corroborating Signal**: Explicit Customer Denial of Charge (Rule R2) (+0.90): Cardholder explicitly stated they did not authorize this purchase.\n\n#### Case Memory Precedents Informing Decision\n- **[DYNAMIC MEMORY] Precedent Case MEM-RUN-2 (confirmed_fraud, out_of_region_use)** (Score: 0.425 | Source: *TigerGraph Dynamic Case Memory*):\n  \"### Investigation Summary for Case MEM-RUN-2\n**Transaction**: `3000906` | **Amount**: `$226.01` | **Trigger**: `risk_score`\n\n**Assessed Fraud Probability**: `0.43` | **Confidence**: `LOW` (Uncertainty...\"\n- **Precedent Case CC-1511 (confirmed_fraud, out_of_region_use)** (Score: 0.3654 | Source: *TigerGraph Case Memory (Historical)*):\n  \"Case CC-1511: cardholder C10164 reported unrecognized activity on card C10164-K1. 5 transaction(s) between 2016-07-27 and 2016-07-30 totaling $292.72 were confirmed fraudulent. Card-present use in a b...\"\n- **Precedent Case CC-4694 (confirmed_fraud, out_of_region_use)** (Score: 0.365 | Source: *TigerGraph Case Memory (Historical)*):\n  \"Case CC-4694: cardholder C00889 reported unrecognized activity on card C00889-K2. 4 transaction(s) between 2016-10-09 and 2016-10-10 totaling $292.12 were confirmed fraudulent. Card-present use in a b...\"\n\n#### Policy Gated Actions & Next Steps\n- **CREATE_CASE** (`auto` - EXECUTED): Customer explicitly denied transaction. Open formal fraud case. (Governing: *Rule R2*)\n- **BLOCK_CARD** (`L1` - PENDING_HUMAN_APPROVAL): Compromised card replacement required for customer-reported fraud ($292.36 exposure). (Governing: *Rule R2*)",
+    "narrative": "### Investigation Summary for Case HHG-002\n**Transaction**: `3478782` | **Amount**: `$292.36` | **Trigger**: `risk_score`\n\n**Assessed Fraud Probability**: `0.79` | **Confidence**: `LOW` (Uncertainty: `0.80`)\n\n#### Traceable Evidence & Reasoning\n- **Trigger Prior**: Bank Risk Model Score (0.79) (+0.59): Real-time automated transaction scoring model.\n\n#### Identified Evidence Gaps\n- *Gap*: Weak uncorroborated single signal: risk score stands alone without graph or device anomalies (Rule R1).\n\n#### Case Memory Precedents Informing Decision\n- **[DYNAMIC MEMORY] Precedent Case MEM-RUN-2 (confirmed_fraud, out_of_region_use)** (Score: 0.425 | Source: *TigerGraph Dynamic Case Memory*):\n  \"### Investigation Summary for Case MEM-RUN-2\n**Transaction**: `3000906` | **Amount**: `$226.01` | **Trigger**: `risk_score`\n\n**Assessed Fraud Probability**: `0.43` | **Confidence**: `LOW` (Uncertainty...\"\n- **Precedent Case CC-1511 (confirmed_fraud, out_of_region_use)** (Score: 0.3654 | Source: *TigerGraph Case Memory (Historical)*):\n  \"Case CC-1511: cardholder C10164 reported unrecognized activity on card C10164-K1. 5 transaction(s) between 2016-07-27 and 2016-07-30 totaling $292.72 were confirmed fraudulent. Card-present use in a b...\"\n- **Precedent Case CC-4694 (confirmed_fraud, out_of_region_use)** (Score: 0.365 | Source: *TigerGraph Case Memory (Historical)*):\n  \"Case CC-4694: cardholder C00889 reported unrecognized activity on card C00889-K2. 4 transaction(s) between 2016-10-09 and 2016-10-10 totaling $292.12 were confirmed fraudulent. Card-present use in a b...\"\n\n#### Policy Gated Actions & Next Steps\n- **MONITOR_CARD** (`auto` - EXECUTED): Low confidence single signal; keep card active under standard heightened monitoring. (Governing: *Section 1*)",
     "actions_taken": [
-      "CREATE_CASE",
-      "BLOCK_CARD"
+      "MONITOR_CARD"
     ],
     "graph_vertices": {
       "Case": {
         "case_id": "HHG-002",
-        "opened_at": "2026-09-21T12:36:19.981369",
-        "closed_at": "2026-09-21T12:36:20.052335",
+        "opened_at": "2026-09-21T12:59:03.043981",
+        "closed_at": "2026-09-21T12:59:03.087634",
         "status": "RESOLVED",
         "outcome": "confirmed_fraud",
         "pattern": "none",
         "exposure_usd": 292.36,
         "is_benchmark": true,
         "namespace": "eval_benchmark",
-        "narrative": "### Investigation Summary for Case HHG-002\n**Transaction**: `3478782` | **Amount**: `$292.36` | **Trigger**: `risk_score`\n\n**Assessed Fraud Probability**: `0.98` | **Confidence**: `HIGH` (Uncertainty: `0.02`)\n\n#### Traceable Evidence & Reasoning\n- **Trigger Prior**: Bank Risk Model Score (0.79) (+0.59): Real-time automated transaction scoring model.\n- **Corroborating Signal**: Explicit Customer Denial of Charge (Rule R2) (+0.90): Cardholder explicitly stated they did not authorize this purchase.\n\n#### Case Memory Precedents Informing Decision\n- **[DYNAMIC MEMORY] Precedent Case MEM-RUN-2 (confirmed_fraud, out_of_region_use)** (Score: 0.425 | Source: *TigerGraph Dynamic Case Memory*):\n  \"### Investigation Summary for Case MEM-RUN-2\n**Transaction**: `3000906` | **Amount**: `$226.01` | **Trigger**: `risk_score`\n\n**Assessed Fraud Probability**: `0.43` | **Confidence**: `LOW` (Uncertainty...\"\n- **Precedent Case CC-1511 (confirmed_fraud, out_of_region_use)** (Score: 0.3654 | Source: *TigerGraph Case Memory (Historical)*):\n  \"Case CC-1511: cardholder C10164 reported unrecognized activity on card C10164-K1. 5 transaction(s) between 2016-07-27 and 2016-07-30 totaling $292.72 were confirmed fraudulent. Card-present use in a b...\"\n- **Precedent Case CC-4694 (confirmed_fraud, out_of_region_use)** (Score: 0.365 | Source: *TigerGraph Case Memory (Historical)*):\n  \"Case CC-4694: cardholder C00889 reported unrecognized activity on card C00889-K2. 4 transaction(s) between 2016-10-09 and 2016-10-10 totaling $292.12 were confirmed fraudulent. Card-present use in a b...\"\n\n#### Policy Gated Actions & Next Steps\n- **CREATE_CASE** (`auto` - EXECUTED): Customer explicitly denied transaction. Open formal fraud case. (Governing: *Rule R2*)\n- **BLOCK_CARD** (`L1` - PENDING_HUMAN_APPROVAL): Compromised card replacement required for customer-reported fraud ($292.36 exposure). (Governing: *Rule R2*)"
+        "narrative": "### Investigation Summary for Case HHG-002\n**Transaction**: `3478782` | **Amount**: `$292.36` | **Trigger**: `risk_score`\n\n**Assessed Fraud Probability**: `0.79` | **Confidence**: `LOW` (Uncertainty: `0.80`)\n\n#### Traceable Evidence & Reasoning\n- **Trigger Prior**: Bank Risk Model Score (0.79) (+0.59): Real-time automated transaction scoring model.\n\n#### Identified Evidence Gaps\n- *Gap*: Weak uncorroborated single signal: risk score stands alone without graph or device anomalies (Rule R1).\n\n#### Case Memory Precedents Informing Decision\n- **[DYNAMIC MEMORY] Precedent Case MEM-RUN-2 (confirmed_fraud, out_of_region_use)** (Score: 0.425 | Source: *TigerGraph Dynamic Case Memory*):\n  \"### Investigation Summary for Case MEM-RUN-2\n**Transaction**: `3000906` | **Amount**: `$226.01` | **Trigger**: `risk_score`\n\n**Assessed Fraud Probability**: `0.43` | **Confidence**: `LOW` (Uncertainty...\"\n- **Precedent Case CC-1511 (confirmed_fraud, out_of_region_use)** (Score: 0.3654 | Source: *TigerGraph Case Memory (Historical)*):\n  \"Case CC-1511: cardholder C10164 reported unrecognized activity on card C10164-K1. 5 transaction(s) between 2016-07-27 and 2016-07-30 totaling $292.72 were confirmed fraudulent. Card-present use in a b...\"\n- **Precedent Case CC-4694 (confirmed_fraud, out_of_region_use)** (Score: 0.365 | Source: *TigerGraph Case Memory (Historical)*):\n  \"Case CC-4694: cardholder C00889 reported unrecognized activity on card C00889-K2. 4 transaction(s) between 2016-10-09 and 2016-10-10 totaling $292.12 were confirmed fraudulent. Card-present use in a b...\"\n\n#### Policy Gated Actions & Next Steps\n- **MONITOR_CARD** (`auto` - EXECUTED): Low confidence single signal; keep card active under standard heightened monitoring. (Governing: *Section 1*)"
       },
       "Evidence": [
         {
@@ -867,13 +860,6 @@
           "source": "TigerGraph Case Memory (Historical)",
           "title": "Precedent Case CC-4694 (confirmed_fraud, out_of_region_use)",
           "score": 0.365
-        },
-        {
-          "evidence_id": "HHG-002-EV-011",
-          "evidence_type": "customer_verification_response",
-          "source": "Cardholder SMS/Push Channel",
-          "title": "Customer Verification Response: denied_fraud",
-          "score": null
         }
       ]
     },
@@ -936,24 +922,16 @@
         {
           "from": "HHG-002",
           "to": "HHG-002-EV-010"
-        },
-        {
-          "from": "HHG-002",
-          "to": "HHG-002-EV-011"
         }
       ],
       "APPLIED_POLICY": [
         {
           "from": "HHG-002",
-          "to": "Rule R2"
-        },
-        {
-          "from": "HHG-002",
-          "to": "Rule R2"
+          "to": "Section 1"
         }
       ]
     },
-    "persisted_at": "2026-09-21T12:36:20.052420"
+    "persisted_at": "2026-09-21T12:59:03.087678"
   },
   "HHG-003": {
     "case_id": "HHG-003",

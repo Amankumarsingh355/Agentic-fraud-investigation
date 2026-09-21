@@ -279,10 +279,32 @@
 
         <!-- TAB 1: DECISIONS & ACTIONS -->
         <div id="tabViewActions" class="space-y-4">
+          <!-- AI Investigation Findings -->
+          <div class="bg-slate-950/90 rounded-lg p-3 border border-borderMuted space-y-1.5">
+            <div class="flex justify-between items-center">
+              <span class="text-xs font-headline font-bold text-white uppercase tracking-wider">AI Investigation Reasoning</span>
+              <span class="text-[10px] font-mono text-cyanAccent bg-cyanAccent/10 px-1.5 py-0.5 rounded border border-cyanAccent/30">TigerGraph Reasoned</span>
+            </div>
+            <div class="text-xs text-slate-300 font-sans leading-relaxed" id="displaySummary">
+              Investigation in progress...
+            </div>
+          </div>
+
+          <!-- Collected Evidence Checklist -->
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-xs font-headline font-bold text-white uppercase tracking-wider">Collected Evidence</span>
+              <span class="text-[10px] font-mono text-emeraldSafe font-bold" id="evidenceCountBadge">0 Signals Verified</span>
+            </div>
+            <div class="space-y-1.5 max-h-48 overflow-y-auto custom-scroll" id="evidenceItemList">
+              <!-- Dynamically populated evidence claims -->
+            </div>
+          </div>
+
           <!-- Next Best Actions Evolution -->
           <div class="space-y-2">
             <div class="flex justify-between items-center">
-              <span class="text-xs font-headline font-bold text-white uppercase tracking-wider">Next Best Actions (Final)</span>
+              <span class="text-xs font-headline font-bold text-white uppercase tracking-wider">Next Best Actions</span>
               <span class="text-[10px] font-mono text-slate-400">Policy Gated</span>
             </div>
 
@@ -521,6 +543,34 @@
       document.getElementById("sarDates").innerText = JSON.stringify(sar.activity_dates || []);
       document.getElementById("sarNarrative").innerText = sar.narrative || "No SAR narrative required for this case.";
 
+      // Populate AI Investigation Reasoning
+      document.getElementById("displaySummary").innerText = c.summary || `Investigation record for transaction ${c.first_suspicious_txn_id}.`;
+
+      // Populate Evidence Checklist
+      const evList = document.getElementById("evidenceItemList");
+      evList.innerHTML = "";
+      if (c.evidence && c.evidence.length > 0) {
+        document.getElementById("evidenceCountBadge").innerText = `${c.evidence.length} Signals Verified ✓`;
+        c.evidence.forEach(ev => {
+          const item = document.createElement("div");
+          item.className = "p-2 rounded bg-slate-950/70 border border-borderMuted/60 text-xs font-mono flex items-start space-x-2";
+          item.innerHTML = `
+            <span class="text-emeraldSafe font-bold text-sm leading-none flex-shrink-0 mt-0.5">✓</span>
+            <div class="flex-1 min-w-0">
+              <div class="text-slate-200 font-semibold text-[11px] leading-tight">${ev.claim}</div>
+              <div class="text-[10px] text-slate-400 mt-1 flex justify-between items-center">
+                <span class="truncate">Ref: <span class="text-cyanAccent">${ev.ref}</span></span>
+                <span class="uppercase text-[9px] px-1 py-0.5 rounded bg-slate-800 text-slate-300 ml-1 flex-shrink-0">${ev.source}</span>
+              </div>
+            </div>
+          `;
+          evList.appendChild(item);
+        });
+      } else {
+        document.getElementById("evidenceCountBadge").innerText = "0 Signals";
+        evList.innerHTML = "<div class='text-slate-500 text-[11px] p-2'>No evidence records compiled yet.</div>";
+      }
+
       // Update Actions
       const actionList = document.getElementById("actionList");
       actionList.innerHTML = "";
@@ -619,13 +669,8 @@
         { id: "card", label: `Card ${cardId}`, x: cx - 60, y: cy - 40, color: "#10B981" },
         { id: "txn", label: `Txn #${data.case.first_suspicious_txn_id}`, x: cx + 80, y: cy - 40, color: data.case.verdict === 'legitimate' ? '#10B981' : '#EF4444' },
         { id: "region", label: `Region ${data.case.pattern === 'out_of_region_use' ? '444.0 (Out)' : 'Home'}`, x: cx + 80, y: cy + 70, color: "#F59E0B" },
-        { id: "device", label: isSyndicate ? "Syndicate HW (52x)" : "Terminal / POS", x: cx + 200, y: cy - 40, color: isSyndicate ? "#EF4444" : "#8B5CF6" }
+        { id: "device", label: isSyndicate ? "Syndicate HW (52x)" : "Terminal / POS", x: cx + 210, y: cy - 40, color: isSyndicate ? "#EF4444" : "#8B5CF6" }
       ];
-
-      if (isSyndicate) {
-        nodes.push({ id: "ring1", label: "Acct C04921", x: cx + 260, y: cy + 60, color: "#EF4444" });
-        nodes.push({ id: "ring2", label: "Acct C11894", x: cx + 260, y: cy - 90, color: "#EF4444" });
-      }
 
       // Edges
       const edges = [
@@ -635,24 +680,49 @@
         { from: nodes[2], to: nodes[4], label: "USED_TERMINAL" }
       ];
 
-      if (isSyndicate) {
-        edges.push({ from: nodes[4], to: nodes[5], label: "SHARED_HW" });
-        edges.push({ from: nodes[4], to: nodes[6], label: "SHARED_HW" });
+      if (data.case.similar_prior_cases && data.case.similar_prior_cases.length > 0) {
+        const pcase = data.case.similar_prior_cases[0];
+        const pnode = { id: "prior", label: `Prior: ${pcase}`, x: cx - 60, y: cy + 70, color: "#C084FC" };
+        nodes.push(pnode);
+        edges.push({ from: nodes[1], to: pnode, label: "PREV_FRAUD" });
       }
 
-      // Render lines
+      if (isSyndicate) {
+        const r1 = { id: "ring1", label: "Acct C04921", x: cx + 270, y: cy + 60, color: "#EF4444" };
+        const r2 = { id: "ring2", label: "Acct C11894", x: cx + 270, y: cy - 90, color: "#EF4444" };
+        nodes.push(r1, r2);
+        edges.push({ from: nodes[4], to: r1, label: "SHARED_HW" });
+        edges.push({ from: nodes[4], to: r2, label: "SHARED_HW" });
+      }
+
+      // Render lines & edge labels
       edges.forEach(e => {
         const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
         line.setAttribute("x1", e.from.x);
         line.setAttribute("y1", e.from.y);
         line.setAttribute("x2", e.to.x);
         line.setAttribute("y2", e.to.y);
-        line.setAttribute("stroke", isSyndicate && (e.label === "SHARED_HW") ? "#EF4444" : "#334155");
-        line.setAttribute("stroke-width", isSyndicate && (e.label === "SHARED_HW") ? "2.5" : "2");
-        if (isSyndicate && e.label === "SHARED_HW") {
+        const isAlertEdge = isSyndicate && (e.label === "SHARED_HW");
+        const isPriorEdge = e.label === "PREV_FRAUD";
+        line.setAttribute("stroke", isAlertEdge ? "#EF4444" : (isPriorEdge ? "#C084FC" : "#334155"));
+        line.setAttribute("stroke-width", isAlertEdge ? "2.5" : "2");
+        if (isAlertEdge || isPriorEdge) {
           line.setAttribute("stroke-dasharray", "4,4");
         }
         svg.appendChild(line);
+
+        // Edge label text at midpoint
+        const midX = (e.from.x + e.to.x) / 2;
+        const midY = (e.from.y + e.to.y) / 2 - 4;
+        const elbl = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        elbl.setAttribute("x", midX);
+        elbl.setAttribute("y", midY);
+        elbl.setAttribute("text-anchor", "middle");
+        elbl.setAttribute("fill", isAlertEdge ? "#EF4444" : (isPriorEdge ? "#C084FC" : "#64748B"));
+        elbl.setAttribute("font-size", "9px");
+        elbl.setAttribute("font-family", "JetBrains Mono");
+        elbl.textContent = e.label;
+        svg.appendChild(elbl);
       });
 
       // Render nodes
