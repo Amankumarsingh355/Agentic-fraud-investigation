@@ -1,0 +1,460 @@
+{
+  "case_id": "TEST-02",
+  "opened_at": "2026-09-21T11:21:30.332501",
+  "closed_at": "2026-09-21T11:21:30.351858",
+  "status": "RESOLVED",
+  "trigger": {
+    "type": "customer_report",
+    "text": "Customer C12982 message: 'I see an unrecognized online purchase of $30.12 following small test transactions. Please check my card.' Refers to 3000196.",
+    "flagged_txn_id": 3000196,
+    "card_id": "C12982-K1",
+    "customer_id": "C12982",
+    "risk_score": 0.14,
+    "timestamp": "2026-09-21T11:21:30.332501"
+  },
+  "risk_assessment": {
+    "fraud_probability": 0.55,
+    "uncertainty_score": 0.6,
+    "confidence_level": "LOW",
+    "has_sufficient_evidence": false,
+    "criteria_breakdown": {
+      "base_signals": [
+        {
+          "signal": "Direct Customer Dispute/Inquiry",
+          "delta": 0.45,
+          "detail": "Customer explicitly questioned or reported the charge."
+        }
+      ],
+      "corroborating_signals": [],
+      "mitigating_signals": [
+        {
+          "signal": "Established Customer History",
+          "delta": -0.1,
+          "detail": "Customer has 262 historical transactions totaling $14,699.92."
+        }
+      ],
+      "evidence_gaps": []
+    },
+    "evidence_gaps": [],
+    "updated_at": "2026-09-21T11:21:30.351750"
+  },
+  "findings": [],
+  "actions": [
+    {
+      "action_id": "ACT-01",
+      "action_name": "MONITOR_CARD",
+      "route": "auto",
+      "status": "EXECUTED",
+      "reason": "Low confidence single signal; keep card active under standard heightened monitoring.",
+      "policy_rule": "Section 1",
+      "side_effects": {
+        "card_id": "C12982-K1",
+        "monitoring_profile": "HEIGHTENED_VELOCITY_72H",
+        "threshold_adjustment": 0.8,
+        "active_until": "72_hours_rolling"
+      },
+      "timestamp": "2026-09-21T11:21:30.351827"
+    }
+  ],
+  "evidence_summary": [
+    {
+      "evidence_id": "EV-001",
+      "type": "customer_baseline",
+      "title": "Cardholder Profile for C12982",
+      "score": null
+    },
+    {
+      "evidence_id": "EV-002",
+      "type": "target_transaction",
+      "title": "Flagged Transaction 3000196 ($ 30.12)",
+      "score": 0.14
+    },
+    {
+      "evidence_id": "EV-003",
+      "type": "velocity_timeline",
+      "title": "Rolling 72-Hour Timeline (1 events)",
+      "score": null
+    },
+    {
+      "evidence_id": "EV-004",
+      "type": "hardware_profile",
+      "title": "Device Fingerprint: Windows | nan | chrome 61.0",
+      "score": null
+    },
+    {
+      "evidence_id": "EV-005",
+      "type": "pattern_signals",
+      "title": "Typology Pattern Recognition Checks",
+      "score": null
+    },
+    {
+      "evidence_id": "EV-006",
+      "type": "hardware_rings",
+      "title": "Shared Hardware Syndicate Ring Discovery",
+      "score": null
+    },
+    {
+      "evidence_id": "EV-007",
+      "type": "policy_citation",
+      "title": "**Rule R1: Verify Before You Block on a Weak Signal**",
+      "score": 0.3071
+    },
+    {
+      "evidence_id": "EV-008",
+      "type": "policy_citation",
+      "title": "Closed Case CC-2791 (confirmed_fraud, card_not_present_fraud)",
+      "score": 0.091
+    },
+    {
+      "evidence_id": "EV-009",
+      "type": "case_precedent",
+      "title": "Precedent Case CC-2004 (confirmed_fraud)",
+      "score": 0.2703
+    },
+    {
+      "evidence_id": "EV-010",
+      "type": "case_precedent",
+      "title": "Precedent Case CC-2897 (confirmed_fraud)",
+      "score": 0.2702
+    }
+  ],
+  "evidence_list": [
+    {
+      "evidence_id": "EV-001",
+      "type": "customer_baseline",
+      "source": "TigerGraph / Customer",
+      "title": "Cardholder Profile for C12982",
+      "details": {
+        "customer_id": "C12982",
+        "total_historical_txns": 262,
+        "total_historical_volume": 14699.92,
+        "home_region": 284.0,
+        "first_seen": "2016-07-02 02:26:37",
+        "last_seen": "2016-12-21 23:44:25"
+      },
+      "score": null,
+      "recorded_at": "2026-09-21T11:21:30.332529"
+    },
+    {
+      "evidence_id": "EV-002",
+      "type": "target_transaction",
+      "source": "TigerGraph / Transaction",
+      "title": "Flagged Transaction 3000196 ($ 30.12)",
+      "details": {
+        "txn_id": 3000196,
+        "customer_id": "C12982",
+        "card_id": "C12982-K1",
+        "amount": 30.12,
+        "ts": "2016-07-02 02:26:37",
+        "channel": "online",
+        "product_cd": "C",
+        "risk_score": 0.14,
+        "addr1": null,
+        "addr2": null,
+        "card_network": "visa",
+        "card_type": "credit",
+        "purchaser_email": "hotmail.com"
+      },
+      "score": 0.14,
+      "recorded_at": "2026-09-21T11:21:30.332540"
+    },
+    {
+      "evidence_id": "EV-003",
+      "type": "velocity_timeline",
+      "source": "TigerGraph / Card History",
+      "title": "Rolling 72-Hour Timeline (1 events)",
+      "details": [
+        {
+          "txn_id": 3000196,
+          "ts": "2016-07-02 02:26:37",
+          "amount": 30.12,
+          "channel": "online",
+          "product_cd": "C",
+          "risk_score": 0.14,
+          "addr1": null,
+          "delta_s": 0.0
+        }
+      ],
+      "score": null,
+      "recorded_at": "2026-09-21T11:21:30.332546"
+    },
+    {
+      "evidence_id": "EV-004",
+      "type": "hardware_profile",
+      "source": "TigerGraph / Device",
+      "title": "Device Fingerprint: Windows | nan | chrome 61.0",
+      "details": {
+        "device_type": "desktop",
+        "device_info": "Windows",
+        "os": "nan",
+        "browser": "chrome 61.0",
+        "screen": "nan",
+        "is_new": false,
+        "proxy_status": "Direct/None",
+        "device_profile": "Windows | nan | chrome 61.0"
+      },
+      "score": null,
+      "recorded_at": "2026-09-21T11:21:30.332553"
+    },
+    {
+      "evidence_id": "EV-005",
+      "type": "pattern_signals",
+      "source": "Pattern Engine",
+      "title": "Typology Pattern Recognition Checks",
+      "details": {
+        "card_testing": {
+          "flagged": false,
+          "micro_count": 0,
+          "large_count": 0
+        },
+        "card_not_present": {
+          "flagged": true,
+          "online_count": 1
+        },
+        "cnp_new_device": {
+          "flagged": false,
+          "is_new": false
+        },
+        "out_of_region": {
+          "flagged": false,
+          "current_region": NaN,
+          "home_region": 284.0
+        },
+        "account_takeover": {
+          "flagged": false,
+          "mixed_channels": false
+        }
+      },
+      "score": null,
+      "recorded_at": "2026-09-21T11:21:30.332561"
+    },
+    {
+      "evidence_id": "EV-006",
+      "type": "hardware_rings",
+      "source": "Graph Ring Algorithms",
+      "title": "Shared Hardware Syndicate Ring Discovery",
+      "details": {
+        "has_shared_ring": false,
+        "connected_customers": [],
+        "ring_size": 1
+      },
+      "score": null,
+      "recorded_at": "2026-09-21T11:21:30.332566"
+    },
+    {
+      "evidence_id": "EV-007",
+      "type": "policy_citation",
+      "source": "Bank Fraud Policy Store",
+      "title": "**Rule R1: Verify Before You Block on a Weak Signal**",
+      "details": "- **Rule R1: Verify Before You Block on a Weak Signal**\n  If an investigation rests on a single signal (such as a model risk score alone) and assessed fraud probability is below 0.70, recommend `VERIFY_WITH_CUSTOMER` or `STEP_UP_AUTH` prior to any card block. Blocking a legitimate customer on uncorr...",
+      "score": 0.3071,
+      "recorded_at": "2026-09-21T11:21:30.342551"
+    },
+    {
+      "evidence_id": "EV-008",
+      "type": "policy_citation",
+      "source": "Bank Fraud Policy Store",
+      "title": "Closed Case CC-2791 (confirmed_fraud, card_not_present_fraud)",
+      "details": "Case CC-2791: cardholder C10957 reported unrecognized activity on card C10957-K2. 1 transaction(s) between 2016-08-30 and 2016-08-30 totaling $12.89 were confirmed fraudulent. Online purchases inconsistent with the cardholder's usual merchants and amounts. Online transactions came from a Windows on ...",
+      "score": 0.091,
+      "recorded_at": "2026-09-21T11:21:30.342571"
+    },
+    {
+      "evidence_id": "EV-009",
+      "type": "case_precedent",
+      "source": "TigerGraph Case Memory (Historical)",
+      "title": "Precedent Case CC-2004 (confirmed_fraud)",
+      "details": "Case CC-2004: cardholder C12982 reported unrecognized activity on card C12982-K1. 6 transaction(s) between 2016-08-09 and 2016-08-10 totaling $85.30 were confirmed fraudulent. Online purchases inconsistent with the cardholder's usual merchants and amounts. Card blocked and reissued. Customer reimbur...",
+      "score": 0.2703,
+      "recorded_at": "2026-09-21T11:21:30.351698"
+    },
+    {
+      "evidence_id": "EV-010",
+      "type": "case_precedent",
+      "source": "TigerGraph Case Memory (Historical)",
+      "title": "Precedent Case CC-2897 (confirmed_fraud)",
+      "details": "Case CC-2897: cardholder C12982 reported unrecognized activity on card C12982-K1. 4 transaction(s) between 2016-08-30 and 2016-09-01 totaling $169.79 were confirmed fraudulent. Online purchases inconsistent with the cardholder's usual merchants and amounts. Card blocked and reissued. Customer reimbu...",
+      "score": 0.2702,
+      "recorded_at": "2026-09-21T11:21:30.351712"
+    }
+  ],
+  "decision_explanation": "### Investigation Summary for Case TEST-02\n**Transaction**: `3000196` | **Amount**: `$30.12` | **Trigger**: `customer_report`\n\n**Assessed Fraud Probability**: `0.55` | **Confidence**: `LOW` (Uncertainty: `0.60`)\n\n#### Traceable Evidence & Reasoning\n- **Trigger Prior**: Direct Customer Dispute/Inquiry (+0.45): Customer explicitly questioned or reported the charge.\n- **Mitigating Signal**: Established Customer History (-0.10): Customer has 262 historical transactions totaling $14,699.92.\n\n#### Policy Gated Actions & Next Steps\n- **MONITOR_CARD** (`auto` - EXECUTED): Low confidence single signal; keep card active under standard heightened monitoring. (Governing: *Section 1*)",
+  "audit_trail": [
+    {
+      "index": 1,
+      "timestamp": "2026-09-21T11:21:30.332514",
+      "stage": "TRIGGER",
+      "event_type": "CASE_OPENED",
+      "description": "Case TEST-02 initialized via customer_report for Txn 3000196 (Customer C12982, Card C12982-K1).",
+      "actor": "SYSTEM_TRIGGER_HANDLER"
+    },
+    {
+      "index": 2,
+      "timestamp": "2026-09-21T11:21:30.332521",
+      "stage": "LIFECYCLE",
+      "event_type": "STATUS_CHANGED",
+      "description": "Status transitioned from OPEN to INVESTIGATING. Initiated graph traversal and entity resolution.",
+      "actor": "AGENT_CORE"
+    },
+    {
+      "index": 3,
+      "timestamp": "2026-09-21T11:21:30.332533",
+      "stage": "GATHER_EVIDENCE",
+      "event_type": "EVIDENCE_ADDED",
+      "description": "Added evidence [EV-001] (customer_baseline): Cardholder Profile for C12982",
+      "actor": "EVIDENCE_COLLECTOR"
+    },
+    {
+      "index": 4,
+      "timestamp": "2026-09-21T11:21:30.332542",
+      "stage": "GATHER_EVIDENCE",
+      "event_type": "EVIDENCE_ADDED",
+      "description": "Added evidence [EV-002] (target_transaction): Flagged Transaction 3000196 ($ 30.12)",
+      "actor": "EVIDENCE_COLLECTOR"
+    },
+    {
+      "index": 5,
+      "timestamp": "2026-09-21T11:21:30.332548",
+      "stage": "GATHER_EVIDENCE",
+      "event_type": "EVIDENCE_ADDED",
+      "description": "Added evidence [EV-003] (velocity_timeline): Rolling 72-Hour Timeline (1 events)",
+      "actor": "EVIDENCE_COLLECTOR"
+    },
+    {
+      "index": 6,
+      "timestamp": "2026-09-21T11:21:30.332555",
+      "stage": "GATHER_EVIDENCE",
+      "event_type": "EVIDENCE_ADDED",
+      "description": "Added evidence [EV-004] (hardware_profile): Device Fingerprint: Windows | nan | chrome 61.0",
+      "actor": "EVIDENCE_COLLECTOR"
+    },
+    {
+      "index": 7,
+      "timestamp": "2026-09-21T11:21:30.332557",
+      "stage": "LIFECYCLE",
+      "event_type": "STATUS_CHANGED",
+      "description": "Status transitioned from INVESTIGATING to GATHER_EVIDENCE. Extracting pattern typologies, syndicate rings, and precedents.",
+      "actor": "AGENT_CORE"
+    },
+    {
+      "index": 8,
+      "timestamp": "2026-09-21T11:21:30.332563",
+      "stage": "GATHER_EVIDENCE",
+      "event_type": "EVIDENCE_ADDED",
+      "description": "Added evidence [EV-005] (pattern_signals): Typology Pattern Recognition Checks",
+      "actor": "EVIDENCE_COLLECTOR"
+    },
+    {
+      "index": 9,
+      "timestamp": "2026-09-21T11:21:30.332568",
+      "stage": "GATHER_EVIDENCE",
+      "event_type": "EVIDENCE_ADDED",
+      "description": "Added evidence [EV-006] (hardware_rings): Shared Hardware Syndicate Ring Discovery",
+      "actor": "EVIDENCE_COLLECTOR"
+    },
+    {
+      "index": 10,
+      "timestamp": "2026-09-21T11:21:30.342566",
+      "stage": "GATHER_EVIDENCE",
+      "event_type": "EVIDENCE_ADDED",
+      "description": "Added evidence [EV-007] (policy_citation): **Rule R1: Verify Before You Block on a Weak Signal**",
+      "actor": "EVIDENCE_COLLECTOR"
+    },
+    {
+      "index": 11,
+      "timestamp": "2026-09-21T11:21:30.342574",
+      "stage": "GATHER_EVIDENCE",
+      "event_type": "EVIDENCE_ADDED",
+      "description": "Added evidence [EV-008] (policy_citation): Closed Case CC-2791 (confirmed_fraud, card_not_present_fraud)",
+      "actor": "EVIDENCE_COLLECTOR"
+    },
+    {
+      "index": 12,
+      "timestamp": "2026-09-21T11:21:30.351707",
+      "stage": "GATHER_EVIDENCE",
+      "event_type": "EVIDENCE_ADDED",
+      "description": "Added evidence [EV-009] (case_precedent): Precedent Case CC-2004 (confirmed_fraud)",
+      "actor": "EVIDENCE_COLLECTOR"
+    },
+    {
+      "index": 13,
+      "timestamp": "2026-09-21T11:21:30.351714",
+      "stage": "GATHER_EVIDENCE",
+      "event_type": "EVIDENCE_ADDED",
+      "description": "Added evidence [EV-010] (case_precedent): Precedent Case CC-2897 (confirmed_fraud)",
+      "actor": "EVIDENCE_COLLECTOR"
+    },
+    {
+      "index": 14,
+      "timestamp": "2026-09-21T11:21:30.351757",
+      "stage": "ASSESS_UNCERTAINTY",
+      "event_type": "RISK_ASSESSMENT_UPDATED",
+      "description": "Assessed Fraud Probability=0.55, Confidence=LOW (Uncertainty=0.60). Sufficient Evidence to Act=False.",
+      "actor": "UNCERTAINTY_ENGINE"
+    },
+    {
+      "index": 15,
+      "timestamp": "2026-09-21T11:21:30.351762",
+      "stage": "LIFECYCLE",
+      "event_type": "STATUS_CHANGED",
+      "description": "Status transitioned from GATHER_EVIDENCE to EVIDENCE_PENDING. Uncertainty exceeds threshold; initiating controlled evidence gathering.",
+      "actor": "AGENT_CORE"
+    },
+    {
+      "index": 16,
+      "timestamp": "2026-09-21T11:21:30.351765",
+      "stage": "GATHER_MORE_EVIDENCE",
+      "event_type": "DISPATCH_CUSTOMER_VERIFICATION",
+      "description": "Triggered autonomous VERIFY_WITH_CUSTOMER (Rule R1: Verify Before You Block).",
+      "actor": "AGENT_CORE"
+    },
+    {
+      "index": 17,
+      "timestamp": "2026-09-21T11:21:30.351768",
+      "stage": "LIFECYCLE",
+      "event_type": "STATUS_CHANGED",
+      "description": "Status transitioned from EVIDENCE_PENDING to RECOMMENDING_ACTIONS. Evaluating policy rules and assigning authority routes.",
+      "actor": "AGENT_CORE"
+    },
+    {
+      "index": 18,
+      "timestamp": "2026-09-21T11:21:30.351830",
+      "stage": "EXECUTE_ACTIONS",
+      "event_type": "ACTION_RECORDED",
+      "description": "Action MONITOR_CARD [EXECUTED] via route 'auto'. Rule: Section 1. Reason: Low confidence single signal; keep card active under standard heightened monitoring.",
+      "actor": "POLICY_ROUTER"
+    },
+    {
+      "index": 19,
+      "timestamp": "2026-09-21T11:21:30.351833",
+      "stage": "LIFECYCLE",
+      "event_type": "STATUS_CHANGED",
+      "description": "Status transitioned from RECOMMENDING_ACTIONS to EXPLAINING_DECISION. Generating comprehensive policy-grounded rationale.",
+      "actor": "AGENT_CORE"
+    },
+    {
+      "index": 20,
+      "timestamp": "2026-09-21T11:21:30.351852",
+      "stage": "EXPLAIN_DECISION",
+      "event_type": "EXPLANATION_GENERATED",
+      "description": "Generated full audit-compliant rationale for case adjudication.",
+      "actor": "EXPLANATION_ENGINE"
+    },
+    {
+      "index": 21,
+      "timestamp": "2026-09-21T11:21:30.351861",
+      "stage": "LIFECYCLE",
+      "event_type": "STATUS_CHANGED",
+      "description": "Status transitioned from EXPLAINING_DECISION to RESOLVED. Investigation completed and policy actions executed.",
+      "actor": "AGENT_CORE"
+    },
+    {
+      "index": 22,
+      "timestamp": "2026-09-21T11:21:30.351863",
+      "stage": "UPDATE_CASE_MEMORY",
+      "event_type": "CASE_PERSISTED",
+      "description": "Case TEST-02 state committed to memory (Namespace: case_memory).",
+      "actor": "CASE_MEMORY_MANAGER"
+    }
+  ]
+}
