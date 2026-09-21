@@ -1,6 +1,30 @@
 {
-  "flagged_devices": {},
-  "flagged_proxies": {},
+  "flagged_devices": {
+    "SM-G935F Build/NRD90M | Android 7.0 | chrome 62.0 for android | 1920x1080": {
+      "first_case_id": "HHG-014",
+      "associated_cases": [
+        "HHG-014"
+      ],
+      "case_count": 1,
+      "pattern": "syndicate_ring",
+      "first_flagged_at": "2026-09-21T11:34:02.862976",
+      "last_flagged_at": "2026-09-21T11:34:02.862976",
+      "notes": "Confirmed fraud in Case HHG-014: syndicate_ring ($74.96)"
+    }
+  },
+  "flagged_proxies": {
+    "IP_PROXY:ANONYMOUS": {
+      "first_case_id": "HHG-014",
+      "associated_cases": [
+        "HHG-014"
+      ],
+      "case_count": 1,
+      "pattern": "syndicate_ring",
+      "first_flagged_at": "2026-09-21T11:34:02.863701",
+      "last_flagged_at": "2026-09-21T11:34:02.863701",
+      "notes": "Confirmed anonymous proxy in Case HHG-014"
+    }
+  },
   "novel_patterns": {},
-  "last_updated": "2026-09-21T11:29:04.442451"
+  "last_updated": "2026-09-21T11:34:02.863884"
 }

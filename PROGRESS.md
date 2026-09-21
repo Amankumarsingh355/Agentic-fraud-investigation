@@ -11,32 +11,36 @@
 | **Phase 4** | **GraphRAG Layer & MCP Tools** | **COMPLETED** | Multi-hop subgraph extractor, policy vector retrieval, structured LLM-ready markdown dossiers synthesized, MCP server exposing 6 tools, gate tested on 3 sample transactions in `docs/graphrag-test-report.md`. |
 | **Phase 5** | **Agent Core: Investigation Loop** | **COMPLETED** | Stateful 8-stage investigation loop, inspectable uncertainty/confidence engine, strict policy gating (`auto`, `L1`, `L2`), realistic action stubs, gate passed across 3 non-benchmark cases in `docs/phase5-agent-report.md`. |
 | **Phase 6** | **Case Memory & Dynamic Knowledge Feedback** | **COMPLETED** | Graph persistence of case outcomes, hybrid case memory retrieval, pattern library feedback registry, gate verified: running same type of case twice retrieves memory from first run in `docs/phase6-memory-report.md`. |
-| **Phase 7** | **Decision Engine & Next Best Action Evolution** | Planned | Two-stage action progression (`initial` vs `final`), `what_changed`, and FinCEN SAR 6-question narrative generator. |
+| **Phase 7** | **Explainability & Output Format** | **COMPLETED** | Exact 3-part JSON submission format (`case`, `sar`, `next_best_actions`), two-stage action evolution (`initial` vs `final` + `what_changed`), FinCEN SAR 6-question narrative generator, graph persistence confirmed, gate passed with 0 schema errors in `docs/phase7-output-format-report.md`. |
 | **Phase 8** | **Benchmark Evaluation (20 Cases)** | Planned | Execute agent across all 20 benchmark cases and output schema-validated `cases/<case_id>.json`. |
 | **Phase 9** | **Interactive UI / Dashboard** | Planned | Analyst dashboard with graph visualization, progression timeline, and action approval. |
 | **Phase 10** | **Submission Deliverables & Final Polish** | Planned | Technical blog post, demo script/video, social media post, and code audit. |
 
 ---
 
-## Phase 6 Detail Log: Case Memory & Dynamic Knowledge Feedback
+## Phase 7 Detail Log: Explainability & Exact Output Format
 
-- **Dynamic Case Memory Manager (`graph/case_memory.py`)**:
-  - Implemented dynamic graph persistence for resolved cases:
-    - **Vertices**: `Case` (status, outcome, pattern, exposure, is_benchmark, narrative) and `Evidence` entities.
-    - **Edges**: `PART_OF_CASE` (from Transaction), `INVESTIGATED_CARD` (to Card), `INVESTIGATED_CUSTOMER` (to Customer), `ATTACHED_EVIDENCE` (to Evidence), `APPLIED_POLICY` (to PolicyRule).
-    - Persisted into `data/dynamic_case_memory.json` maintaining strict benchmark isolation (`eval_benchmark` excluded).
-- **Hybrid Case Memory Retrieval Engine (`graph/similar_cases_engine.py`)**:
-  - Upgraded to search across both 5,565 static historical cases and newly resolved dynamic cases.
-  - Computes blended score: $0.5 \times \text{VectorSemantic} + 0.5 \times \text{GraphStructural}$, matching on pattern, customer, exposure proximity, and dynamic recency boost.
-- **Pattern Library Dynamic Feedback Registry (`graph/pattern_registry.py`)**:
-  - Automatically feeds confirmed fraudulent entities (hardware profiles, proxy IPs, novel patterns) back into the pattern library stored in `data/pattern_registry.json`.
-  - Informs subsequent investigations when identical devices or entities reappear across cardholder accounts.
-- **Phase 6 Verification Gate (`agent/test_memory_gate.py`)**:
-  - Tested running the same type of case twice:
-    - **Run 1 (`MEM-RUN-1` / Txn `3000332`)**: Out-of-region in-person spend ($117.05). Customer denied charge; case resolved as confirmed fraud and persisted to dynamic graph memory.
-    - **Run 2 (`MEM-RUN-2` / Txn `3000906`)**: Subsequent out-of-region in-person spend ($226.01).
-    - **Memory Recall Verification**:
-      - `MEM-RUN-1` was dynamically retrieved as the **#1 Top Precedent** (Score `0.55`), outscoring all 5,565 historical static cases!
-      - Added to Case 2 evidence list under `[DYNAMIC MEMORY] Precedent Case MEM-RUN-1`.
-      - Explicitly cited in Case 2 decision explanation under `Case Memory Precedents Informing Decision`.
-  - Detailed report saved to `docs/phase6-memory-report.md`.
+- **Exact 3-Part Submission Schema Formatter (`agent/case_formatter.py`)**:
+  - Implemented strict translation and validation logic conforming to README.md specifications:
+    1. **Part 1 (`case`)**: `status`, `verdict`, `fraud_probability`, `pattern`, `pattern_description`, `affected_txn_ids`, `first_suspicious_txn_id`, `connected_card_ids`, `connected_device_profiles`, `exposure_usd`, `evidence` (each with `claim`, `source`, `ref`, `entity_ids`), `similar_prior_cases`, `summary`, `written_to_graph`, `graph_case_id`.
+    2. **Part 2 (`sar`)**: FinCEN Suspicious Activity Report block (`file`, `reason`, `narrative`, `subjects`, `total_amount_usd`, `activity_dates`). Strictly formatted: when `file == false`, fields are empty (`""`, `[]`, `0`, `[]`).
+    3. **Part 3 (`next_best_actions`)**: Two-stage progression (`initial`, `final`, and `what_changed`), with actions, approval routes (`auto`, `L1`, `L2`), and rule justifications.
+  - Implemented comprehensive `validate_schema()` asserting 100% compliance on enums, ranges, and cross-field constraints.
+- **FinCEN SAR 6-Question Compliance Generator (`agent/sar_generator.py`)**:
+  - Automatically synthesizes complete regulatory narratives answering **Who, What, When, Where, How, and Why** (6 to 12 sentences).
+  - Resolves subject IDs (customer, card, connected syndicate cards, device profile) and active date windows.
+- **Two-Stage Decision Evolution Engine (`agent/decision_engine.py`)**:
+  - Formulates initial recommendations before evidence gathering (e.g. `VERIFY_WITH_CUSTOMER`, `MONITOR_CARD`).
+  - Dispatches controlled evidence requests (`customer_validation`, `step_up_auth`, `analyst_info`) with explicit assumed responses.
+  - Formulates final recommendations after evidence (e.g. `BLOCK_CARD`, `CREATE_CASE`, `FILE_REPORT`).
+  - Summarizes the decision delta in `what_changed`.
+- **Phase 7 Verification Gate (`agent/test_output_format.py`)**:
+  - Validated sample case `HHG-001` (Txn `3514030`):
+    - Status: `closed_fraud`, Verdict: `fraud`, Fraud Prob: `0.98`, Pattern: `out_of_region_use`.
+    - Next Best Actions: 3 initial (`CREATE_CASE`, `VERIFY_WITH_CUSTOMER`, `MONITOR_CARD`) $\rightarrow$ 2 final (`CREATE_CASE`, `BLOCK_CARD`).
+    - What Changed: *"Customer denial raised fraud probability from 0.71 to 0.98, confirming the need for permanent card block and fraud case creation."*
+    - Written to Graph: `True` (`CASE-3514030`).
+    - Schema Validation: **0 errors**, 100% compliant with README requirements.
+  - Validated SAR generation on syndicate case `HHG-014` (Txn `3478561`):
+    - `sar.file = True`, Rule R6 triggered, 8 subjects resolved, full 6-question narrative generated with **0 validation errors**.
+  - Detailed report saved to `docs/phase7-output-format-report.md`.

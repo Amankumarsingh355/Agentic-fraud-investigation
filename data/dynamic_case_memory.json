@@ -364,5 +364,387 @@
       ]
     },
     "persisted_at": "2026-09-21T11:29:04.676159"
+  },
+  "HHG-001": {
+    "case_id": "HHG-001",
+    "outcome": "confirmed_fraud",
+    "pattern": "out_of_region_use",
+    "exposure_usd": 77.07,
+    "customer_id": "C12382",
+    "card_id": "C12382-K1",
+    "flagged_txn_id": 3514030,
+    "is_benchmark": true,
+    "namespace": "eval_benchmark",
+    "narrative": "### Investigation Summary for Case HHG-001\n**Transaction**: `3514030` | **Amount**: `$77.07` | **Trigger**: `risk_score`\n\n**Assessed Fraud Probability**: `0.98` | **Confidence**: `HIGH` (Uncertainty: `0.02`)\n\n#### Traceable Evidence & Reasoning\n- **Trigger Prior**: Bank Risk Model Score (0.61) (+0.41): Real-time automated transaction scoring model.\n- **Corroborating Signal**: Out-of-Region In-Person POS (+0.20): Physical card used in region 444.0 away from established home 204.0.\n- **Corroborating Signal**: Explicit Customer Denial of Charge (Rule R2) (+0.90): Cardholder explicitly stated they did not authorize this purchase.\n- **Mitigating Signal**: Established Customer History (-0.10): Customer has 422 historical transactions totaling $48,783.68.\n\n#### Case Memory Precedents Informing Decision\n- **[DYNAMIC MEMORY] Precedent Case MEM-RUN-1 (confirmed_fraud, out_of_region_use)** (Score: 0.55 | Source: *TigerGraph Dynamic Case Memory*):\n  \"### Investigation Summary for Case MEM-RUN-1\n**Transaction**: `3000332` | **Amount**: `$117.05` | **Trigger**: `risk_score`\n\n**Assessed Fraud Probability**: `0.98` | **Confidence**: `HIGH` (Uncertaint...\"\n- **Precedent Case CC-1541 (confirmed_fraud, out_of_region_use)** (Score: 0.4891 | Source: *TigerGraph Case Memory (Historical)*):\n  \"Case CC-1541: cardholder C02250 reported unrecognized activity on card C02250-K2. 1 transaction(s) between 2016-08-01 and 2016-08-01 totaling $77.02 were confirmed fraudulent. Card-present use in a bi...\"\n- **Precedent Case CC-2923 (confirmed_fraud, out_of_region_use)** (Score: 0.4869 | Source: *TigerGraph Case Memory (Historical)*):\n  \"Case CC-2923: cardholder C00088 reported unrecognized activity on card C00088-K1. 1 transaction(s) between 2016-08-31 and 2016-08-31 totaling $77.00 were confirmed fraudulent. Card-present use in a bi...\"\n\n#### Policy Gated Actions & Next Steps\n- **CREATE_CASE** (`auto` - EXECUTED): Customer explicitly denied transaction. Open formal fraud case. (Governing: *Rule R2*)\n- **BLOCK_CARD** (`L1` - PENDING_HUMAN_APPROVAL): Compromised card replacement required for customer-reported fraud ($77.07 exposure). (Governing: *Rule R2*)",
+    "actions_taken": [
+      "CREATE_CASE",
+      "BLOCK_CARD"
+    ],
+    "graph_vertices": {
+      "Case": {
+        "case_id": "HHG-001",
+        "opened_at": "2026-09-21T11:33:11.213031",
+        "closed_at": "2026-09-21T11:33:11.256930",
+        "status": "RESOLVED",
+        "outcome": "confirmed_fraud",
+        "pattern": "out_of_region_use",
+        "exposure_usd": 77.07,
+        "is_benchmark": true,
+        "namespace": "eval_benchmark",
+        "narrative": "### Investigation Summary for Case HHG-001\n**Transaction**: `3514030` | **Amount**: `$77.07` | **Trigger**: `risk_score`\n\n**Assessed Fraud Probability**: `0.98` | **Confidence**: `HIGH` (Uncertainty: `0.02`)\n\n#### Traceable Evidence & Reasoning\n- **Trigger Prior**: Bank Risk Model Score (0.61) (+0.41): Real-time automated transaction scoring model.\n- **Corroborating Signal**: Out-of-Region In-Person POS (+0.20): Physical card used in region 444.0 away from established home 204.0.\n- **Corroborating Signal**: Explicit Customer Denial of Charge (Rule R2) (+0.90): Cardholder explicitly stated they did not authorize this purchase.\n- **Mitigating Signal**: Established Customer History (-0.10): Customer has 422 historical transactions totaling $48,783.68.\n\n#### Case Memory Precedents Informing Decision\n- **[DYNAMIC MEMORY] Precedent Case MEM-RUN-1 (confirmed_fraud, out_of_region_use)** (Score: 0.55 | Source: *TigerGraph Dynamic Case Memory*):\n  \"### Investigation Summary for Case MEM-RUN-1\n**Transaction**: `3000332` | **Amount**: `$117.05` | **Trigger**: `risk_score`\n\n**Assessed Fraud Probability**: `0.98` | **Confidence**: `HIGH` (Uncertaint...\"\n- **Precedent Case CC-1541 (confirmed_fraud, out_of_region_use)** (Score: 0.4891 | Source: *TigerGraph Case Memory (Historical)*):\n  \"Case CC-1541: cardholder C02250 reported unrecognized activity on card C02250-K2. 1 transaction(s) between 2016-08-01 and 2016-08-01 totaling $77.02 were confirmed fraudulent. Card-present use in a bi...\"\n- **Precedent Case CC-2923 (confirmed_fraud, out_of_region_use)** (Score: 0.4869 | Source: *TigerGraph Case Memory (Historical)*):\n  \"Case CC-2923: cardholder C00088 reported unrecognized activity on card C00088-K1. 1 transaction(s) between 2016-08-31 and 2016-08-31 totaling $77.00 were confirmed fraudulent. Card-present use in a bi...\"\n\n#### Policy Gated Actions & Next Steps\n- **CREATE_CASE** (`auto` - EXECUTED): Customer explicitly denied transaction. Open formal fraud case. (Governing: *Rule R2*)\n- **BLOCK_CARD** (`L1` - PENDING_HUMAN_APPROVAL): Compromised card replacement required for customer-reported fraud ($77.07 exposure). (Governing: *Rule R2*)"
+      },
+      "Evidence": [
+        {
+          "evidence_id": "HHG-001-EV-001",
+          "evidence_type": "customer_baseline",
+          "source": "TigerGraph / Customer",
+          "title": "Cardholder Profile for C12382",
+          "score": null
+        },
+        {
+          "evidence_id": "HHG-001-EV-002",
+          "evidence_type": "target_transaction",
+          "source": "TigerGraph / Transaction",
+          "title": "Flagged Transaction 3514030 ($ 77.07)",
+          "score": 0.61
+        },
+        {
+          "evidence_id": "HHG-001-EV-003",
+          "evidence_type": "velocity_timeline",
+          "source": "TigerGraph / Card History",
+          "title": "Rolling 72-Hour Timeline (8 events)",
+          "score": null
+        },
+        {
+          "evidence_id": "HHG-001-EV-004",
+          "evidence_type": "pattern_signals",
+          "source": "Pattern Engine",
+          "title": "Typology Pattern Recognition Checks",
+          "score": null
+        },
+        {
+          "evidence_id": "HHG-001-EV-005",
+          "evidence_type": "hardware_rings",
+          "source": "Graph Ring Algorithms",
+          "title": "Shared Hardware Syndicate Ring Discovery",
+          "score": null
+        },
+        {
+          "evidence_id": "HHG-001-EV-006",
+          "evidence_type": "policy_citation",
+          "source": "Bank Fraud Policy Store",
+          "title": "**Rule R1: Verify Before You Block on a Weak Signal**",
+          "score": 0.2939
+        },
+        {
+          "evidence_id": "HHG-001-EV-007",
+          "evidence_type": "policy_citation",
+          "source": "Bank Fraud Policy Store",
+          "title": "Closed Case CC-1541 (confirmed_fraud, out_of_region_use)",
+          "score": 0.091
+        },
+        {
+          "evidence_id": "HHG-001-EV-008",
+          "evidence_type": "case_precedent",
+          "source": "TigerGraph Dynamic Case Memory",
+          "title": "[DYNAMIC MEMORY] Precedent Case MEM-RUN-1 (confirmed_fraud, out_of_region_use)",
+          "score": 0.55
+        },
+        {
+          "evidence_id": "HHG-001-EV-009",
+          "evidence_type": "case_precedent",
+          "source": "TigerGraph Case Memory (Historical)",
+          "title": "Precedent Case CC-1541 (confirmed_fraud, out_of_region_use)",
+          "score": 0.4891
+        },
+        {
+          "evidence_id": "HHG-001-EV-010",
+          "evidence_type": "case_precedent",
+          "source": "TigerGraph Case Memory (Historical)",
+          "title": "Precedent Case CC-2923 (confirmed_fraud, out_of_region_use)",
+          "score": 0.4869
+        },
+        {
+          "evidence_id": "HHG-001-EV-011",
+          "evidence_type": "customer_verification_response",
+          "source": "Cardholder SMS/Push Channel",
+          "title": "Customer Verification Response: denied_fraud",
+          "score": null
+        }
+      ]
+    },
+    "graph_edges": {
+      "PART_OF_CASE": [
+        {
+          "from": 3514030,
+          "to": "HHG-001"
+        }
+      ],
+      "INVESTIGATED_CARD": [
+        {
+          "from": "HHG-001",
+          "to": "C12382-K1"
+        }
+      ],
+      "INVESTIGATED_CUSTOMER": [
+        {
+          "from": "HHG-001",
+          "to": "C12382"
+        }
+      ],
+      "ATTACHED_EVIDENCE": [
+        {
+          "from": "HHG-001",
+          "to": "HHG-001-EV-001"
+        },
+        {
+          "from": "HHG-001",
+          "to": "HHG-001-EV-002"
+        },
+        {
+          "from": "HHG-001",
+          "to": "HHG-001-EV-003"
+        },
+        {
+          "from": "HHG-001",
+          "to": "HHG-001-EV-004"
+        },
+        {
+          "from": "HHG-001",
+          "to": "HHG-001-EV-005"
+        },
+        {
+          "from": "HHG-001",
+          "to": "HHG-001-EV-006"
+        },
+        {
+          "from": "HHG-001",
+          "to": "HHG-001-EV-007"
+        },
+        {
+          "from": "HHG-001",
+          "to": "HHG-001-EV-008"
+        },
+        {
+          "from": "HHG-001",
+          "to": "HHG-001-EV-009"
+        },
+        {
+          "from": "HHG-001",
+          "to": "HHG-001-EV-010"
+        },
+        {
+          "from": "HHG-001",
+          "to": "HHG-001-EV-011"
+        }
+      ],
+      "APPLIED_POLICY": [
+        {
+          "from": "HHG-001",
+          "to": "Rule R2"
+        },
+        {
+          "from": "HHG-001",
+          "to": "Rule R2"
+        }
+      ]
+    },
+    "persisted_at": "2026-09-21T11:33:11.256962"
+  },
+  "HHG-014": {
+    "case_id": "HHG-014",
+    "outcome": "confirmed_fraud",
+    "pattern": "syndicate_ring",
+    "exposure_usd": 74.96,
+    "customer_id": "C13487",
+    "card_id": "C13487-K1",
+    "flagged_txn_id": 3478561,
+    "is_benchmark": true,
+    "namespace": "eval_benchmark",
+    "narrative": "### Investigation Summary for Case HHG-014\n**Transaction**: `3478561` | **Amount**: `$74.96` | **Trigger**: `analyst_request`\n\n**Assessed Fraud Probability**: `0.99` | **Confidence**: `HIGH` (Uncertainty: `0.10`)\n\n#### Traceable Evidence & Reasoning\n- **Trigger Prior**: Analyst Flagged Investigation (+0.30): Case routed by human analyst investigating unusual activity or shared devices.\n- **Corroborating Signal**: New Hardware Device Profile (+0.15): Online session from unfamiliar hardware signature: SM-G935F Build/NRD90M | Android 7.0 | chrome 62.0 for android | 1920x1080.\n- **Corroborating Signal**: Anonymous Proxy / VPN Connection (+0.15): Identity record reveals proxy type IP_PROXY:ANONYMOUS.\n- **Corroborating Signal**: Syndicate Device Ring (52 connected accounts) (+0.35): Hardware profile is shared across 52 separate customer accounts: ['C03744', 'C09354', 'C12033', 'C09174', 'C01935'].\n- **Mitigating Signal**: Established Customer History (-0.10): Customer has 85 historical transactions totaling $4,881.62.\n\n#### Case Memory Precedents Informing Decision\n- **Precedent Case CC-0595 (confirmed_fraud, card_not_present_new_device)** (Score: 0.5174 | Source: *TigerGraph Case Memory (Historical)*):\n  \"Case CC-0595: cardholder C04865 reported unrecognized activity on card C04865-K1. 1 transaction(s) between 2016-07-15 and 2016-07-15 totaling $74.96 were confirmed fraudulent. Online purchases from a ...\"\n- **Precedent Case CC-2710 (confirmed_fraud, card_not_present_new_device)** (Score: 0.5144 | Source: *TigerGraph Case Memory (Historical)*):\n  \"Case CC-2710: cardholder C11871 reported unrecognized activity on card C11871-K1. 1 transaction(s) between 2016-08-28 and 2016-08-28 totaling $74.96 were confirmed fraudulent. Online purchases from a ...\"\n- **Precedent Case CC-0710 (confirmed_fraud, card_not_present_new_device)** (Score: 0.5128 | Source: *TigerGraph Case Memory (Historical)*):\n  \"Case CC-0710: cardholder C07311 reported unrecognized activity on card C07311-K1. 1 transaction(s) between 2016-07-17 and 2016-07-17 totaling $74.96 were confirmed fraudulent. Online purchases from a ...\"\n\n#### Policy Gated Actions & Next Steps\n- **CREATE_CASE** (`auto` - EXECUTED): Syndicate fraud ring detected: hardware profile shared across 52 distinct accounts. (Governing: *Rule R6*)\n- **FILE_REPORT** (`L2` - PENDING_HUMAN_APPROVAL): Mandatory SAR filing for organized cross-account syndicate (52 connected customers). (Governing: *Rule R6*)\n- **MONITOR_CONNECTED_CARDS** (`auto` - EXECUTED): Heighten monitoring on all 5 peer cards sharing this hardware. (Governing: *Rule R6*)\n- **BLOCK_CARD** (`L1` - PENDING_HUMAN_APPROVAL): Block compromised target card identified in confirmed syndicate. (Governing: *Rule R6*)",
+    "actions_taken": [
+      "CREATE_CASE",
+      "FILE_REPORT",
+      "MONITOR_CONNECTED_CARDS",
+      "BLOCK_CARD"
+    ],
+    "graph_vertices": {
+      "Case": {
+        "case_id": "HHG-014",
+        "opened_at": "2026-09-21T11:34:02.808950",
+        "closed_at": "2026-09-21T11:34:02.860717",
+        "status": "RESOLVED",
+        "outcome": "confirmed_fraud",
+        "pattern": "syndicate_ring",
+        "exposure_usd": 74.96,
+        "is_benchmark": true,
+        "namespace": "eval_benchmark",
+        "narrative": "### Investigation Summary for Case HHG-014\n**Transaction**: `3478561` | **Amount**: `$74.96` | **Trigger**: `analyst_request`\n\n**Assessed Fraud Probability**: `0.99` | **Confidence**: `HIGH` (Uncertainty: `0.10`)\n\n#### Traceable Evidence & Reasoning\n- **Trigger Prior**: Analyst Flagged Investigation (+0.30): Case routed by human analyst investigating unusual activity or shared devices.\n- **Corroborating Signal**: New Hardware Device Profile (+0.15): Online session from unfamiliar hardware signature: SM-G935F Build/NRD90M | Android 7.0 | chrome 62.0 for android | 1920x1080.\n- **Corroborating Signal**: Anonymous Proxy / VPN Connection (+0.15): Identity record reveals proxy type IP_PROXY:ANONYMOUS.\n- **Corroborating Signal**: Syndicate Device Ring (52 connected accounts) (+0.35): Hardware profile is shared across 52 separate customer accounts: ['C03744', 'C09354', 'C12033', 'C09174', 'C01935'].\n- **Mitigating Signal**: Established Customer History (-0.10): Customer has 85 historical transactions totaling $4,881.62.\n\n#### Case Memory Precedents Informing Decision\n- **Precedent Case CC-0595 (confirmed_fraud, card_not_present_new_device)** (Score: 0.5174 | Source: *TigerGraph Case Memory (Historical)*):\n  \"Case CC-0595: cardholder C04865 reported unrecognized activity on card C04865-K1. 1 transaction(s) between 2016-07-15 and 2016-07-15 totaling $74.96 were confirmed fraudulent. Online purchases from a ...\"\n- **Precedent Case CC-2710 (confirmed_fraud, card_not_present_new_device)** (Score: 0.5144 | Source: *TigerGraph Case Memory (Historical)*):\n  \"Case CC-2710: cardholder C11871 reported unrecognized activity on card C11871-K1. 1 transaction(s) between 2016-08-28 and 2016-08-28 totaling $74.96 were confirmed fraudulent. Online purchases from a ...\"\n- **Precedent Case CC-0710 (confirmed_fraud, card_not_present_new_device)** (Score: 0.5128 | Source: *TigerGraph Case Memory (Historical)*):\n  \"Case CC-0710: cardholder C07311 reported unrecognized activity on card C07311-K1. 1 transaction(s) between 2016-07-17 and 2016-07-17 totaling $74.96 were confirmed fraudulent. Online purchases from a ...\"\n\n#### Policy Gated Actions & Next Steps\n- **CREATE_CASE** (`auto` - EXECUTED): Syndicate fraud ring detected: hardware profile shared across 52 distinct accounts. (Governing: *Rule R6*)\n- **FILE_REPORT** (`L2` - PENDING_HUMAN_APPROVAL): Mandatory SAR filing for organized cross-account syndicate (52 connected customers). (Governing: *Rule R6*)\n- **MONITOR_CONNECTED_CARDS** (`auto` - EXECUTED): Heighten monitoring on all 5 peer cards sharing this hardware. (Governing: *Rule R6*)\n- **BLOCK_CARD** (`L1` - PENDING_HUMAN_APPROVAL): Block compromised target card identified in confirmed syndicate. (Governing: *Rule R6*)"
+      },
+      "Evidence": [
+        {
+          "evidence_id": "HHG-014-EV-001",
+          "evidence_type": "customer_baseline",
+          "source": "TigerGraph / Customer",
+          "title": "Cardholder Profile for C13487",
+          "score": null
+        },
+        {
+          "evidence_id": "HHG-014-EV-002",
+          "evidence_type": "target_transaction",
+          "source": "TigerGraph / Transaction",
+          "title": "Flagged Transaction 3478561 ($ 74.96)",
+          "score": 0.05
+        },
+        {
+          "evidence_id": "HHG-014-EV-003",
+          "evidence_type": "velocity_timeline",
+          "source": "TigerGraph / Card History",
+          "title": "Rolling 72-Hour Timeline (2 events)",
+          "score": null
+        },
+        {
+          "evidence_id": "HHG-014-EV-004",
+          "evidence_type": "hardware_profile",
+          "source": "TigerGraph / Device",
+          "title": "Device Fingerprint: SM-G935F Build/NRD90M | Android 7.0 | chrome 62.0 for android | 1920x1080",
+          "score": null
+        },
+        {
+          "evidence_id": "HHG-014-EV-005",
+          "evidence_type": "pattern_signals",
+          "source": "Pattern Engine",
+          "title": "Typology Pattern Recognition Checks",
+          "score": null
+        },
+        {
+          "evidence_id": "HHG-014-EV-006",
+          "evidence_type": "hardware_rings",
+          "source": "Graph Ring Algorithms",
+          "title": "Shared Hardware Syndicate Ring Discovery",
+          "score": null
+        },
+        {
+          "evidence_id": "HHG-014-EV-007",
+          "evidence_type": "policy_citation",
+          "source": "Bank Fraud Policy Store",
+          "title": "**Rule R1: Verify Before You Block on a Weak Signal**",
+          "score": 0.2524
+        },
+        {
+          "evidence_id": "HHG-014-EV-008",
+          "evidence_type": "policy_citation",
+          "source": "Bank Fraud Policy Store",
+          "title": "Closed Case CC-4968 (cleared, none)",
+          "score": 0.2117
+        },
+        {
+          "evidence_id": "HHG-014-EV-009",
+          "evidence_type": "case_precedent",
+          "source": "TigerGraph Case Memory (Historical)",
+          "title": "Precedent Case CC-0595 (confirmed_fraud, card_not_present_new_device)",
+          "score": 0.5174
+        },
+        {
+          "evidence_id": "HHG-014-EV-010",
+          "evidence_type": "case_precedent",
+          "source": "TigerGraph Case Memory (Historical)",
+          "title": "Precedent Case CC-2710 (confirmed_fraud, card_not_present_new_device)",
+          "score": 0.5144
+        },
+        {
+          "evidence_id": "HHG-014-EV-011",
+          "evidence_type": "case_precedent",
+          "source": "TigerGraph Case Memory (Historical)",
+          "title": "Precedent Case CC-0710 (confirmed_fraud, card_not_present_new_device)",
+          "score": 0.5128
+        }
+      ]
+    },
+    "graph_edges": {
+      "PART_OF_CASE": [
+        {
+          "from": 3478561,
+          "to": "HHG-014"
+        }
+      ],
+      "INVESTIGATED_CARD": [
+        {
+          "from": "HHG-014",
+          "to": "C13487-K1"
+        }
+      ],
+      "INVESTIGATED_CUSTOMER": [
+        {
+          "from": "HHG-014",
+          "to": "C13487"
+        }
+      ],
+      "ATTACHED_EVIDENCE": [
+        {
+          "from": "HHG-014",
+          "to": "HHG-014-EV-001"
+        },
+        {
+          "from": "HHG-014",
+          "to": "HHG-014-EV-002"
+        },
+        {
+          "from": "HHG-014",
+          "to": "HHG-014-EV-003"
+        },
+        {
+          "from": "HHG-014",
+          "to": "HHG-014-EV-004"
+        },
+        {
+          "from": "HHG-014",
+          "to": "HHG-014-EV-005"
+        },
+        {
+          "from": "HHG-014",
+          "to": "HHG-014-EV-006"
+        },
+        {
+          "from": "HHG-014",
+          "to": "HHG-014-EV-007"
+        },
+        {
+          "from": "HHG-014",
+          "to": "HHG-014-EV-008"
+        },
+        {
+          "from": "HHG-014",
+          "to": "HHG-014-EV-009"
+        },
+        {
+          "from": "HHG-014",
+          "to": "HHG-014-EV-010"
+        },
+        {
+          "from": "HHG-014",
+          "to": "HHG-014-EV-011"
+        }
+      ],
+      "APPLIED_POLICY": [
+        {
+          "from": "HHG-014",
+          "to": "Rule R6"
+        },
+        {
+          "from": "HHG-014",
+          "to": "Rule R6"
+        },
+        {
+          "from": "HHG-014",
+          "to": "Rule R6"
+        },
+        {
+          "from": "HHG-014",
+          "to": "Rule R6"
+        }
+      ]
+    },
+    "persisted_at": "2026-09-21T11:34:02.860758"
   }
 }
