@@ -208,7 +208,7 @@
         "reason": "Block compromised target card identified in confirmed syndicate."
       }
     ],
-    "what_changed": "nothing"
+    "what_changed": "Graph ring traversal provided decisive structural proof of multi-account syndicate (52 connected accounts); no customer inquiry was required and definitive policy actions were formulated immediately."
   },
   "sar": {
     "file": true,
@@ -233,5 +233,5 @@
   "stop_reason": "Policy actions formulated and staged for required human approval; case saved to graph memory.",
   "tool_calls": 9,
   "tokens": 11200,
-  "latency_s": 0.1
+  "latency_s": 0.2
 }

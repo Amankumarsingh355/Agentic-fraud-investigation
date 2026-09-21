@@ -200,5 +200,5 @@
   "stop_reason": "Customer confirmation verified transaction legitimacy under Rule R3. Case closed.",
   "tool_calls": 9,
   "tokens": 11200,
-  "latency_s": 0.1
+  "latency_s": 0.2
 }

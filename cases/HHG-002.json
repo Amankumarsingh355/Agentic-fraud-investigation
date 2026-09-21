@@ -163,5 +163,5 @@
   "stop_reason": "Policy actions formulated and staged for required human approval; case saved to graph memory.",
   "tool_calls": 9,
   "tokens": 11200,
-  "latency_s": 0.1
+  "latency_s": 0.2
 }

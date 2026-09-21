@@ -5,10 +5,10 @@
       "associated_cases": [
         "HHG-014"
       ],
-      "case_count": 3,
+      "case_count": 4,
       "pattern": "syndicate_ring",
       "first_flagged_at": "2026-09-21T11:34:02.862976",
-      "last_flagged_at": "2026-09-21T12:16:37.926626",
+      "last_flagged_at": "2026-09-21T12:36:22.095888",
       "notes": "Confirmed fraud in Case HHG-014: syndicate_ring ($74.96)"
     },
     "nan | nan | firefox 47.0": {
@@ -16,10 +16,10 @@
       "associated_cases": [
         "HHG-004"
       ],
-      "case_count": 2,
+      "case_count": 3,
       "pattern": "none",
       "first_flagged_at": "2026-09-21T12:15:54.852440",
-      "last_flagged_at": "2026-09-21T12:16:37.025611",
+      "last_flagged_at": "2026-09-21T12:36:20.392564",
       "notes": "Confirmed fraud in Case HHG-004: none ($128.33)"
     },
     "iOS Device | iOS 9.3.5 | mobile safari 9.0 | 1024x768": {
@@ -27,10 +27,10 @@
       "associated_cases": [
         "HHG-005"
       ],
-      "case_count": 2,
+      "case_count": 3,
       "pattern": "syndicate_ring",
       "first_flagged_at": "2026-09-21T12:15:54.925104",
-      "last_flagged_at": "2026-09-21T12:16:37.133164",
+      "last_flagged_at": "2026-09-21T12:36:20.593743",
       "notes": "Confirmed fraud in Case HHG-005: syndicate_ring ($100.07)"
     },
     "Trident/7.0 | Windows 7 | ie 11.0 for desktop | 1920x1080": {
@@ -38,10 +38,10 @@
       "associated_cases": [
         "HHG-006"
       ],
-      "case_count": 2,
+      "case_count": 3,
       "pattern": "syndicate_ring",
       "first_flagged_at": "2026-09-21T12:15:54.989789",
-      "last_flagged_at": "2026-09-21T12:16:37.228225",
+      "last_flagged_at": "2026-09-21T12:36:20.746969",
       "notes": "Confirmed fraud in Case HHG-006: syndicate_ring ($482.12)"
     },
     "nan | nan | chrome 66.0": {
@@ -49,10 +49,10 @@
       "associated_cases": [
         "HHG-008"
       ],
-      "case_count": 2,
+      "case_count": 3,
       "pattern": "card_testing",
       "first_flagged_at": "2026-09-21T12:15:55.207812",
-      "last_flagged_at": "2026-09-21T12:16:37.423661",
+      "last_flagged_at": "2026-09-21T12:36:21.123172",
       "notes": "Confirmed fraud in Case HHG-008: card_testing ($55.68)"
     },
     "nan | nan | nan": {
@@ -60,10 +60,10 @@
       "associated_cases": [
         "HHG-009"
       ],
-      "case_count": 2,
+      "case_count": 3,
       "pattern": "none",
       "first_flagged_at": "2026-09-21T12:15:55.275230",
-      "last_flagged_at": "2026-09-21T12:16:37.505500",
+      "last_flagged_at": "2026-09-21T12:36:21.298378",
       "notes": "Confirmed fraud in Case HHG-009: none ($30.02)"
     },
     "Windows | Windows 10 | edge 16.0 | 1366x768": {
@@ -71,10 +71,10 @@
       "associated_cases": [
         "HHG-010"
       ],
-      "case_count": 2,
+      "case_count": 3,
       "pattern": "syndicate_ring",
       "first_flagged_at": "2026-09-21T12:15:55.341482",
-      "last_flagged_at": "2026-09-21T12:16:37.587207",
+      "last_flagged_at": "2026-09-21T12:36:21.443769",
       "notes": "Confirmed fraud in Case HHG-010: syndicate_ring ($1000.03)"
     },
     "SM-G610F Build/NRD90M | nan | chrome 66.0 for android": {
@@ -82,10 +82,10 @@
       "associated_cases": [
         "HHG-011"
       ],
-      "case_count": 2,
+      "case_count": 3,
       "pattern": "card_testing",
       "first_flagged_at": "2026-09-21T12:15:55.418083",
-      "last_flagged_at": "2026-09-21T12:16:37.675088",
+      "last_flagged_at": "2026-09-21T12:36:21.593568",
       "notes": "Confirmed fraud in Case HHG-011: card_testing ($131.30)"
     },
     "Windows | nan | chrome 66.0": {
@@ -93,10 +93,10 @@
       "associated_cases": [
         "HHG-013"
       ],
-      "case_count": 2,
+      "case_count": 3,
       "pattern": "none",
       "first_flagged_at": "2026-09-21T12:15:55.571801",
-      "last_flagged_at": "2026-09-21T12:16:37.817358",
+      "last_flagged_at": "2026-09-21T12:36:21.922000",
       "notes": "Confirmed fraud in Case HHG-013: none ($35.66)"
     },
     "Trident/7.0 | Windows 8.1 | ie 11.0 for desktop | 1680x1050": {
@@ -104,10 +104,10 @@
       "associated_cases": [
         "HHG-015"
       ],
-      "case_count": 2,
+      "case_count": 3,
       "pattern": "syndicate_ring",
       "first_flagged_at": "2026-09-21T12:15:55.718476",
-      "last_flagged_at": "2026-09-21T12:16:37.991890",
+      "last_flagged_at": "2026-09-21T12:36:22.245919",
       "notes": "Confirmed fraud in Case HHG-015: syndicate_ring ($599.94)"
     },
     "Windows | nan | edge 16.0": {
@@ -115,10 +115,10 @@
       "associated_cases": [
         "HHG-016"
       ],
-      "case_count": 2,
+      "case_count": 3,
       "pattern": "none",
       "first_flagged_at": "2026-09-21T12:15:55.827521",
-      "last_flagged_at": "2026-09-21T12:16:38.051889",
+      "last_flagged_at": "2026-09-21T12:36:22.410851",
       "notes": "Confirmed fraud in Case HHG-016: none ($59.67)"
     },
     "Windows | other | chrome 61.0 | 1280x720": {
@@ -126,10 +126,10 @@
       "associated_cases": [
         "HHG-019"
       ],
-      "case_count": 2,
+      "case_count": 3,
       "pattern": "syndicate_ring",
       "first_flagged_at": "2026-09-21T12:15:56.057675",
-      "last_flagged_at": "2026-09-21T12:16:38.252571",
+      "last_flagged_at": "2026-09-21T12:36:22.929948",
       "notes": "Confirmed fraud in Case HHG-019: syndicate_ring ($99.92)"
     }
   },
@@ -139,13 +139,13 @@
       "associated_cases": [
         "HHG-014"
       ],
-      "case_count": 3,
+      "case_count": 4,
       "pattern": "syndicate_ring",
       "first_flagged_at": "2026-09-21T11:34:02.863701",
-      "last_flagged_at": "2026-09-21T12:16:37.927260",
+      "last_flagged_at": "2026-09-21T12:36:22.097769",
       "notes": "Confirmed anonymous proxy in Case HHG-014"
     }
   },
   "novel_patterns": {},
-  "last_updated": "2026-09-21T12:16:38.252746"
+  "last_updated": "2026-09-21T12:36:22.930338"
 }

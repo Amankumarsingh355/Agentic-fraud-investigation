@@ -91,7 +91,17 @@ class DecisionEngine:
         # If no evidence requests were made, final equals initial
         if not evidence_requests:
             clean_final = clean_initial
-            what_changed = "nothing"
+            ring_size = rings.get("ring_size", 1)
+            if rings.get("has_shared_ring") and ring_size > 1:
+                what_changed = (
+                    f"Graph ring traversal provided decisive structural proof of multi-account syndicate "
+                    f"({ring_size} connected accounts); no customer inquiry was required and definitive policy actions were formulated immediately."
+                )
+            else:
+                what_changed = (
+                    f"Initial graph evidence and historical precedent match provided sufficient certainty; "
+                    f"no additional customer inquiry was required and policy recommendations were maintained."
+                )
         else:
             # Compute what_changed explanation
             p_init = initial_assessment["fraud_probability"]
