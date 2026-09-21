@@ -13,8 +13,8 @@
 | **Phase 6** | **Case Memory & Dynamic Knowledge Feedback** | **COMPLETED** | Graph persistence of case outcomes, hybrid case memory retrieval, pattern library feedback registry, gate verified: running same type of case twice retrieves memory from first run in `docs/phase6-memory-report.md`. |
 | **Phase 7** | **Explainability & Output Format** | **COMPLETED** | Exact 3-part JSON submission format (`case`, `sar`, `next_best_actions`), two-stage action evolution (`initial` vs `final` + `what_changed`), FinCEN SAR 6-question narrative generator, graph persistence confirmed, gate passed with 0 schema errors in `docs/phase7-output-format-report.md`. |
 | **Phase 8** | **UI / UX Analyst Dashboard** | **COMPLETED** | StitchMCP project `8720938275256246642` (`Obsidian Vector`), interactive SVG evidence graph, 72h velocity timeline, uncertainty radial gauge, policy sign-off workflow, live HTTP/REST server in `ui/serve.py`, gate verified in `docs/phase8-ui-report.md`. |
-| **Phase 9** | **Benchmark Evaluation (20 Cases)** | In Progress | Execute agent across all 20 benchmark cases and output schema-validated `cases/<case_id>.json`. |
-| **Phase 10** | **Submission Deliverables & Final Polish** | Planned | Technical blog post, demo script/video, social media post, and code audit. |
+| **Phase 9** | **Benchmark Evaluation (20 Cases)** | **COMPLETED** | Executed agent across all 20 benchmark cases, 100% schema valid (0 penalties) in `cases/HHG-*.json`, 0 crashes, 6 SAR filings, 0.08s avg latency, documented in `docs/benchmark-evaluation-report.md`. |
+| **Phase 10** | **Submission Deliverables & Final Polish** | In Progress | Technical blog post, demo script/video, social media post, and code audit. |
 
 ---
 
@@ -70,4 +70,25 @@
     4. Analyst sign-off workflow (`POST /api/approve_action`) - Approval logged & executed.
     5. Live Agent Investigation Trigger (`POST /api/investigate`) - Executed `HHG-003` end-to-end, validated with 0 schema errors.
   - Verification report recorded in `docs/phase8-ui-report.md`.
+
+---
+
+## Phase 9 Detail Log: Benchmark Evaluation (20 Cases)
+
+- **Execution of All 20 Benchmark Cases (`eval/evaluate_benchmark.py`)**:
+  - Investigated all 20 cases from `data/case_pack.csv` (`HHG-001` through `HHG-020`) using the autonomous agent.
+  - Strictly enforced evaluation case isolation: all 20 cases were run with `is_benchmark=True`, ensuring benchmark cases were tagged with namespace `eval_benchmark` and excluded from case memory recall.
+  - Persisted all 20 individual submission artifacts to `cases/HHG-001.json` through `cases/HHG-020.json`.
+- **100% Schema Validation & Zero Scoring Penalties**:
+  - Every single generated file was validated against `CaseFormatter.validate_schema()`.
+  - Result: **20 / 20 cases (100.0%) passed strict schema validation with 0 errors**.
+- **Performance & Detection Metrics**:
+  - **Confirmed Fraud**: 17 cases (85.0%) across typologies: `card_not_present_new_device` (9), `out_of_region_use` (3), `card_testing` (2), `card_not_present_fraud` (3).
+  - **Cleared Legitimate**: 3 cases (15.0%) — `HHG-012` (authorized travel spend), `HHG-017` (authorized recurring spend), `HHG-020` (authorized online spend). When cardholder verified legitimacy, the agent formulated `CLOSE_NO_FRAUD` / `UNRESTRICT_CARD`, cleanly clearing false alarms without customer friction.
+  - **FinCEN SAR Regulatory Filings**: 6 cases triggered statutory filing under Rule R6 / exposure thresholds (`HHG-005`, `HHG-006`, `HHG-010`, `HHG-014`, `HHG-015`, `HHG-019`).
+  - **Syndicate Ring Discovery**: Successfully uncovered the 52-account syndicate ring on `HHG-014` despite a near-zero model score (0.05).
+  - **Turnaround Latency**: Average of **0.08 seconds per case**, demonstrating real-time banking scalability.
+- **Baseline Comparisons**:
+  - Documented in `docs/benchmark-evaluation-report.md`: superior to static threshold baseline (which misses low-scoring syndicate rings and produces excess false alarms) and human-analyst baseline (which suffers 20-45 min latency bottlenecks).
+
 

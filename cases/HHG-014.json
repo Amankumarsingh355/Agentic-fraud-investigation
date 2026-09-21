@@ -3,7 +3,7 @@
   "case": {
     "status": "closed_fraud",
     "verdict": "fraud",
-    "fraud_probability": 0.99,
+    "fraud_probability": 0.98,
     "pattern": "card_not_present_new_device",
     "pattern_description": "",
     "affected_txn_ids": [
@@ -83,6 +83,26 @@
         ]
       },
       {
+        "claim": "Recurring Entity Matched Prior Case HHG-014",
+        "source": "graph",
+        "ref": "query:recurring_entity_memory(txn_id=3478561)",
+        "entity_ids": [
+          "3478561",
+          "C13487-K1",
+          "SM-G935F Build/NRD90M | Android 7.0 | chrome 62.0 for android | 1920x1080"
+        ]
+      },
+      {
+        "claim": "Recurring Entity Matched Prior Case HHG-014",
+        "source": "graph",
+        "ref": "query:recurring_entity_memory(txn_id=3478561)",
+        "entity_ids": [
+          "3478561",
+          "C13487-K1",
+          "SM-G935F Build/NRD90M | Android 7.0 | chrome 62.0 for android | 1920x1080"
+        ]
+      },
+      {
         "claim": "**Rule R1: Verify Before You Block on a Weak Signal**",
         "source": "document",
         "ref": "document:bank_fraud_policy",
@@ -138,7 +158,7 @@
       "CC-2710",
       "CC-0710"
     ],
-    "summary": "Investigation of transaction 3478561 ($74.96) on card C13487-K1 concluded with verdict 'fraud'. Assessed fraud probability is 0.99 based on card not present new device indicators and bank baseline metrics. Graph traversal confirmed hardware profile sharing across 52 distinct customer accounts. Precedent case memory retrieval drew upon prior historical cases CC-0595, CC-2710. Next best actions were formulated under Bank Fraud Policy v1.0 with appropriate approval authority routes.",
+    "summary": "Investigation of transaction 3478561 ($74.96) on card C13487-K1 concluded with verdict 'fraud'. Assessed fraud probability is 0.98 based on card not present new device indicators and bank baseline metrics. Graph traversal confirmed hardware profile sharing across 52 distinct customer accounts. Precedent case memory retrieval drew upon prior historical cases CC-0595, CC-2710. Next best actions were formulated under Bank Fraud Policy v1.0 with appropriate approval authority routes.",
     "written_to_graph": true,
     "graph_case_id": "CASE-3478561"
   },

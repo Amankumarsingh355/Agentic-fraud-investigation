@@ -1,0 +1,215 @@
+{
+  "case_id": "HHG-011",
+  "case": {
+    "status": "closed_fraud",
+    "verdict": "fraud",
+    "fraud_probability": 0.98,
+    "pattern": "card_testing",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3583368"
+    ],
+    "first_suspicious_txn_id": "3583368",
+    "connected_card_ids": [],
+    "connected_device_profiles": [
+      "SM-G610F Build/NRD90M | nan | chrome 66.0 for android"
+    ],
+    "exposure_usd": 131.3,
+    "evidence": [
+      {
+        "claim": "Cardholder Profile for C11923",
+        "source": "customer",
+        "ref": "evidence_request:1",
+        "entity_ids": [
+          "3583368",
+          "C11923-K1",
+          "SM-G610F Build/NRD90M | nan | chrome 66.0 for android"
+        ]
+      },
+      {
+        "claim": "Flagged Transaction 3583368 ($ 131.30)",
+        "source": "graph",
+        "ref": "query:target_transaction(txn_id=3583368)",
+        "entity_ids": [
+          "3583368",
+          "C11923-K1",
+          "SM-G610F Build/NRD90M | nan | chrome 66.0 for android"
+        ]
+      },
+      {
+        "claim": "Rolling 72-Hour Timeline (95 events)",
+        "source": "graph",
+        "ref": "query:velocity_timeline(txn_id=3583368)",
+        "entity_ids": [
+          "3583368",
+          "C11923-K1",
+          "SM-G610F Build/NRD90M | nan | chrome 66.0 for android"
+        ]
+      },
+      {
+        "claim": "Authenticated device: SM-G610F Build/NRD90M | nan | chrome 66.0 for android (New: True)",
+        "source": "graph",
+        "ref": "query:hardware_profile(txn_id=3583368)",
+        "entity_ids": [
+          "3583368",
+          "C11923-K1",
+          "SM-G610F Build/NRD90M | nan | chrome 66.0 for android"
+        ]
+      },
+      {
+        "claim": "Typology Pattern Recognition Checks",
+        "source": "graph",
+        "ref": "query:pattern_signals(txn_id=3583368)",
+        "entity_ids": [
+          "3583368",
+          "C11923-K1",
+          "SM-G610F Build/NRD90M | nan | chrome 66.0 for android"
+        ]
+      },
+      {
+        "claim": "Shared Hardware Syndicate Ring Discovery",
+        "source": "graph",
+        "ref": "query:hardware_rings(txn_id=3583368)",
+        "entity_ids": [
+          "3583368",
+          "C11923-K1",
+          "SM-G610F Build/NRD90M | nan | chrome 66.0 for android"
+        ]
+      },
+      {
+        "claim": "Recurring Entity Matched Prior Case HHG-011",
+        "source": "graph",
+        "ref": "query:recurring_entity_memory(txn_id=3583368)",
+        "entity_ids": [
+          "3583368",
+          "C11923-K1",
+          "SM-G610F Build/NRD90M | nan | chrome 66.0 for android"
+        ]
+      },
+      {
+        "claim": "**Rule R1: Verify Before You Block on a Weak Signal**",
+        "source": "document",
+        "ref": "document:bank_fraud_policy",
+        "entity_ids": [
+          "3583368",
+          "C11923-K1",
+          "SM-G610F Build/NRD90M | nan | chrome 66.0 for android"
+        ]
+      },
+      {
+        "claim": "Closed Case CC-3843 (confirmed_fraud, out_of_region_use)",
+        "source": "document",
+        "ref": "document:bank_fraud_policy",
+        "entity_ids": [
+          "3583368",
+          "C11923-K1",
+          "SM-G610F Build/NRD90M | nan | chrome 66.0 for android"
+        ]
+      },
+      {
+        "claim": "Precedent Case CC-0290 (confirmed_fraud, card_testing)",
+        "source": "graph",
+        "ref": "query:similar_prior_cases",
+        "entity_ids": [
+          "3583368",
+          "C11923-K1",
+          "SM-G610F Build/NRD90M | nan | chrome 66.0 for android"
+        ]
+      },
+      {
+        "claim": "Precedent Case CC-2673 (confirmed_fraud, card_testing)",
+        "source": "graph",
+        "ref": "query:similar_prior_cases",
+        "entity_ids": [
+          "3583368",
+          "C11923-K1",
+          "SM-G610F Build/NRD90M | nan | chrome 66.0 for android"
+        ]
+      },
+      {
+        "claim": "Precedent Case CC-2247 (confirmed_fraud, card_testing)",
+        "source": "graph",
+        "ref": "query:similar_prior_cases",
+        "entity_ids": [
+          "3583368",
+          "C11923-K1",
+          "SM-G610F Build/NRD90M | nan | chrome 66.0 for android"
+        ]
+      },
+      {
+        "claim": "Customer Verification Response: denied_fraud: denied_fraud",
+        "source": "customer",
+        "ref": "evidence_request:1",
+        "entity_ids": [
+          "3583368",
+          "C11923-K1",
+          "SM-G610F Build/NRD90M | nan | chrome 66.0 for android"
+        ]
+      }
+    ],
+    "similar_prior_cases": [
+      "CC-0290",
+      "CC-2673",
+      "CC-2247"
+    ],
+    "summary": "Investigation of transaction 3583368 ($131.30) on card C11923-K1 concluded with verdict 'fraud'. Assessed fraud probability is 0.98 based on card testing indicators and bank baseline metrics. Precedent case memory retrieval drew upon prior historical cases CC-0290, CC-2673. Next best actions were formulated under Bank Fraud Policy v1.0 with appropriate approval authority routes.",
+    "written_to_graph": true,
+    "graph_case_id": "CASE-3583368"
+  },
+  "evidence_requests": [
+    {
+      "type": "customer_validation",
+      "asked_after_step": 4,
+      "assumed_response": "Customer states they did not make this purchase of $131.30 and still has physical possession of the card."
+    }
+  ],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Card testing velocity signature identified."
+      },
+      {
+        "action": "DECLINE_TRANSACTION",
+        "route": "L1",
+        "reason": "Decline suspected automated testing sequence authorization."
+      },
+      {
+        "action": "STEP_UP_AUTH",
+        "route": "auto",
+        "reason": "Require multi-factor challenge on subsequent online checkout attempts."
+      },
+      {
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "High value purchase ($131.30) cleared after micro-authorizations; initiate block."
+      }
+    ],
+    "final": [
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Customer explicitly denied transaction. Open formal fraud case."
+      },
+      {
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "Compromised card replacement required for customer-reported fraud ($131.30 exposure)."
+      }
+    ],
+    "what_changed": "Customer denial raised fraud probability from 0.98 to 0.98, confirming the need for permanent card block and fraud case creation."
+  },
+  "sar": {
+    "file": false,
+    "reason": "No regulatory SAR required: transaction confirmed legitimate or financial exposure does not meet statutory reporting threshold under BSA/FinCEN guidelines.",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0,
+    "activity_dates": []
+  },
+  "stop_reason": "Policy actions formulated and staged for required human approval; case saved to graph memory.",
+  "tool_calls": 9,
+  "tokens": 11200,
+  "latency_s": 0.1
+}
