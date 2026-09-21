@@ -44,15 +44,15 @@ All output files are persisted in `cases/<case_id>.json`:
 | **HHG-009** | 3581141 | `customer_report` | `closed_fraud` | `fraud` | `card_not_present_fraud` | $30.02 | `False` | `CREATE_CASE`, `BLOCK_CARD` | `auto`, `L1` |
 | **HHG-010** | 3506725 | `risk_score` | `closed_fraud` | `fraud` | `card_not_present_new_device` | $1,000.03 | `True` | `CREATE_CASE`, `BLOCK_CARD`, `FILE_REPORT`, `MONITOR_CONNECTED_CARDS` | `auto`, `L1`, `L2`, `auto` |
 | **HHG-011** | 3583368 | `customer_report` | `closed_fraud` | `fraud` | `card_testing` | $131.30 | `False` | `CREATE_CASE`, `BLOCK_CARD` | `auto`, `L1` |
-| **HHG-012** | 3553342 | `risk_score` | `closed_legitimate` | `legitimate` | `none` | $0.00 | `False` | `CLOSE_NO_FRAUD`, `UNRESTRICT_CARD` | `auto`, `auto` |
+| **HHG-012** | 3553342 | `risk_score` | `closed_legitimate` | `legitimate` | `none` | $0.00 | `False` | `CLOSE_NO_FRAUD` | `auto` |
 | **HHG-013** | 3526826 | `risk_score` | `closed_fraud` | `fraud` | `card_not_present_new_device` | $35.66 | `False` | `CREATE_CASE`, `BLOCK_CARD` | `auto`, `L1` |
-| **HHG-014** | 3478561 | `analyst_request` | `closed_fraud` | `fraud` | `card_not_present_new_device` | $74.96 | `True` | `CREATE_CASE`, `BLOCK_CARD`, `FILE_REPORT`, `MONITOR_CONNECTED_CARDS` | `auto`, `L1`, `L2`, `auto` |
-| **HHG-015** | 3464869 | `risk_score` | `closed_fraud` | `fraud` | `card_not_present_new_device` | $599.94 | `True` | `CREATE_CASE`, `BLOCK_CARD`, `FILE_REPORT`, `MONITOR_CONNECTED_CARDS` | `auto`, `L1`, `L2`, `auto` |
+| **HHG-014** | 3478561 | `analyst_request` | `closed_fraud` | `fraud` | `card_not_present_new_device` | $74.96 | `True` | `CREATE_CASE`, `FILE_REPORT`, `MONITOR_CONNECTED_CARDS`, `BLOCK_CARD` | `auto`, `L2`, `auto`, `L1` |
+| **HHG-015** | 3464869 | `risk_score` | `closed_fraud` | `fraud` | `card_not_present_new_device` | $599.94 | `True` | `CREATE_CASE`, `BLOCK_CARD`, `FILE_REPORT` | `auto`, `L1`, `L2` |
 | **HHG-016** | 3534820 | `customer_report` | `closed_fraud` | `fraud` | `card_not_present_new_device` | $59.67 | `False` | `CREATE_CASE`, `BLOCK_CARD` | `auto`, `L1` |
-| **HHG-017** | 3450629 | `risk_score` | `closed_legitimate` | `legitimate` | `none` | $0.00 | `False` | `CLOSE_NO_FRAUD`, `UNRESTRICT_CARD` | `auto`, `auto` |
+| **HHG-017** | 3450629 | `risk_score` | `closed_legitimate` | `legitimate` | `none` | $0.00 | `False` | `CLOSE_NO_FRAUD` | `auto` |
 | **HHG-018** | 3491361 | `customer_report` | `closed_fraud` | `fraud` | `out_of_region_use` | $39.08 | `False` | `CREATE_CASE`, `BLOCK_CARD` | `auto`, `L1` |
-| **HHG-019** | 3503878 | `risk_score` | `closed_fraud` | `fraud` | `card_not_present_new_device` | $99.92 | `True` | `CREATE_CASE`, `BLOCK_CARD`, `FILE_REPORT`, `MONITOR_CONNECTED_CARDS` | `auto`, `L1`, `L2`, `auto` |
-| **HHG-020** | 3509359 | `risk_score` | `closed_legitimate` | `legitimate` | `none` | $0.00 | `False` | `CLOSE_NO_FRAUD`, `UNRESTRICT_CARD` | `auto`, `auto` |
+| **HHG-019** | 3503878 | `risk_score` | `closed_fraud` | `fraud` | `card_not_present_new_device` | $99.92 | `True` | `CREATE_CASE`, `BLOCK_CARD`, `FILE_REPORT` | `auto`, `L1`, `L2` |
+| **HHG-020** | 3509359 | `risk_score` | `closed_legitimate` | `legitimate` | `none` | $0.00 | `False` | `CLOSE_NO_FRAUD` | `auto` |
 
 ---
 
