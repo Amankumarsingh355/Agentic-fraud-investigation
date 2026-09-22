@@ -25,9 +25,11 @@ if PROJECT_ROOT not in sys.path:
 
 from agent.agent import FraudInvestigationAgent
 from agent.case_formatter import CaseFormatter
+from agent.agents import ChiefOrchestratorAgent
 
 # Global lazy agent instance
 _agent = None
+_orchestrator = None
 
 def get_agent():
     global _agent
@@ -36,6 +38,13 @@ def get_agent():
         _agent = FraudInvestigationAgent()
         print("[FraudOps Server] Agent initialized successfully.")
     return _agent
+
+def get_orchestrator():
+    global _orchestrator
+    if _orchestrator is None:
+        agent = get_agent()
+        _orchestrator = ChiefOrchestratorAgent(core_agent=agent)
+    return _orchestrator
 
 def get_benchmark_cases():
     cases_pack_path = os.path.join(PROJECT_ROOT, "data", "case_pack.csv")
@@ -367,6 +376,44 @@ class FraudOpsHandler(BaseHTTPRequestHandler):
                 return
             except Exception as e:
                 self._send_json(500, {"error": f"Investigation of uploaded case failed: {e}"})
+                return
+
+        elif path == "/api/multi_agent_analyze":
+            case_id = body.get("case_id")
+            flagged_txn_id = body.get("flagged_txn_id")
+            trigger_type = body.get("trigger_type", "risk_score")
+            trigger_text = body.get("trigger_text")
+            sim_resp = body.get("simulated_customer_response") or body.get("customer_response")
+
+            benchmarks = {b["case_id"]: b for b in get_benchmark_cases()}
+            if case_id and case_id in benchmarks:
+                b = benchmarks[case_id]
+                trigger_type = b["trigger_type"]
+                trigger_text = b["trigger_text"]
+                flagged_txn_id = int(b["flagged_txn_id"])
+                if not sim_resp and trigger_type == "customer_report":
+                    sim_resp = "denied_fraud"
+            elif not flagged_txn_id:
+                flagged_txn_id = 3514030
+            else:
+                flagged_txn_id = int(flagged_txn_id)
+
+            if not case_id:
+                case_id = f"SQUAD-{flagged_txn_id}"
+
+            try:
+                orch = get_orchestrator()
+                result = orch.run_squad_investigation(
+                    flagged_txn_id=flagged_txn_id,
+                    trigger_type=trigger_type,
+                    trigger_text=trigger_text,
+                    case_id=case_id,
+                    customer_response=sim_resp
+                )
+                self._send_json(200, result)
+                return
+            except Exception as e:
+                self._send_json(500, {"error": f"Multi-agent investigation failed: {e}"})
                 return
 
         elif path == "/api/approve_action":

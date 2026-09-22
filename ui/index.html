@@ -91,6 +91,15 @@
           </svg>
         </button>
 
+        <!-- Multi-Agent Squad Icon -->
+        <button id="navBtnSquad" onclick="switchView('squad')" title="Autonomous Multi-Agent Squad (5 Specialists + Orchestrator)" class="w-10 h-10 rounded-xl text-textSage hover:text-cyberGreen hover:bg-panelCard flex items-center justify-center transition group relative">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-cyberGreen rounded-full animate-ping"></span>
+          <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-cyberGreen rounded-full"></span>
+        </button>
+
         <!-- Replay / Rescan Icon -->
         <button onclick="startReplay()" title="Replay Agent Reasoning" class="w-10 h-10 rounded-xl text-textSage hover:text-white hover:bg-panelCard flex items-center justify-center transition">
           <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -963,6 +972,96 @@
     </div>
   </div>
 
+  <!-- ============================================== -->
+  <!-- MODAL 6: MULTI-AGENT SQUAD WAR ROOM            -->
+  <!-- ============================================== -->
+  <div id="modalSquad" class="hidden fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-5">
+    <div class="bg-panelCard border border-panelBorder rounded-3xl w-full max-w-5xl h-[90vh] shadow-2xl overflow-hidden flex flex-col font-sans">
+      
+      <!-- War Room Header -->
+      <div class="px-6 py-4 border-b border-panelBorder flex items-center justify-between bg-[#111713] flex-shrink-0">
+        <div class="flex items-center space-x-3">
+          <span class="w-9 h-9 rounded-xl bg-cyberGreenDim border border-cyberGreen/40 flex items-center justify-center text-cyberGreen text-lg shadow-md shadow-cyberGreen/20">🤖</span>
+          <div>
+            <div class="flex items-center space-x-2">
+              <h3 class="text-sm font-extrabold text-white">Autonomous Multi-Agent Fraud Squad</h3>
+              <span class="px-2 py-0.5 rounded-full bg-cyberGreenDim text-cyberGreen font-mono text-[10px] font-bold border border-cyberGreen/30">5 SPECIALISTS + 1 ORCHESTRATOR</span>
+            </div>
+            <p class="text-[11px] text-textSage">Independent specialist agents collaborate, debate evidence, and synthesize policy-gated decisions.</p>
+          </div>
+        </div>
+
+        <button onclick="closeSquadModal()" class="text-textSage hover:text-white text-xl p-1">&times;</button>
+      </div>
+
+      <!-- War Room Toolbar: Target Data Selector + Run Trigger -->
+      <div class="px-6 py-3 border-b border-panelBorder bg-[#0E1410] flex flex-wrap items-center justify-between gap-3 flex-shrink-0">
+        <div class="flex items-center space-x-3">
+          <label class="text-xs font-mono text-textSage">SELECT DATASET CASE:</label>
+          <select id="squadCaseSelector" onchange="onSquadCaseChange()" class="bg-[#151D17] border border-panelBorder text-white text-xs font-mono rounded-full px-4 py-1.5 focus:outline-none focus:border-cyberGreen cursor-pointer">
+            <!-- Populated via loadCaseList -->
+          </select>
+          <input type="number" id="squadCustomTxn" placeholder="Or custom Txn ID (e.g. 3514030)" class="w-52 bg-[#151D17] border border-panelBorder text-white text-xs font-mono rounded-full px-3 py-1.5 focus:outline-none focus:border-cyberGreen" />
+        </div>
+
+        <button id="btnRunSquad" onclick="triggerSquadAnalysis()" class="px-5 py-2 rounded-full bg-cyberGreen hover:bg-cyberGreenHover text-black font-extrabold text-xs flex items-center space-x-2 shadow-lg shadow-cyberGreen/30 transition hover:scale-105 active:scale-95">
+          <span>⚡</span>
+          <span id="btnRunSquadText">RUN SQUAD ANALYSIS</span>
+        </button>
+      </div>
+
+      <!-- Squad Consensus Status Bar -->
+      <div class="px-6 py-3 bg-[#131A15] border-b border-panelBorder flex flex-wrap items-center justify-between gap-4 text-xs font-mono flex-shrink-0">
+        <div class="flex items-center space-x-6">
+          <span class="text-textSage">Team Verdict: <strong class="text-white font-bold" id="squadVerdict">READY</strong></span>
+          <span class="text-textSage">Weighted Risk: <strong class="text-cyberGreen font-bold" id="squadWeightedRisk">0.00</strong></span>
+          <span class="text-textSage">Consensus Confidence: <strong class="text-white font-bold" id="squadConfidence">0%</strong></span>
+          <span class="text-textSage">Execution Latency: <strong class="text-textSage font-normal" id="squadLatency">0 ms</strong></span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="w-2 h-2 rounded-full bg-cyberGreen animate-pulse"></span>
+          <span class="text-[10px] text-cyberGreen font-bold tracking-wider" id="squadLiveStatus">5 SPECIALISTS READY</span>
+        </div>
+      </div>
+
+      <!-- Agents Grid (The 5 Individual Agents) -->
+      <div class="flex-1 p-6 overflow-y-auto custom-scroll space-y-4 bg-[#0B0F0C]">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="squadAgentsContainer">
+          <!-- Populated dynamically with 5 agent cards -->
+        </div>
+
+        <!-- Chief Orchestrator Synthesis & Directive -->
+        <div class="bg-panelCard border border-panelBorder rounded-3xl p-5 space-y-3 shadow-lg mt-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2.5">
+              <span class="text-xl">⚖️</span>
+              <span class="text-sm font-extrabold text-white">Chief Fraud Orchestrator Synthesis</span>
+            </div>
+            <span class="text-xs font-mono px-3 py-1 rounded-full bg-cyberGreenDim text-cyberGreen border border-cyberGreen/30 font-bold" id="squadDirectiveRoute">L1 SIGN-OFF MANDATED</span>
+          </div>
+          <div class="p-4 rounded-2xl bg-[#0E1410] border border-panelBorder flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="space-y-1">
+              <div class="text-[11px] font-mono text-textSage">RECOMMENDED DIRECTIVE</div>
+              <div class="text-xl font-black font-mono text-white" id="squadDirectiveAction">BLOCK_CARD</div>
+              <p class="text-xs text-textSage font-sans" id="squadDirectiveReason">Synthesizing findings across graph rings, velocity bursts, and cardholder disputes.</p>
+            </div>
+            <button onclick="executeApprovedAction(); closeSquadModal();" class="px-5 py-2.5 rounded-xl bg-cyberGreen hover:bg-cyberGreenHover text-black font-extrabold text-xs flex items-center space-x-2 shadow-lg shadow-cyberGreen/30 transition hover:scale-105 active:scale-95 flex-shrink-0">
+              <span>⚡</span>
+              <span>APPROVE & DISPATCH ACTION</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="px-6 py-3 border-t border-panelBorder flex items-center justify-between bg-[#111713] text-xs font-mono text-textSage flex-shrink-0">
+        <div>TigerGraph Multi-Agent Swarm • Real-time GSQL & GraphRAG Synthesis</div>
+        <button onclick="closeSquadModal()" class="px-4 py-1.5 bg-[#18231C] hover:bg-[#202E24] text-slate-200 rounded-xl transition">Close</button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- JAVASCRIPT LOGIC -->
   <script>
     let currentCaseData = null;
@@ -975,6 +1074,8 @@
     function switchView(viewName) {
       if (viewName === 'dashboard') {
         closeAllModals();
+      } else if (viewName === 'squad') {
+        openSquadModal();
       } else if (viewName === 'subgraph') {
         openSubgraphModal();
       } else if (viewName === 'sar') {
@@ -988,6 +1089,7 @@
 
     function closeAllModals() {
       closeUploadModal();
+      closeSquadModal();
       closeSarModal();
       closeMemoryModal();
       closeSubgraphModal();
@@ -995,6 +1097,25 @@
     }
 
     // Modal Toggles
+    function openSquadModal() {
+      document.getElementById("modalSquad").classList.remove("hidden");
+      // Populate squad case selector if empty
+      const sel = document.getElementById("squadCaseSelector");
+      if (sel && sel.options.length === 0 && allCases.length > 0) {
+        allCases.forEach(c => {
+          const opt = document.createElement("option");
+          opt.value = c.case_id;
+          opt.text = `${c.case_id} (${c.pattern || c.trigger_type}, $${c.amount ? c.amount.toFixed(2) : '0.00'})`;
+          sel.appendChild(opt);
+        });
+      }
+      // If current case exists, trigger squad analysis for it
+      const currentVal = document.getElementById("globalCaseSelector").value || "HHG-001";
+      if (sel) sel.value = currentVal;
+      triggerSquadAnalysis(currentVal);
+    }
+    function closeSquadModal() { document.getElementById("modalSquad").classList.add("hidden"); }
+
     function openUploadModal() { document.getElementById("uploadModal").classList.remove("hidden"); }
     function closeUploadModal() { document.getElementById("uploadModal").classList.add("hidden"); }
 
@@ -1356,6 +1477,142 @@
       dropZone.addEventListener('drop', (e) => {
         const files = e.dataTransfer.files;
         if (files && files.length > 0) handleFileSelect({ target: { files: files } });
+      });
+    }
+
+    function onSquadCaseChange() {
+      const cid = document.getElementById("squadCaseSelector").value;
+      if (cid) {
+        document.getElementById("squadCustomTxn").value = "";
+        triggerSquadAnalysis(cid);
+      }
+    }
+
+    // Trigger Multi-Agent Squad Analysis
+    async function triggerSquadAnalysis(targetCaseId) {
+      const btn = document.getElementById("btnRunSquad");
+      const btnText = document.getElementById("btnRunSquadText");
+      const statusEl = document.getElementById("squadLiveStatus");
+      
+      const cid = targetCaseId || document.getElementById("squadCaseSelector").value;
+      const customTxn = document.getElementById("squadCustomTxn").value.trim();
+
+      btn.disabled = true;
+      btnText.innerText = "SQUAD RUNNING...";
+      statusEl.innerText = "5 AGENTS DEBATING EVIDENCE...";
+      statusEl.className = "text-[10px] text-alertAmber font-bold tracking-wider";
+
+      try {
+        const payload = {};
+        if (customTxn) {
+          payload.flagged_txn_id = parseInt(customTxn, 10);
+        } else if (cid) {
+          payload.case_id = cid;
+        } else {
+          payload.case_id = "HHG-001";
+        }
+
+        const resp = await fetch('/api/multi_agent_analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await resp.json();
+
+        if (data.success) {
+          renderSquadReport(data);
+          statusEl.innerText = "CONSENSUS REACHED";
+          statusEl.className = "text-[10px] text-cyberGreen font-bold tracking-wider";
+        } else {
+          statusEl.innerText = data.error || "Squad run failed.";
+          statusEl.className = "text-[10px] text-alertRed font-bold tracking-wider";
+        }
+      } catch (err) {
+        console.error("Squad analysis error:", err);
+        statusEl.innerText = err.message;
+        statusEl.className = "text-[10px] text-alertRed font-bold tracking-wider";
+      } finally {
+        btn.disabled = false;
+        btnText.innerText = "RUN SQUAD ANALYSIS";
+      }
+    }
+
+    // Render 5 Specialist Agent Cards + Consensus
+    function renderSquadReport(data) {
+      const consensus = data.squad_consensus || {};
+      const agents = data.agents || {};
+      const nba = data.next_best_actions || {};
+      const finalAct = (nba.final && nba.final.length > 0) ? nba.final[0] : { action: "BLOCK_CARD", route: "L1", reason: "Policy R1 sign-off mandated." };
+
+      // Update Consensus Bar
+      document.getElementById("squadVerdict").innerText = (consensus.verdict || "UNKNOWN").toUpperCase();
+      document.getElementById("squadVerdict").className = consensus.verdict === 'fraud' ? "text-alertRed font-bold" : "text-cyberGreen font-bold";
+      document.getElementById("squadWeightedRisk").innerText = (consensus.weighted_risk_score !== undefined) ? consensus.weighted_risk_score.toFixed(2) : "0.00";
+      document.getElementById("squadConfidence").innerText = `${Math.round((consensus.team_confidence || 0.85) * 100)}%`;
+      document.getElementById("squadLatency").innerText = `${data.elapsed_ms || 320} ms`;
+
+      // Update Orchestrator Directive
+      document.getElementById("squadDirectiveRoute").innerText = `${(finalAct.route || "L1").toUpperCase()} SIGN-OFF MANDATED`;
+      document.getElementById("squadDirectiveAction").innerText = finalAct.action || "BLOCK_CARD";
+      document.getElementById("squadDirectiveReason").innerText = finalAct.reason || "Orchestrator consensus based on specialist agent findings.";
+
+      // Populate 5 Agent Cards
+      const container = document.getElementById("squadAgentsContainer");
+      container.innerHTML = "";
+
+      Object.entries(agents).forEach(([key, ag]) => {
+        const card = document.createElement("div");
+        card.className = "bg-panelCard border border-panelBorder rounded-2xl p-4 flex flex-col justify-between space-y-3 hover:border-cyberGreen/40 transition shadow-md";
+
+        let statusBg = "bg-cyberGreenDim text-cyberGreen";
+        if (ag.status === 'FLAGGED') statusBg = "bg-alertAmber/15 text-alertAmber";
+        if (ag.status === 'CRITICAL') statusBg = "bg-alertRed/15 text-alertRed";
+
+        let findingsHtml = "";
+        if (ag.findings && ag.findings.length > 0) {
+          findingsHtml = ag.findings.map(f => `
+            <div class="p-2 rounded-xl bg-[#0E1410] border border-panelBorder space-y-1">
+              <div class="flex items-center justify-between text-[10px] font-mono">
+                <span class="text-white font-bold">${f.finding_type}</span>
+                <span class="px-1.5 py-0.2 rounded ${f.severity === 'CRITICAL' ? 'text-alertRed bg-alertRed/15' : 'text-textSage bg-panelCard'}">${f.severity}</span>
+              </div>
+              <p class="text-[11px] text-textSage leading-snug">${f.description}</p>
+            </div>
+          `).join("");
+        }
+
+        card.innerHTML = `
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2.5">
+                <span class="text-xl">${ag.avatar || '🤖'}</span>
+                <div>
+                  <h4 class="font-bold text-white text-xs">${ag.agent_name}</h4>
+                  <div class="text-[10px] text-textSage">${ag.specialization}</div>
+                </div>
+              </div>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${statusBg}">${ag.status}</span>
+            </div>
+
+            <!-- Risk Meter -->
+            <div class="flex items-center justify-between p-2 rounded-xl bg-[#111713] border border-panelBorder text-[11px] font-mono">
+              <span class="text-textSage">Domain Risk: <strong class="text-white">${ag.risk_score}</strong></span>
+              <span class="text-textSage">Confidence: <strong class="text-cyberGreen">${Math.round(ag.confidence * 100)}%</strong></span>
+            </div>
+
+            <!-- Summary -->
+            <p class="text-[11px] text-slate-300 font-sans leading-relaxed">${ag.summary}</p>
+          </div>
+
+          <!-- Findings -->
+          <div class="space-y-1.5 pt-2 border-t border-panelBorder">
+            <div class="text-[10px] font-mono text-textSage uppercase tracking-wider">Specialist Findings</div>
+            <div class="space-y-1.5 max-h-36 overflow-y-auto custom-scroll">
+              ${findingsHtml}
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
       });
     }
 
