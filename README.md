@@ -687,13 +687,55 @@ Our team consists of three members with responsibilities spanning leadership, de
 
 ```text
 project-root/
-├── README.md
-├── agent/
-├── graph/
-├── data/
-├── ui/
-├── cases/
-└── configuration files
+│
+├── agent/                  # Core AI Agent Logic
+│   ├── agents/             # Individual agent definitions (Policy Agent, etc.)
+│   ├── strict_eleven_pipeline.py # 11-Agent zero-hallucination orchestrator
+│   ├── policy_engine.py    # Policy and compliance enforcement
+│   └── sar_generator.py    # Suspicious Activity Report (SAR) generation
+│
+├── graph/                  # TigerGraph Database Integration
+│   ├── queries/            # GSQL queries (pattern matching, similarity, etc.)
+│   ├── mcp_server.py       # Model Context Protocol (MCP) server for GraphRAG
+│   ├── schema.gsql         # TigerGraph database schema definitions
+│   ├── tigergraph_tools.py # TigerGraph API helper functions
+│   └── graphrag_synthesizer.py # Graph-based retrieval augmented generation
+│
+├── src/                    # React Frontend (Vite + Tailwind CSS)
+│   ├── components/         # UI components (AgentCard, FraudGraph, ChatInterface)
+│   ├── data/               # Frontend mock data and configurations
+│   ├── styles/             # Global CSS and Tailwind directives (index.css)
+│   ├── App.jsx             # Main React application and layout
+│   └── main.jsx            # Frontend entry point
+│
+├── ui/                     # Python Backend Server
+│   └── serve.py            # FastAPI backend (handles streaming LLM responses)
+│
+├── cases/                  # Final Output Cases (Submission)
+│   └── HHG-001.json ... HHG-020.json # 20 structured benchmark JSON outputs
+│
+├── data/                   # Datasets & Graph State
+│   ├── pattern_registry.json # Known fraud pattern typologies
+│   ├── dynamic_case_memory.json # Case history and knowledge base
+│   └── analyst_approvals.jsonl  # Human-in-the-loop (HITL) approval logs
+│
+├── tests/                  # Validation & Testing
+│   ├── test_11_agents_comprehensive.py # Agent integration tests
+│   ├── validate_schema.py  # JSON output schema validation
+│   └── judge_readiness.py  # Final submission readiness checks
+│
+├── docs/                   # Project Documentation
+│   ├── ARCHITECTURE.md     # System architecture design
+│   ├── PROJECT_REPORT.md   # Final comprehensive project report
+│   └── AGENT_RESPONSIBILITIES.md # Agent roles and capabilities
+│
+├── public/                 # Static Assets
+│   └── savanna-logo.png    # Custom system logo and branding
+│
+├── package.json            # Node.js dependencies and scripts
+├── tailwind.config.js      # Tailwind CSS configuration and themes
+├── vite.config.js          # Vite frontend bundler configuration
+└── README.md               # Main project documentation
 ```
 
 ---
