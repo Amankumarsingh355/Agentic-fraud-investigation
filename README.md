@@ -670,11 +670,13 @@ Our team consists of three members with responsibilities spanning leadership, de
 
 ### Screenshots
 
-<span style="color:red">[Add project screenshots here]</span>
+<span style="color:red"><img width="415" height="852" alt="image" src="https://github.com/user-attachments/assets/847a991e-c0ca-404b-8aa2-fec261f92b7d" />
+<img width="465" height="848" alt="image" src="https://github.com/user-attachments/assets/eb31a176-f7f0-4ea6-9196-f06e2fa0922d" />
+<img width="496" height="862" alt="image" src="https://github.com/user-attachments/assets/e48f93e5-440c-4ad5-ad0b-85674e2d7974" />
+<img width="1600" height="716" alt="image" src="https://github.com/user-attachments/assets/399b627e-c29f-4f31-90ad-9a4b04cd88e2" />
+</span>
 
-### Live Demo
 
-<span style="color:red">[Add live demo link if available]</span>
 
 ---
 
