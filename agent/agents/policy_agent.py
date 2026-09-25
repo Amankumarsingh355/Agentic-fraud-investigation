@@ -45,8 +45,9 @@ class PolicyComplianceAgent(BaseSpecialistAgent):
         rule_desc = top_action.get("reason", "Standard policy evaluation")
         mandated_route = top_action.get("route", "L1")
 
-        # Evaluate SAR statutory requirements
-        sar_required = exposure >= 10000.0 or has_syndicate or (context.get("verdict") == "fraud" and exposure >= 5000.0)
+        # Evaluate SAR statutory requirements under Bank Fraud Policy v1.0 Section 4 ($1,000 threshold or syndicate)
+        pattern = context.get("pattern", "")
+        sar_required = exposure >= 1000.0 or has_syndicate or (context.get("verdict") == "fraud" and (exposure >= 1000.0 or rings.get("has_shared_ring", False) or pattern in ["syndicate_ring", "account_takeover"]))
         
         risk_score = 0.85 if sar_required else (0.60 if mandated_route != "auto" else 0.15)
         confidence = 0.95

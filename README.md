@@ -1,37 +1,57 @@
 # TigerGraph Agentic Fraud Investigation Suite (HHGOA_IEEE)
 
 [![TigerGraph](https://img.shields.io/badge/TigerGraph-Savanna%20%7C%20Enterprise-orange.svg)](https://www.tigergraph.com/)
+[![CrewAI](https://img.shields.io/badge/CrewAI-11%20Autonomous%20Agents-red.svg)](docs/AGENT_RESPONSIBILITIES.md)
 [![GraphRAG](https://img.shields.io/badge/GraphRAG-Multi--Hop%20Evidence-06B6D4.svg)](https://github.com/tigergraph/tigergraph-mcp)
 [![FinCEN SAR](https://img.shields.io/badge/FinCEN%20SAR-Compliant-10B981.svg)](https://www.fincen.gov/)
 [![Benchmark Evaluation](https://img.shields.io/badge/Benchmark-20%2F20%20Cases%20(100%25)-brightgreen.svg)](cases/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
-An end-to-end, production-grade autonomous AI fraud investigation system built for the **TigerGraph × Hacker House Goa** hackathon. 
+An end-to-end, production-grade autonomous AI fraud investigation system built for the **TigerGraph × Hacker House Goa** hackathon.
 
-Powered by **TigerGraph GSQL**, **GraphRAG evidence synthesis**, an **8-stage stateful agent loop**, **traceable uncertainty engine**, **strict policy gating**, and a live **cyber-analyst cockpit** (`Obsidian Vector` design system).
+Engineered with **Production-Inspired Institutional Sandbox Architecture**: Powered by **TigerGraph GSQL**, **11-Agent CrewAI Hierarchy**, **GraphRAG Evidence Synthesis**, an **Observable Hybrid Graph Engine**, **Multi-Factor Case Similarity Engine**, **Strict Policy & HITL Guardrails**, and a live **Cyber-Analyst Cockpit** (`Obsidian Vector` design system).
 
 ---
 
-## ⚡ Quick Start: One-Command Execution
+## ⚡ Quick Start: Core Commands
 
-### 1. Run Benchmark Evaluation (All 20 Cases)
-Runs the autonomous agent across all 20 benchmark cases (`HHG-001` through `HHG-020`), enforces memory isolation, outputs schema-validated JSON files into `cases/`, and logs metrics:
+### 1. Run Hackathon Judge Readiness Self-Check
+Validates environment, dataset integrity, hybrid graph status, 20/20 benchmark files, 6 domain validators, anti-hallucination audits, and sandbox gateway:
 ```bash
-python eval/evaluate_benchmark.py
+python tests/judge_readiness.py
 ```
 
-### 2. Launch Interactive Analyst Cockpit UI
-Launches the live threading HTTP server and dark-mode cybersecurity cockpit:
+### 2. Run Canonical Investigation Pipeline (Single Case or All)
+Run an autonomous forensic investigation for a specific case with two-stage action evolution and customer verification:
+```bash
+# Single benchmark case (fast mode)
+python -m agent.run_investigation --case-id HHG-001
+
+# Single benchmark case with customer denial simulation
+python -m agent.run_investigation --case-id HHG-001 --customer-response denied_fraud
+
+# Run all 20 benchmark cases in canonical pipeline
+python -m agent.run_investigation --all
+```
+
+### 3. Run One-Command Interactive Guided Demo
+Walks judges through key forensic attack typologies, syndicates, customer verification, and institutional sandbox action execution:
+```bash
+python run_demo.py
+```
+
+### 4. Run Official 20-Case Benchmark Evaluation & Validator Suite
+Executes the full pipeline across all 20 benchmark cases (`HHG-001` through `HHG-020`), enforces 100% schema compliance, and runs the 6-part Master Validator Suite:
+```bash
+python run_benchmark.py
+```
+
+### 5. Launch Interactive Analyst Cockpit UI
+Launches the live threading HTTP backend and dark-mode cybersecurity cockpit:
 ```bash
 python ui/serve.py
 ```
 Open **[http://localhost:8080](http://localhost:8080)** in your browser to interact with the multi-hop SVG evidence graph, 72-hour rolling velocity timeline, uncertainty radial gauge, FinCEN SAR tab, and human sign-off action buttons.
-
-### 3. Run Submission Integrity Audit
-Runs strict validation on all 20 submission files, asserting 0 schema violations, 0 placeholders, valid entity grounding, and FinCEN SAR conditional compliance:
-```bash
-python tests/validate_submission.py
-```
 
 ---
 
@@ -40,50 +60,80 @@ python tests/validate_submission.py
 ```
                                   [ TRIGGER LAYER ]
                         Risk Score | Customer Dispute | Analyst
-                                         │
-                                         ▼
-                     ┌────────────────────────────────────────┐
-                     │   Autonomous Fraud Investigation Agent  │
-                     └───────────────────┬────────────────────┘
-                                         │
-                 ┌───────────────────────┴───────────────────────┐
-                 ▼                                               ▼
-     [ TIGERGRAPH GSQL ENGINE ]                     [ SEMANTIC VECTOR STORE ]
-  - 2-Hop Multi-Entity Subgraph                  - TF-IDF Dense Policy Index
-  - Shared Hardware Syndicate Rings              - Fraud Typologies Store
-  - 72-Hour Velocity Rolling Window              - Historical Case Memory Index
-                 │                                               │
-                 └───────────────────────┬───────────────────────┘
-                                         ▼
-                             [ GRAPHRAG SYNTHESIS ]
-                     Structured LLM Dossiers (No Raw Dumps)
-                                         │
-                                         ▼
-                          [ TRACEABLE UNCERTAINTY ]
-                     P(Fraud) = Prior + Corroboration - Mitigating
-                                         │
-                         Sufficient Evidence to Act?
-                            ├── [NO] ──> [CONTROLLED INQUIRY]
-                            │            SMS Verification / Step-Up Auth
-                            │            Re-assess with ground truth
-                            └── [YES] ─> Continue
-                                         │
-                                         ▼
-                              [ STRICT POLICY ENGINE ]
-                       Bank Fraud Policy v1.0 Rules R1–R8
-                            ├── auto: CREATE_CASE, CLOSE_NO_FRAUD
-                            ├── L1:   BLOCK_CARD (≤ $2,500)
-                            └── L2:   BLOCK_ALL_CARDS, FILE_REPORT (> $2,500 / Syndicate)
-                                         │
-                                         ▼
-                       ┌─────────────────┴─────────────────┐
-                       ▼                                   ▼
-          [ EXPLAINABILITY & SAR ]               [ GRAPH CASE MEMORY ]
-       - Two-Stage Action Evolution           - Write Case Vertex to TigerGraph
-         (initial vs final + what_changed)    - Dynamic Precedent Recall
-       - FinCEN SAR 6-Question Narrative      - Pattern Feedback Loop
-         (Who, What, When, Where, How, Why)
+                                          │
+                                          ▼
+                      ┌────────────────────────────────────────┐
+                      │   11-Agent CrewAI Autonomous Pipeline  │
+                      │  (Ingestion ➔ Forensic ➔ Anomaly ➔     │
+                      │   Memory ➔ Step-Up ➔ Policy ➔ Master)  │
+                      └───────────────────┬────────────────────┘
+                                          │
+                  ┌───────────────────────┴───────────────────────┐
+                  ▼                                               ▼
+      [ TIGERGRAPH HYBRID ENGINE ]                   [ SEMANTIC VECTOR STORE ]
+   - Live Savanna TG Cloud Cluster                - TF-IDF Dense Policy Index
+   - Observable Local Fallback Engine             - Fraud Typologies Store
+   - 2-Hop Multi-Entity Subgraph                  - Dynamic Case Memory Index
+   - Shared Hardware Syndicate Rings              - Multi-Factor Similarity Engine
+   - 72-Hour Velocity Rolling Window                 (Text 0.4 + Graph 0.4 + Pattern 0.2)
+                  │                                               │
+                  └───────────────────────┬───────────────────────┘
+                                          ▼
+                              [ GRAPHRAG SYNTHESIS ]
+                      Structured LLM Dossiers (No Raw Dumps)
+                                          │
+                                          ▼
+                           [ TRACEABLE UNCERTAINTY ]
+                      P(Fraud) = Prior + Corroboration - Mitigating
+                                          │
+                          Sufficient Evidence to Act?
+                             ├── [NO] ──> [CONTROLLED INQUIRY]
+                             │            SMS Verification / Step-Up Auth
+                             │            Re-assess with ground truth
+                             └── [YES] ─> Continue
+                                          │
+                                          ▼
+                               [ STRICT POLICY ENGINE ]
+                        Bank Fraud Policy v1.0 Rules R1–R10
+                             ├── auto: CREATE_CASE, CLOSE_NO_FRAUD
+                             ├── L1:   BLOCK_CARD (≤ $2,500)
+                             └── L2:   BLOCK_ALL_CARDS, FILE_REPORT (> $2,500 / Syndicate)
+                                          │
+                                          ▼
+                   [ INSTITUTIONAL SANDBOX ACTION GATEWAY ]
+                        - State-Machine Card Transitions (ACTIVE ➔ BLOCKED)
+                        - HITL Authorization Gateways
+                        - Nonce-Protected Idempotent Audit Trails
+                                          │
+                                          ▼
+                        ┌─────────────────┴─────────────────┐
+                        ▼                                   ▼
+           [ EXPLAINABILITY & SAR ]               [ GRAPH CASE MEMORY ]
+        - Two-Stage Action Evolution           - Write Case Vertex to TigerGraph
+          (initial vs final + what_changed)    - Dynamic Precedent Recall
+        - FinCEN SAR 6-Question Narrative      - Pattern Feedback Loop
+          (Who, What, When, Where, How, Why)
 ```
+
+---
+
+## 🤖 11-Agent Architecture Breakdown
+
+For complete forensic details, tools, schemas, and fallback procedures, see [docs/AGENT_RESPONSIBILITIES.md](file:///c:/Users/aman%20kumar%20singh/Desktop/AI_Agent/docs/AGENT_RESPONSIBILITIES.md).
+
+| Agent # | Agent Name | Primary Specialty | Key GSQL / Tool Invocation |
+|---|---|---|---|
+| **Agent 1** | **Fraud Ingestion Agent** | Alert ingestion & parameter validation | Alert Feed, IEEE-CIS Transaction Ingest |
+| **Agent 2** | **TigerGraph Evidence Agent** | Multi-hop graph traversal & subgraph expansion | `find_shared_devices_tool`, `trace_fraud_ring` |
+| **Agent 3** | **Pattern Analysis Agent** | Typology pattern & anomaly recognition | Card Testing, ATO, CNP, Out-of-Region engines |
+| **Agent 4** | **Case Lifecycle Agent** | Case ledger & millisecond audit trail | Audit state machine (`ACTIVE` ➔ `RESOLVED`) |
+| **Agent 5** | **Case Memory Agent** | Graph & vector historical case retrieval | `SimilarCasesEngine` (Text + Graph + Pattern) |
+| **Agent 6** | **Step-Up Validation Agent** | Controlled cardholder verification | `CustomerVerificationProvider` (SMS/Push) |
+| **Agent 7** | **Action Recommender Agent** | Multi-action recommendation engine | `DecisionEngine` two-stage action evolution |
+| **Agent 8** | **Policy & Guardrails Agent** | Bank Fraud Policy v1.0 (Rules R1-R10) | Authority route gating (`auto`, `L1`, `L2`) |
+| **Agent 9** | **Early Stopping Agent** | Efficiency & stopping criteria controller | Uncertainty threshold & confidence saturation |
+| **Agent 10** | **Explainability Agent** | FinCEN SAR & transparent plain-English audit | 6-Question FinCEN SAR narrative synthesis |
+| **Agent 11** | **Master Decision Validator** | 4-rule cross-consistency verification | Final 3-part schema audit & route reconciliation |
 
 ---
 
@@ -97,7 +147,7 @@ python tests/validate_submission.py
 | **Confirmed Fraud Verdicts** | **17 cases (85.0%)** | Realistic attack distribution | **PASS** |
 | **Cleared Legitimate Verdicts** | **3 cases (15.0%)** | False alarm resolution (Rule R3) | **PASS** |
 | **FinCEN SAR Filings** | **6 filings** | Statutory SAR criteria (Rule R6) | **PASS** |
-| **Average Latency** | **0.17 seconds / case** | Real-time banking SLA (< 5s) | **EXCEEDED (0.17s)** |
+| **Average Latency** | **0.18 seconds / case** | Real-time banking SLA (< 5s) | **EXCEEDED (0.18s)** |
 | **Average Tool Calls** | **9.0 calls / case** | Multi-hop graph & memory queries | **OPTIMAL** |
 | **Average Context Tokens** | **11,200 tokens / case** | Structured markdown dossiers | **OPTIMAL** |
 
@@ -109,82 +159,94 @@ python tests/validate_submission.py
 | **HHG-002** | 3478782 | `risk_score` | `fraud` | `closed_fraud` | `card_not_present_fraud` | $292.36 | `False` | `CREATE_CASE`, `BLOCK_CARD` |
 | **HHG-003** | 3530164 | `customer_report` | `fraud` | `closed_fraud` | `out_of_region_use` | $49.00 | `False` | `CREATE_CASE`, `BLOCK_CARD` |
 | **HHG-004** | 3583227 | `customer_report` | `fraud` | `closed_fraud` | `card_not_present_new_device` | $128.33 | `False` | `CREATE_CASE`, `BLOCK_CARD` |
-| **HHG-005** | 3523199 | `risk_score` | `fraud` | `closed_fraud` | `card_not_present_new_device` | $100.07 | `True` | `CREATE_CASE`, `BLOCK_CARD`, `FILE_REPORT`, `MONITOR_CONNECTED_CARDS` |
-| **HHG-006** | 3476682 | `customer_report` | `fraud` | `closed_fraud` | `card_not_present_new_device` | $482.12 | `True` | `CREATE_CASE`, `BLOCK_CARD`, `FILE_REPORT`, `MONITOR_CONNECTED_CARDS` |
+| **HHG-005** | 3523199 | `risk_score` | `fraud` | `closed_fraud` | `card_not_present_new_device` | $100.07 | `True` | `CREATE_CASE`, `BLOCK_CARD`, `FILE_REPORT` |
+| **HHG-006** | 3476682 | `customer_report` | `fraud` | `closed_fraud` | `card_not_present_new_device` | $482.12 | `True` | `CREATE_CASE`, `BLOCK_CARD`, `FILE_REPORT` |
 | **HHG-007** | 3514948 | `risk_score` | `fraud` | `closed_fraud` | `card_not_present_fraud` | $111.92 | `False` | `CREATE_CASE`, `BLOCK_CARD` |
 | **HHG-008** | 3558054 | `customer_report` | `fraud` | `closed_fraud` | `card_testing` | $55.68 | `False` | `CREATE_CASE`, `BLOCK_CARD` |
 | **HHG-009** | 3581141 | `customer_report` | `fraud` | `closed_fraud` | `card_not_present_fraud` | $30.02 | `False` | `CREATE_CASE`, `BLOCK_CARD` |
-| **HHG-010** | 3506725 | `risk_score` | `fraud` | `closed_fraud` | `card_not_present_new_device` | $1,000.03 | `True` | `CREATE_CASE`, `BLOCK_CARD`, `FILE_REPORT`, `MONITOR_CONNECTED_CARDS` |
+| **HHG-010** | 3506725 | `risk_score` | `fraud` | `closed_fraud` | `card_not_present_new_device` | $1,000.03 | `True` | `CREATE_CASE`, `BLOCK_CARD`, `FILE_REPORT` |
 | **HHG-011** | 3583368 | `customer_report` | `fraud` | `closed_fraud` | `card_testing` | $131.30 | `False` | `CREATE_CASE`, `BLOCK_CARD` |
 | **HHG-012** | 3553342 | `risk_score` | `legitimate` | `closed_legitimate` | `none` | $0.00 | `False` | `CLOSE_NO_FRAUD` |
 | **HHG-013** | 3526826 | `risk_score` | `fraud` | `closed_fraud` | `card_not_present_new_device` | $35.66 | `False` | `CREATE_CASE`, `BLOCK_CARD` |
-| **HHG-014** | 3478561 | `analyst_request` | `fraud` | `closed_fraud` | `card_not_present_new_device` | $74.96 | `True` | `CREATE_CASE`, `FILE_REPORT`, `MONITOR_CONNECTED_CARDS`, `BLOCK_CARD` |
-| **HHG-015** | 3464869 | `risk_score` | `fraud` | `closed_fraud` | `card_not_present_new_device` | $599.94 | `True` | `CREATE_CASE`, `BLOCK_CARD`, `FILE_REPORT`, `MONITOR_CONNECTED_CARDS` |
+| **HHG-014** | 3478561 | `analyst_request` | `fraud` | `closed_fraud` | `card_not_present_new_device` | $74.96 | `True` | `CREATE_CASE`, `FILE_REPORT`, `MONITOR_CONNECTED_CARDS` |
+| **HHG-015** | 3464869 | `risk_score` | `fraud` | `closed_fraud` | `card_not_present_new_device` | $599.94 | `True` | `CREATE_CASE`, `BLOCK_CARD`, `FILE_REPORT` |
 | **HHG-016** | 3534820 | `customer_report` | `fraud` | `closed_fraud` | `card_not_present_new_device` | $59.67 | `False` | `CREATE_CASE`, `BLOCK_CARD` |
 | **HHG-017** | 3450629 | `risk_score` | `legitimate` | `closed_legitimate` | `none` | $0.00 | `False` | `CLOSE_NO_FRAUD` |
 | **HHG-018** | 3491361 | `customer_report` | `fraud` | `closed_fraud` | `out_of_region_use` | $39.08 | `False` | `CREATE_CASE`, `BLOCK_CARD` |
-| **HHG-019** | 3503878 | `risk_score` | `fraud` | `closed_fraud` | `card_not_present_new_device` | $99.92 | `True` | `CREATE_CASE`, `BLOCK_CARD`, `FILE_REPORT`, `MONITOR_CONNECTED_CARDS` |
+| **HHG-019** | 3503878 | `risk_score` | `fraud` | `closed_fraud` | `card_not_present_new_device` | $99.92 | `True` | `CREATE_CASE`, `BLOCK_CARD`, `FILE_REPORT` |
 | **HHG-020** | 3509359 | `risk_score` | `legitimate` | `closed_legitimate` | `none` | $0.00 | `False` | `CLOSE_NO_FRAUD` |
+
+---
+
+## 🧪 Comprehensive Test & Verification Suite
+
+Our repository is rigorously verified with dedicated test suites covering all audit layers:
+
+```bash
+# 1. Master Judge Readiness Suite (All 8 Subsystems)
+python tests/judge_readiness.py
+
+# 2. Dynamic Next-Best-Action Scenarios (A through E)
+python -m unittest tests/test_next_best_action_dynamics.py
+
+# 3. Real Human-In-The-Loop Enforcement & Policy Gating
+python -m unittest tests/test_hitl_enforcement.py
+
+# 4. Multi-Factor Case Similarity Engine (Text + Graph + Pattern)
+python -m unittest tests/test_graph_case_similarity.py
+
+# 5. Full 6-Part Master Domain Validators on 20 Cases
+python -m tests.validate_cases cases/
+```
 
 ---
 
 ## 📁 Repository Structure
 
 ```
-├── PROGRESS.md                     # 10-Phase progression log and acceptance gate tracking
 ├── README.md                       # Primary system documentation and quickstart
+├── run_demo.py                     # One-command guided interactive demo for judges
+├── run_benchmark.py                # Official 20-case benchmark runner & evaluation
 ├── cases/                          # 20 Submission-ready JSON files (HHG-001.json - HHG-020.json)
+├── benchmark_results/              # Detailed evaluation summary, metrics, and report
 ├── agent/                          # Core autonomous investigation loop
+│   ├── run_investigation.py        # Canonical CLI entry point
+│   ├── eleven_agents_pipeline.py   # 11-Agent CrewAI pipeline orchestration
 │   ├── agent.py                    # 8-stage stateful investigation orchestrator
 │   ├── case.py                     # Case data object with audit trails & graph persistence
+│   ├── action_gateway.py           # Production-inspired institutional sandbox action gateway
+│   ├── customer_verification.py    # Customer verification provider abstraction (mock/webhook)
 │   ├── uncertainty_engine.py       # Traceable Bayesian uncertainty scoring & confidence logic
-│   ├── policy_engine.py            # Bank Fraud Policy v1.0 enforcement (Rules R1-R8)
+│   ├── policy_engine.py            # Bank Fraud Policy v1.0 enforcement (Rules R1-R10)
 │   ├── decision_engine.py          # Two-stage next best action evolution (initial vs final)
 │   ├── sar_generator.py            # FinCEN 6-question regulatory narrative generator
-│   ├── case_formatter.py           # Strict 3-part schema validator (zero penalties)
-│   └── action_executor.py          # Action dispatch & side-effect stubs
+│   └── case_formatter.py           # Strict 3-part schema validator (zero penalties)
 ├── graph/                          # TigerGraph database & GraphRAG layer
-│   ├── schema.gsql                 # Formal GSQL schema definition (vertices & edges)
-│   ├── loading_jobs.gsql           # GSQL bulk loading jobs
-│   ├── subgraph_extractor.py       # 2-hop multi-entity connected subgraph extractor
+│   ├── tigergraph_tools.py         # Multi-tenant TigerGraph connection & observable cloud probe
+│   ├── subgraph_extractor.py       # Observable hybrid subgraph extractor (Cloud + resilient local)
+│   ├── similar_cases_engine.py     # Multi-factor similarity engine (Text 0.4 + Graph 0.4 + Pattern 0.2)
 │   ├── graphrag_synthesizer.py     # Structured markdown investigative dossier formatter
-│   ├── similar_cases_engine.py     # Hybrid dense vector + graph precedent retrieval
 │   ├── case_memory.py              # Graph vertex persistence of resolved cases
 │   ├── pattern_registry.py         # Dynamic pattern feedback loop for recurring entities
 │   ├── load_vector_store.py        # TF-IDF dense vector index over policies & closed cases
-│   └── mcp_server.py               # TigerGraph Model Context Protocol (MCP) server
-├── ui/                             # Analyst Cockpit Dashboard (Stitch Obsidian Vector)
-│   ├── index.html                  # Interactive single-page application (SVG graph, timeline, gauge)
-│   ├── serve.py                    # Threading HTTP server delivering dashboard & REST API
+│   └── schema.gsql                 # Formal GSQL schema definition (vertices & edges)
+├── ui/                             # Analyst Cockpit Dashboard
+│   ├── serve.py                    # Multi-endpoint REST API server & action execution gateway
 │   └── test_ui.py                  # End-to-end UI and API automated test suite
-├── eval/                           # Benchmark evaluation suite
-│   └── evaluate_benchmark.py       # Full benchmark runner across all 20 cases
-├── tests/                          # Integrity testing
-│   └── validate_submission.py      # End-to-end submission auditor (0 error assertion)
+├── src/                            # React 18 frontend (Obsidian Vector design system)
+├── tests/                          # Integrity testing & judge validation
+│   ├── judge_readiness.py          # Master 8-subsystem pre-flight judge readiness test
+│   ├── test_next_best_action_dynamics.py # Scenarios A-E dynamic NBA verification
+│   ├── test_hitl_enforcement.py    # Negative & positive HITL authorization tests
+│   ├── test_graph_case_similarity.py # Tri-factor graph similarity verification
+│   ├── validate_submission.py      # End-to-end submission auditor (0 error assertion)
+│   └── validate_cases.py           # 6-part domain validator suite
 └── docs/                           # Documentation & Deliverables
+    ├── AGENT_RESPONSIBILITIES.md   # Deep-dive 11-agent forensic specification
     ├── blog-post.md                # Publication-ready technical blog post
     ├── demo-script.md              # 5-minute video demonstration script & recording guide
-    ├── social-post.md              # Formatted Twitter/X and LinkedIn announcements
-    ├── benchmark-evaluation-report.md # Comprehensive Phase 9 evaluation report
-    ├── phase8-ui-report.md         # UI/UX verification report
     └── decisions.md                # Technical decisions and architectural rationale
 ```
-
----
-
-## 🎯 10-Phase Progression Checklist
-
-- [x] **Phase 0: Setup**: Environment configured, `tigergraph-mcp` installed, framework decisions recorded in `docs/decisions.md`.
-- [x] **Phase 1: Data Understanding & Graph Schema**: All data files profiled, vector vs graph partitioned, schema authored in `graph/schema.gsql`.
-- [x] **Phase 2: Data Ingestion & Vector Store**: 5,587 documents embedded and indexed into `data/vector_store/`, 0 failed rows in `docs/ingestion-report.md`.
-- [x] **Phase 3: Graph Algorithms & Pattern Library**: Parameterized GSQL pattern queries for all 5 typologies and hardware ring detection in `docs/query-test-report.md`.
-- [x] **Phase 4: GraphRAG Layer & MCP Tools**: Structured LLM dossiers synthesized without raw JSON dumps, 6 MCP tools exposed in `docs/graphrag-test-report.md`.
-- [x] **Phase 5: Agent Core (Investigation Loop)**: 8-stage stateful loop, traceable uncertainty, strict policy gating in `docs/phase5-agent-report.md`.
-- [x] **Phase 6: Case Memory & Dynamic Knowledge Feedback**: Resolved cases persisted to TigerGraph, dynamic precedent recall verified in `docs/phase6-memory-report.md`.
-- [x] **Phase 7: Explainability & Exact Output Format**: Exact 3-part JSON format, two-stage action evolution, FinCEN SAR generator in `docs/phase7-output-format-report.md`.
-- [x] **Phase 8: UI / UX Analyst Dashboard**: Interactive dark-mode cockpit (Stitch `Obsidian Vector`), SVG evidence graph, live sign-offs in `docs/phase8-ui-report.md`.
-- [x] **Phase 9: Benchmark Evaluation (20 Cases)**: All 20 cases evaluated, 100% schema valid (0 penalties), 0 crashes in `docs/benchmark-evaluation-report.md`.
-- [x] **Phase 10: Submission Polish & Deliverables**: Final integrity audit passed, technical blog post, video demo script, and social posts completed.
 
 ---
 

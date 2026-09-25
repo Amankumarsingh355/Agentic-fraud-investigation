@@ -31,3 +31,6 @@ Thumbs.db
 scratch/
 test_*.csv
 graph/tigergraph-mcp/
+
+node_modules/
+dist/

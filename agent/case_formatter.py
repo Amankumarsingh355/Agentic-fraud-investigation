@@ -88,15 +88,25 @@ class CaseFormatter:
                     f"is concurrently shared across {rings.get('ring_size')} distinct cardholder accounts."
                 )
 
-        # 3. Affected Transactions & Exposure
+        # 3. Affected Transactions & Exposure (Strict mathematical identity)
         if verdict == "legitimate":
             affected_txns = []
             first_suspicious = ""
             exposure_usd = 0.0
         else:
-            affected_txns = [str(target["txn_id"])]
-            first_suspicious = str(target["txn_id"])
-            exposure_usd = round(float(target["amount"]), 2)
+            if case_dict.get("affected_txn_ids"):
+                affected_txns = [str(t) for t in case_dict["affected_txn_ids"]]
+            else:
+                affected_txns = [str(target["txn_id"])]
+
+            first_suspicious = str(case_dict.get("first_suspicious_txn_id") or target["txn_id"])
+
+            # Map amounts for all affected txns from timeline or target
+            timeline_map = {str(t.get("txn_id")): abs(float(t.get("amount", 0.0))) for t in subgraph.get("card_timeline_72h", [])}
+            timeline_map[str(target["txn_id"])] = abs(float(target["amount"]))
+
+            calc_exposure = sum(timeline_map.get(str(t_id), abs(float(target["amount"]))) for t_id in affected_txns)
+            exposure_usd = round(float(calc_exposure), 2)
 
         # 4. Connected Cards & Device Profiles
         connected_cards = []
@@ -150,9 +160,8 @@ class CaseFormatter:
         for ev in case_dict.get("evidence_list", []):
             if ev.get("type") == "case_precedent":
                 t = ev.get("title", "")
-                # Extract case ID e.g. CC-1541 or MEM-RUN-1
                 for word in t.replace("(", " ").replace(")", " ").split():
-                    if word.startswith("CC-") or word.startswith("MEM-"):
+                    if word.startswith("CC-") and word[3:].isdigit():
                         if word not in similar_prior:
                             similar_prior.append(word)
 
@@ -178,9 +187,28 @@ class CaseFormatter:
             "activity_dates": sar_dict.get("activity_dates", []) if sar_dict.get("file") else []
         }
 
+        # 9. Extract Graph Provenance & Telemetry
+        graph_meta = subgraph.get("graph_metadata", {})
+        src_mode = graph_meta.get("investigation_source", "local_index_fallback")
+        g_stat = graph_meta.get("graph_status", "degraded")
+        fb_used = graph_meta.get("fallback_used", True)
+        fb_reason = graph_meta.get("fallback_reason", "workspace_paused")
+
+        # Explicitly prepend Graph Data Strategy evidence item
+        formatted_evidence.insert(0, {
+            "claim": f"Graph data sourced via {src_mode} (Status: {g_stat}, Fallback used: {fb_used}, Reason: {fb_reason}).",
+            "source": "graph",
+            "ref": f"telemetry:graph_data_strategy({src_mode})",
+            "entity_ids": [str(target["txn_id"]), str(target.get("customer_id", ""))]
+        })
+
         # Build Full Submission Artifact
         submission = {
             "case_id": case_id,
+            "investigation_source": src_mode,
+            "graph_status": g_stat,
+            "fallback_used": fb_used,
+            "fallback_reason": fb_reason,
             "case": {
                 "status": status,
                 "verdict": verdict,
@@ -192,6 +220,11 @@ class CaseFormatter:
                 "connected_card_ids": connected_cards,
                 "connected_device_profiles": connected_devs,
                 "exposure_usd": exposure_usd,
+                "investigation_source": src_mode,
+                "graph_status": g_stat,
+                "fallback_used": fb_used,
+                "fallback_reason": fb_reason,
+                "graph_forensic_chain": subgraph.get("graph_forensic_chain", {}),
                 "evidence": formatted_evidence,
                 "similar_prior_cases": similar_prior,
                 "summary": summary,

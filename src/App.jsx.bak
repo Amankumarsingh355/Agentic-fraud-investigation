@@ -1,0 +1,592 @@
+import React, { useState, useEffect } from 'react';
+import { Sidebar } from './components/Sidebar';
+import { InvestigationHeader } from './components/InvestigationHeader';
+import { ChatInterface } from './components/ChatInterface';
+import { CaseSummary } from './components/CaseSummary';
+import { RiskPanel } from './components/RiskPanel';
+import { UncertaintyPanel } from './components/UncertaintyPanel';
+import { NextBestAction } from './components/NextBestAction';
+import { PolicyEvidence } from './components/PolicyEvidence';
+import { EvidenceDrawer } from './components/EvidenceDrawer';
+import { PegaInvestigationDashboard } from './components/PegaInvestigationDashboard';
+import { AgentActivity } from './components/AgentActivity';
+import { ApprovalCenter } from './components/ApprovalCenter';
+import { CaseTimeline } from './components/CaseTimeline';
+import { SimilarCases } from './components/SimilarCases';
+import { BenchmarkView } from './components/BenchmarkView';
+import { DashboardOverview } from './components/DashboardOverview';
+import { NewInvestigationModal } from './components/NewInvestigationModal';
+import { RequestEvidenceModal } from './components/RequestEvidenceModal';
+import { PolicyModal } from './components/PolicyModal';
+import { generateCaseThoughtSteps } from './utils/thoughtGenerator';
+import { BatchProcessor } from './components/BatchProcessor';
+
+export function App() {
+  const [activeCaseId, setActiveCaseId] = useState(null);
+  const [cases, setCases] = useState([]);
+  const [caseData, setCaseData] = useState(null);
+  const [activeNav, setActiveNav] = useState('graph'); // Default to Graph Cockpit
+  const [pegaNav, setPegaNav] = useState('overview');
+  const [rightPanelOpen, setRightPanelOpen] = useState(true);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [selectedEntity, setSelectedEntity] = useState(null);
+  const [systemStatus, setSystemStatus] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Collapsed on graph view for 3-column Pega focus
+
+  // Modals
+  const [isNewInvestigationOpen, setIsNewInvestigationOpen] = useState(false);
+  const [isRequestEvidenceOpen, setIsRequestEvidenceOpen] = useState(false);
+  const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
+
+  // Default 11-agent pipeline status
+  const [pipelineStatus, setPipelineStatus] = useState([
+    { id: "agent_1", name: "01 Fraud Ingestion Specialist", status: "Completed", latency: "0.18s" },
+    { id: "agent_2", name: "02 TigerGraph Forensic Investigator", status: "Completed", latency: "0.38s" },
+    { id: "agent_3", name: "03 Pattern Recognition Specialist", status: "Completed", latency: "0.24s" },
+    { id: "agent_4", name: "04 Case Lifecycle Manager", status: "Completed", latency: "0.11s" },
+    { id: "agent_5", name: "05 Case Memory & Precedent Agent", status: "Completed", latency: "0.29s" },
+    { id: "agent_6", name: "06 Step-Up & Uncertainty Agent", status: "Completed", latency: "0.19s" },
+    { id: "agent_7", name: "07 Anti-Fraud Action Engine", status: "Completed", latency: "0.22s" },
+    { id: "agent_8", name: "08 Policy & Governance Validator", status: "Completed", latency: "0.16s" },
+    { id: "agent_9", name: "09 Early Stopping & Efficiency Gate", status: "Completed", latency: "0.08s" },
+    { id: "agent_10", name: "10 Explainability & Narrative Agent", status: "Completed", latency: "0.31s" },
+    { id: "agent_11", name: "11 Master Decision Validator", status: "Completed", latency: "0.15s" }
+  ]);
+
+  // Initial fetch of cases and system status
+  useEffect(() => {
+    fetch('/api/cases')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.cases) {
+          setCases(data.cases);
+          if (data.cases.length > 0 && !activeCaseId) {
+            setActiveCaseId(data.cases[0].case_id);
+          }
+        }
+      })
+      .catch(err => console.error("Error loading cases:", err));
+
+    fetch('/api/system/status')
+      .then(res => res.json())
+      .then(data => setSystemStatus(data))
+      .catch(err => console.error("Error loading system status:", err));
+  }, []);
+
+  // Fetch case detail when activeCaseId changes
+  useEffect(() => {
+    if (!activeCaseId) return;
+    setIsAnalyzing(true);
+
+    fetch(`/api/case?id=${activeCaseId}`)
+      .then(res => res.json())
+      .then(data => {
+        setCaseData(data);
+        setIsAnalyzing(false);
+
+        // Populate initial conversational messages
+        const c = data.case || {};
+        const nba = data.next_best_actions || {};
+        const sar = data.sar || {};
+        const actionsStr = (nba.final || []).map(a => a.action).join(', ') || 'CREATE_CASE, BLOCK_CARD';
+
+        const initialTurns = [
+          {
+            sender: 'user',
+            time: '19:41:01',
+            text: `Investigate transaction TX #${c.first_suspicious_txn_id || 'Unknown'} and determine whether this transaction is connected to any known fraud activity.`
+          },
+          {
+            sender: 'ai',
+            time: '19:41:03',
+            showActions: true,
+            chainOfThought: {
+              title: "Drafting forensic investigation report with TigerGraph & 11 Agents",
+              duration: "1.8s",
+              defaultExpanded: false,
+              steps: generateCaseThoughtSteps(data)
+            },
+            text: `## Investigation Summary\n\n` +
+              `The transaction is associated with a high-risk network of accounts sharing hardware and IP relationships. ` +
+              `Topological analysis classifies this activity as **${c.pattern || 'Unknown'}**.\n\n` +
+              `### Key Findings\n` +
+              `• **Connected Accounts**: ${(c.connected_card_ids || []).length} related cardholders identified via TigerGraph multi-hop traversal [Evidence #E-001].\n` +
+              `• **Hardware Nexus**: Linked to **${(c.connected_device_profiles && c.connected_device_profiles.length > 0) ? c.connected_device_profiles[0] : 'Unknown'}** [Evidence #E-002].\n` +
+              `• **Exposure**: Financial exposure stands at **$${Number(c.exposure_usd || 0).toFixed(2)} USD**.\n` +
+              `• **FinCEN SAR**: ${sar.file ? 'Mandatory filing triggered under Section 4 ($1,000 threshold or syndicate ring)' : 'Filing exempt based on exposure threshold'}.\n\n` +
+              `### Metric Overview\n` +
+              `• **Risk**: ${Math.round((c.fraud_probability || 0) * 100)}% (${(c.fraud_probability || 0) >= 0.75 ? 'HIGH' : 'MEDIUM'})\n` +
+              `• **Confidence**: ${Math.round((c.confidence_score || 0) * 100)}%\n` +
+              `• **Uncertainty**: ${c.uncertainty_level || 'LOW'}\n` +
+              `• **Evidence Sufficiency**: ${Math.round((c.evidence_completeness || 0) * 100)}%\n\n` +
+              `Current operational recommendation: **${actionsStr}** under **Bank Fraud Policy v1.0**.`
+          }
+        ];
+        setChatMessages(initialTurns);
+      })
+      .catch(err => {
+        console.error("Error loading case detail:", err);
+        setIsAnalyzing(false);
+      });
+  }, [activeCaseId]);
+
+  // Handle natural language chat message from analyst
+  const handleSendMessage = (userText) => {
+    const userMsg = {
+      sender: 'user',
+      time: new Date().toTimeString().split(' ')[0],
+      text: userText
+    };
+    setChatMessages(prev => [...prev, userMsg]);
+    setIsAnalyzing(true);
+
+    fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        case_id: activeCaseId,
+        message: userText,
+        history: chatMessages
+      })
+    })
+      .then(res => res.json())
+      .then(data => {
+        setIsAnalyzing(false);
+        const aiMsg = {
+          sender: 'ai',
+          time: new Date().toTimeString().split(' ')[0],
+          showActions: true,
+          chainOfThought: {
+            title: "Synthesizing multi-hop graph forensics & regulatory citations",
+            duration: "1.2s",
+            defaultExpanded: false,
+            steps: generateCaseThoughtSteps(caseData).slice(0, 4)
+          },
+          text: data.reply || "Investigation brief generated based on graph evidence."
+        };
+        setChatMessages(prev => [...prev, aiMsg]);
+      })
+      .catch(err => {
+        console.error("Error in chat:", err);
+        setIsAnalyzing(false);
+        const errorMsg = {
+          sender: 'ai',
+          time: new Date().toTimeString().split(' ')[0],
+          showActions: true,
+          text: "I was unable to complete the query against the local AI engine. Please verify that Ollama is operational or retry."
+        };
+        setChatMessages(prev => [...prev, errorMsg]);
+      });
+  };
+
+  // Re-run 11-agent investigation
+  const handleRerunInvestigation = () => {
+    setIsAnalyzing(true);
+    fetch('/api/investigate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ case_id: activeCaseId })
+    })
+      .then(res => res.json())
+      .then(data => {
+        const updatedData = data.data || caseData;
+        if (data.data) {
+          setCaseData(data.data);
+        }
+        setIsAnalyzing(false);
+        setChatMessages(prev => [
+          ...prev,
+          {
+            sender: 'ai',
+            time: new Date().toTimeString().split(' ')[0],
+            showActions: true,
+            chainOfThought: {
+              title: "Re-evaluating forensic topology with 11 Specialized Agents",
+              duration: "2.1s",
+              defaultExpanded: false,
+              steps: generateCaseThoughtSteps(updatedData)
+            },
+            text: `## Investigation Refreshed // 11 Agents Executed\n\n` +
+              `All 11 specialized agent stages re-evaluated graph evidence, precedent memory, and policy rules. ` +
+              `Status: **${updatedData?.case?.status || 'closed_fraud'}**.`
+          }
+        ]);
+      })
+      .catch(() => setIsAnalyzing(false));
+  };
+
+  // Human approval of action
+  const handleApproveAction = (action, route) => {
+    fetch(`/api/investigations/${activeCaseId}/approve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        case_id: activeCaseId,
+        action: action,
+        route: route,
+        analyst: "Senior Fraud Analyst L2"
+      })
+    })
+      .then(res => res.json())
+      .then(data => {
+        setCaseData(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            case: {
+              ...prev.case,
+              status: "closed_fraud",
+              approval_status: "APPROVED"
+            }
+          };
+        });
+
+        setChatMessages(prev => [
+          ...prev,
+          {
+            sender: 'ai',
+            time: new Date().toTimeString().split(' ')[0],
+            showActions: false,
+            text: `✓ **ACTION APPROVED & DISPATCHED**\n\n` +
+              `Action **${action}** was formally authorized by **Senior Fraud Analyst L2** under Route **${route}**. ` +
+              `Dispatched to core banking transaction blocking pipeline and recorded in the immutable audit ledger.`
+          }
+        ]);
+      })
+      .catch(err => console.error("Error approving action:", err));
+  };
+
+  // Human rejection of action
+  const handleRejectAction = (action, reason) => {
+    fetch(`/api/investigations/${activeCaseId}/reject`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        case_id: activeCaseId,
+        action: action,
+        reason: reason
+      })
+    })
+      .then(() => {
+        setCaseData(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            case: { ...prev.case, approval_status: "REJECTED" }
+          };
+        });
+      });
+  };
+
+  // Submit additional evidence
+  const handleSubmitEvidence = (payload) => {
+    fetch(`/api/investigations/${activeCaseId}/evidence`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.reinvestigation_data) {
+          setCaseData(data.reinvestigation_data);
+        }
+        setIsRequestEvidenceOpen(false);
+        setChatMessages(prev => [
+          ...prev,
+          {
+            sender: 'user',
+            time: new Date().toTimeString().split(' ')[0],
+            text: `Additional out-of-band evidence received: ${payload.evidence_type} -> '${payload.response}'.`
+          },
+          {
+            sender: 'ai',
+            time: new Date().toTimeString().split(' ')[0],
+            showActions: true,
+            text: `## Additional Evidence Ingested // Re-investigation Complete\n\n` +
+              `✓ Evidence signals updated\n` +
+              `✓ Risk and confidence recalculated\n` +
+              `✓ Next-best-action updated to reflect corroborated customer response under Bank Fraud Policy v1.0 [Rule R2/R3].`
+          }
+        ]);
+      })
+      .catch(() => setIsRequestEvidenceOpen(false));
+  };
+
+  // Start new investigation
+  const handleStartNewInvestigation = (params) => {
+    if (params.case_id) {
+      setActiveCaseId(params.case_id);
+      setActiveNav('graph');
+    } else {
+      fetch('/api/investigate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params)
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.case_id) {
+            setActiveCaseId(data.case_id);
+          }
+          setActiveNav('graph');
+        });
+    }
+  };
+
+  // Export 3-part JSON
+  const handleExportJson = () => {
+    if (!caseData) return;
+    const blob = new Blob([JSON.stringify(caseData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${activeCaseId}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Click on citation in chat
+  const handleOpenEvidenceCitation = (citation) => {
+    setSelectedEntity({
+      id: citation,
+      label: citation,
+      type: "Shared Hardware Profile",
+      risk_level: "HIGH",
+      details: {
+        connected_accounts: 4,
+        transactions: 12,
+        risk_relationships: 3,
+        shared_with: ["User_882", "User_412", "User_101"]
+      }
+    });
+  };
+
+  return (
+    <div className="flex h-screen bg-[#121212] text-slate-100 overflow-hidden font-sans">
+      {/* 1. Global Suite Sidebar (Visible on non-graph views or when toggled) */}
+      {(sidebarOpen || activeNav !== 'graph') && (
+        <Sidebar
+          cases={cases}
+          activeCaseId={activeCaseId}
+          onSelectCase={(cid) => {
+            setActiveCaseId(cid);
+          }}
+          onNewInvestigation={() => setIsNewInvestigationOpen(true)}
+          activeNav={activeNav}
+          onSelectNav={(nav) => setActiveNav(nav)}
+          systemStatus={systemStatus}
+        />
+      )}
+
+      {/* 2. Main Work Area */}
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        {/* Top Header */}
+        <InvestigationHeader
+          caseData={caseData}
+          rightPanelOpen={rightPanelOpen}
+          onToggleRightPanel={() => setRightPanelOpen(!rightPanelOpen)}
+          onRerun={handleRerunInvestigation}
+          isRerunning={isAnalyzing}
+          onExportJson={handleExportJson}
+        />
+
+        {/* Dynamic Views */}
+        <div className="flex-1 flex overflow-hidden relative">
+          {/* PRIMARY VIEW: Pega Investigation Dashboard (3-Column Architecture: Left Case Panel + Center Graph + Right Entity Drawer) */}
+          {activeNav === 'graph' && (
+            <PegaInvestigationDashboard
+              caseId={activeCaseId}
+              caseData={caseData}
+              cases={cases}
+              onSelectCase={(cid) => setActiveCaseId(cid)}
+              activeNav={pegaNav}
+              onSelectNav={(nav) => {
+                setPegaNav(nav);
+                if (nav === 'research') setActiveNav('chat');
+                else if (nav === 'ai_investigation') setActiveNav('agents');
+                else if (nav === 'previous_cases') setActiveNav('benchmark');
+                else setActiveNav('graph');
+              }}
+              onNewInvestigation={() => setIsNewInvestigationOpen(true)}
+            />
+          )}
+
+          {activeNav === 'batch_process' && (
+            <BatchProcessor cases={cases} />
+          )}
+
+          {/* Conversational Investigation Chat */}
+          {activeNav === 'chat' && (
+            <div className="flex-1 flex overflow-hidden">
+              <ChatInterface
+                caseData={caseData}
+                chatMessages={chatMessages}
+                onSendMessage={handleSendMessage}
+                isAnalyzing={isAnalyzing}
+                onRerunInvestigation={handleRerunInvestigation}
+                onOpenEvidence={handleOpenEvidenceCitation}
+                onViewGraph={() => setActiveNav('graph')}
+                onViewPolicy={() => setIsPolicyModalOpen(true)}
+                onViewSimilar={() => setActiveNav('benchmark')}
+                onReviewAction={() => setRightPanelOpen(true)}
+                onAttachEvidence={() => setIsRequestEvidenceOpen(true)}
+                pipelineStatus={pipelineStatus}
+              />
+
+              {/* Right-Side Investigation Context Panel */}
+              {rightPanelOpen && (
+                <aside className="w-80 border-l border-[#2A2A2A] bg-[#1E1E1E] overflow-y-auto p-3.5 space-y-3.5 flex-shrink-0">
+                  <CaseSummary caseData={caseData} />
+                  <RiskPanel caseData={caseData} />
+                  <NextBestAction
+                    caseData={caseData}
+                    onApprove={handleApproveAction}
+                    onReject={handleRejectAction}
+                    onRequestEvidence={() => setIsRequestEvidenceOpen(true)}
+                    onEscalate={() => handleApproveAction("ESCALATE_TO_ANALYST", "L2")}
+                    isProcessing={isAnalyzing}
+                  />
+                  <UncertaintyPanel
+                    caseData={caseData}
+                    onRequestEvidence={() => setIsRequestEvidenceOpen(true)}
+                  />
+                  <PolicyEvidence
+                    caseData={caseData}
+                    onOpenPolicyModal={() => setIsPolicyModalOpen(true)}
+                  />
+                </aside>
+              )}
+            </div>
+          )}
+
+          {/* 11-Agent Activity View */}
+          {activeNav === 'agents' && (
+            <div className="flex-1 overflow-y-auto p-4 bg-[#121212]">
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-white font-mono flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
+                    11-AGENT AUTONOMOUS FORENSIC PIPELINE
+                  </h2>
+                  <p className="text-xs text-[#A0A0A0]">
+                    Real-time state and reasoning output from all 11 specialized investigation agents.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setActiveNav('graph')}
+                  className="px-3 py-1.5 rounded bg-[#10B981] hover:bg-[#34D399] text-black font-mono font-bold text-xs shadow-[0_0_12px_rgba(16,185,129,0.3)] transition-all"
+                >
+                  Return to Graph Cockpit
+                </button>
+              </div>
+              <AgentActivity caseData={caseData} />
+            </div>
+          )}
+
+          {/* Approvals Center */}
+          {activeNav === 'approvals' && (
+            <div className="flex-1 overflow-y-auto p-4 bg-[#121212]">
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-white font-mono">HUMAN-IN-THE-LOOP APPROVAL CENTER</h2>
+                  <p className="text-xs text-[#A0A0A0]">Regulatory sign-off and sandbox execution for Tier-2 analysts.</p>
+                </div>
+                <button
+                  onClick={() => setActiveNav('graph')}
+                  className="px-3 py-1.5 rounded bg-[#10B981] hover:bg-[#34D399] text-black font-mono font-bold text-xs"
+                >
+                  Return to Graph Cockpit
+                </button>
+              </div>
+              <ApprovalCenter
+                onSelectCase={(cid) => {
+                  setActiveCaseId(cid);
+                  setActiveNav('graph');
+                }}
+              />
+            </div>
+          )}
+
+          {/* Case Timeline */}
+          {activeNav === 'timeline' && (
+            <div className="flex-1 overflow-y-auto p-4 bg-[#121212]">
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-white font-mono">CASE AUDIT TIMELINE</h2>
+                  <p className="text-xs text-[#A0A0A0]">Chronological forensic audit log with millisecond timestamps.</p>
+                </div>
+                <button
+                  onClick={() => setActiveNav('graph')}
+                  className="px-3 py-1.5 rounded bg-[#10B981] hover:bg-[#34D399] text-black font-mono font-bold text-xs"
+                >
+                  Return to Graph Cockpit
+                </button>
+              </div>
+              <CaseTimeline caseId={activeCaseId} />
+            </div>
+          )}
+
+          {/* Benchmark Suite */}
+          {activeNav === 'benchmark' && (
+            <div className="flex-1 overflow-y-auto p-4 bg-[#121212]">
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-white font-mono">OFFICIAL 20-CASE BENCHMARK EVALUATION</h2>
+                  <p className="text-xs text-[#A0A0A0]">Ground-truth verification across all 20 IEEE-CIS test scenarios.</p>
+                </div>
+                <button
+                  onClick={() => setActiveNav('graph')}
+                  className="px-3 py-1.5 rounded bg-[#10B981] hover:bg-[#34D399] text-black font-mono font-bold text-xs"
+                >
+                  Return to Graph Cockpit
+                </button>
+              </div>
+              <BenchmarkView
+                onSelectCase={(cid) => {
+                  setActiveCaseId(cid);
+                  setActiveNav('graph');
+                }}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Evidence Drawer for clicked citations */}
+      {selectedEntity && (
+        <EvidenceDrawer
+          entity={selectedEntity}
+          onClose={() => setSelectedEntity(null)}
+          onInvestigateEntity={(ent) => {
+            setSelectedEntity(null);
+            handleSendMessage(`Explain the forensic connection and risk relationships for entity ${ent.label || ent.id}.`);
+          }}
+        />
+      )}
+
+      {/* Modals */}
+      <NewInvestigationModal
+        isOpen={isNewInvestigationOpen}
+        onClose={() => setIsNewInvestigationOpen(false)}
+        onStartInvestigation={handleStartNewInvestigation}
+        benchmarkCases={cases}
+      />
+
+      <RequestEvidenceModal
+        isOpen={isRequestEvidenceOpen}
+        onClose={() => setIsRequestEvidenceOpen(false)}
+        caseId={activeCaseId}
+        onSubmitEvidence={handleSubmitEvidence}
+        isSubmitting={isAnalyzing}
+      />
+
+      <PolicyModal
+        isOpen={isPolicyModalOpen}
+        onClose={() => setIsPolicyModalOpen(false)}
+      />
+    </div>
+  );
+}
+
+export default App;

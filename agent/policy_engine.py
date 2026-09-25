@@ -2,9 +2,11 @@
 Bank Fraud Policy & Approval Authority Engine
 Strictly enforces Bank Fraud Policy v1.0, Operational Rules (R1 - R10),
 and Permission Matrix (auto, L1, L2).
+Zero fabricated rules. Strictly grounded in repository policy documentation.
 """
 
 from typing import Dict, Any, List, Optional, Tuple
+
 
 class PolicyEngine:
     def __init__(self):
@@ -21,7 +23,7 @@ class PolicyEngine:
             "ESCALATE_TO_ANALYST",
             "CLOSE_NO_FRAUD"
         }
-        
+
     def determine_action_route(self, action_name: str, exposure_usd: float) -> Tuple[str, str]:
         """
         Returns (route, role_description):
@@ -30,19 +32,19 @@ class PolicyEngine:
         """
         if action_name in self.AUTO_ACTIONS:
             return "auto", "Autonomous Agent"
-            
+
         if action_name == "DECLINE_TRANSACTION":
             return "L1", "Team Lead Sign-off"
-            
+
         if action_name == "BLOCK_CARD":
             if exposure_usd <= 2500.0:
                 return "L1", "Team Lead Sign-off"
             else:
                 return "L2", "Fraud Manager Sign-off"
-                
+
         if action_name in ["BLOCK_ALL_CARDS", "FILE_REPORT"]:
             return "L2", "Fraud Manager Sign-off"
-            
+
         # Default fail-safe: require highest management approval
         return "L2", "Fraud Manager Sign-off (Unclassified Action)"
 
@@ -51,10 +53,13 @@ class PolicyEngine:
         subgraph: Dict[str, Any],
         risk_assessment: Dict[str, Any],
         customer_verification_status: str = "pending",
-        trigger_type: str = "risk_score"
+        trigger_type: str = "risk_score",
+        is_recurring_dispute: bool = False,
+        is_undocumented_pattern: bool = False
     ) -> List[Dict[str, Any]]:
         """
         Determines the policy-compliant sequence of actions and assigns approval routes.
+        Follows Bank Fraud Policy v1.0 Rules R1 to R10.
         """
         target = subgraph["target_transaction"]
         rings = subgraph.get("shared_hardware_ring", {})
@@ -63,9 +68,9 @@ class PolicyEngine:
         prob = risk_assessment.get("fraud_probability", 0.0)
         has_sufficient_evidence = risk_assessment.get("has_sufficient_evidence", False)
         gaps = risk_assessment.get("evidence_gaps", [])
-        
+
         actions = []
-        
+
         def add_act(name: str, rule: str, reason: str):
             route, role = self.determine_action_route(name, exposure)
             # Avoid duplicate action recommendations
@@ -81,12 +86,19 @@ class PolicyEngine:
 
         # --- RULE EVALUATION HIERARCHY ---
 
+        # Rule R7: Disputed But Legitimate Recurring Activity
+        if is_recurring_dispute:
+            add_act("CREATE_CASE", "Rule R7", "Disputed charge matches historical recurring pattern.")
+            add_act("VERIFY_WITH_CUSTOMER", "Rule R7", "Verify recurring subscription with customer.")
+            add_act("WARN_CUSTOMER", "Rule R7", "Provide recurring charge advisory to customer; do not block.")
+            return actions
+
         # 1. Customer Verification Cases (Rules R2, R3, R4)
         if customer_verification_status == "confirmed_authorized":
             # Rule R3: Customer Confirms the Transaction
             add_act("CLOSE_NO_FRAUD", "Rule R3", "Cardholder verified initiating transaction. Close case without fraud.")
             return actions
-            
+
         if customer_verification_status == "denied_fraud":
             # Rule R2: Customer Denies the Transaction
             add_act("CREATE_CASE", "Rule R2", "Customer explicitly denied transaction. Open formal fraud case.")
@@ -102,6 +114,13 @@ class PolicyEngine:
             add_act("DECLINE_TRANSACTION", "Rule R4", "Decline authorization pending customer re-engagement.")
             if exposure > 500.0:
                 add_act("ESCALATE_TO_ANALYST", "Rule R4", f"High exposure (${exposure:.2f}) on unresponsive account requires manual review.")
+            return actions
+
+        # Rule R9: Undocumented Coordinated Patterns
+        if is_undocumented_pattern:
+            add_act("CREATE_CASE", "Rule R9", "Undocumented coordinated pattern detected across accounts.")
+            add_act("FILE_REPORT", "Rule R9", "Mandatory SAR for coordinated novel abuse pattern.")
+            add_act("ESCALATE_TO_ANALYST", "Rule R9", "Escalate undocumented pattern to fraud analyst.")
             return actions
 
         # 2. Shared Origin & Syndicate Rings (Rule R6)
@@ -155,5 +174,5 @@ class PolicyEngine:
         else:
             add_act("ALLOW_TRANSACTION", "Section 1", "Transaction permitted without customer friction.")
             add_act("MONITOR_CARD", "Section 1", "Card retained in active monitoring.")
-            
+
         return actions

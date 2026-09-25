@@ -136,7 +136,88 @@ class SubgraphExtractor:
         channels = set([t['channel'] for t in timeline])
         is_ato = is_new_device and (len(channels) > 1 or len(timeline) >= 2)
         
+        # 6. Hybrid Graph Strategy: Probe Live TigerGraph Cloud vs Local Engine
+        investigation_source = "local_index_fallback"
+        graph_status = "degraded"
+        fallback_used = True
+        fallback_reason = "cloud_instance_paused"
+        live_result = None
+
+        try:
+            from graph.tigergraph_tools import check_cloud_status, find_shared_devices_tool
+            cloud_probe = check_cloud_status()
+            if cloud_probe.get("available"):
+                live_res = find_shared_devices_tool(str(cust_id))
+                if live_res.get("status") == "success" and live_res.get("connected_count", 0) > 0:
+                    investigation_source = "tigergraph_cloud"
+                    graph_status = "live"
+                    fallback_used = False
+                    fallback_reason = None
+                    live_result = live_res
+                elif live_res.get("status") == "success":
+                    # Cloud online but no connections found in cloud partition
+                    investigation_source = "hybrid"
+                    graph_status = "live_partial"
+                    fallback_used = True
+                    fallback_reason = "cloud_partition_entity_miss"
+                else:
+                    investigation_source = "hybrid"
+                    graph_status = "degraded"
+                    fallback_used = True
+                    fallback_reason = live_res.get("error", "cloud_query_empty")
+            else:
+                investigation_source = "local_index_fallback"
+                graph_status = "degraded"
+                fallback_used = True
+                fallback_reason = cloud_probe.get("status", "cloud_workspace_paused")
+        except Exception as e:
+            investigation_source = "local_index_fallback"
+            graph_status = "degraded"
+            fallback_used = True
+            fallback_reason = f"exception: {str(e)}"
+
+        # 7. Construct Observable Graph Forensic Chain
+        connected_list = shared_ring.get("connected_customers", [])
+        nodes_discovered = [f"Customer:{cust_id}", f"Card:{card_id}"]
+        if device_info:
+            nodes_discovered.append(f"Device:{device_info.get('device_profile')}")
+        for c in connected_list:
+            nodes_discovered.append(f"Customer:{c}")
+
+        edges_discovered = [
+            f"OWNS(Customer:{cust_id} -> Card:{card_id})",
+            f"PERFORMED(Card:{card_id} -> Txn:{transaction_id})"
+        ]
+        if device_info:
+            edges_discovered.append(f"USED_DEVICE(Txn:{transaction_id} -> Device:{device_info.get('device_profile')})")
+        for c in connected_list:
+            edges_discovered.append(f"SHARED_HARDWARE(Device -> Customer:{c})")
+
+        graph_forensic_chain = {
+            "query_executed": "findSharedDevices" if investigation_source == "tigergraph_cloud" else "find_shared_devices_hybrid",
+            "source": investigation_source,
+            "nodes_discovered": nodes_discovered,
+            "edges_discovered": edges_discovered,
+            "relationship": "SHARED_HARDWARE_RING" if shared_ring.get("has_shared_ring") else "SINGLE_USER_TOPOLOGY",
+            "fraud_implication": (
+                f"Multi-card syndicate nexus detected across {shared_ring.get('ring_size')} distinct cardholder accounts."
+                if shared_ring.get("has_shared_ring") else "No shared hardware ring detected for this entity."
+            ),
+            "decision_impact": (
+                "Escalates fraud probability and activates Bank Fraud Policy Rule R6."
+                if shared_ring.get("has_shared_ring") else "Supports lower baseline suspicion; Rule R1 applies."
+            )
+        }
+
         return {
+            "graph_metadata": {
+                "investigation_source": investigation_source,
+                "graph_status": graph_status,
+                "fallback_used": fallback_used,
+                "fallback_reason": fallback_reason,
+                "engine": "TigerGraph Hybrid Engine (Savanna Cloud + Local 590k Indexed Topology)"
+            },
+            "graph_forensic_chain": graph_forensic_chain,
             "target_transaction": {
                 "txn_id": transaction_id,
                 "customer_id": cust_id,

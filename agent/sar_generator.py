@@ -37,21 +37,12 @@ class SARGenerator:
         card_id = target.get("card_id")
         txn_id = target.get("txn_id")
         
-        # Check if FILE_REPORT is among final actions
-        file_report_mandated = any(a.get("action") == "FILE_REPORT" or a.get("action_name") == "FILE_REPORT" for a in actions)
-        
-        # Policy rules determining SAR filing:
-        # 1. Total exposure > $1,000 on confirmed/suspected fraud
-        # 2. Activity links to shared device profile or syndicate ring (Rule R6)
-        # 3. Customer denial with exposure > $1,000 (Rule R2)
-        # 4. Coordinated/undocumented pattern (Rule R9)
-        should_file = file_report_mandated or (
-            verdict == "fraud" and (
-                exposure >= 1000.0 or 
-                rings.get("has_shared_ring", False) or 
-                pattern in ["syndicate_ring", "account_takeover"]
-            )
+        # Strictly enforce: SAR file == true ONLY if FILE_REPORT exists in final actions
+        file_report_mandated = any(
+            (a.get("action") == "FILE_REPORT" or a.get("action_name") == "FILE_REPORT")
+            for a in actions
         )
+        should_file = file_report_mandated and (verdict == "fraud")
         
         # If verdict is legitimate or should not file, return empty compliant SAR block
         if not should_file or verdict == "legitimate":

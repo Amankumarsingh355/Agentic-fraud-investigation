@@ -144,7 +144,7 @@ class CaseMemoryManager:
         
         self.dynamic_cases[cid] = memory_record
         self._save_memory()
-        
+
         # Feedback into pattern registry if confirmed fraud
         if outcome == "confirmed_fraud" and subgraph:
             dev = subgraph.get("identity_device")
@@ -164,7 +164,35 @@ class CaseMemoryManager:
                     pattern=pattern,
                     notes=f"Confirmed anonymous proxy in Case {cid}"
                 )
-                
+
+        # Attempt Live TigerGraph Upsert Write-Back
+        try:
+            from graph.tigergraph_crewai_integration import conn
+            if conn and hasattr(conn, "upsertVertex"):
+                conn.upsertVertex(
+                    "ClosedCase",
+                    cid,
+                    attributes={
+                        "status": case_dict.get("status", "RESOLVED"),
+                        "outcome": outcome,
+                        "pattern": pattern,
+                        "exposure_usd": float(exposure),
+                        "analyst_notes": case_dict.get("decision_explanation", "")[:500]
+                    }
+                )
+                if txn_id:
+                    try:
+                        conn.upsertEdge("ClosedCase", cid, "INVOLVES", "Transaction", str(txn_id))
+                    except Exception:
+                        pass
+                if card_id:
+                    try:
+                        conn.upsertEdge("ClosedCase", cid, "ON_CARD", "Card", str(card_id))
+                    except Exception:
+                        pass
+        except Exception:
+            pass  # Seamless fallback to persistent dynamic case memory
+
         return memory_record
 
     def get_case(self, case_id: str) -> Optional[Dict[str, Any]]:
