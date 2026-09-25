@@ -1,0 +1,45 @@
+// ============================================================================
+// TigerGraph GSQL: Similar Prior Cases Retrieval Query
+// Hackathon: TigerGraph Agentic Fraud Investigation (Hacker House Goa 2026)
+// ============================================================================
+
+USE GRAPH FraudGraph
+
+// ----------------------------------------------------------------------------
+// Similar Prior Case Retrieval (find_similar_prior_cases)
+// Traverses historical Case Memory to find structural precedents
+// Strictly filters out benchmark evaluation cases (is_benchmark == FALSE)
+// ----------------------------------------------------------------------------
+CREATE QUERY find_similar_prior_cases(
+    STRING target_pattern,
+    DOUBLE target_exposure,
+    INT top_k = 5
+) FOR GRAPH FraudGraph RETURNS (ListAccum<TUPLE<STRING case_id, STRING pattern, STRING outcome, DOUBLE exposure_usd, DOUBLE score>> similar_cases) {
+    
+    TYPEDEF TUPLE<STRING case_id, STRING pattern, STRING outcome, DOUBLE exposure_usd, DOUBLE score> CASE_MATCH;
+    ListAccum<CASE_MATCH> @@candidates;
+
+    AllCases = { Case.* };
+
+    // Filter strictly for historical case memory (NEVER benchmark eval cases)
+    MemoryCases = SELECT c FROM AllCases:c
+                  WHERE c.is_benchmark == FALSE 
+                    AND c.namespace == "case_memory"
+                    AND (target_pattern == "" OR c.pattern == target_pattern)
+                  ACCUM
+                      DOUBLE score = 0.0,
+                      // Pattern match bonus
+                      IF c.pattern == target_pattern THEN
+                          score = score + 0.5
+                      END,
+                      // Financial exposure proximity
+                      IF target_exposure > 0.0 AND abs(c.exposure_usd - target_exposure) <= (0.5 * target_exposure) THEN
+                          score = score + 0.5
+                      ELSE IF target_exposure > 0.0 AND abs(c.exposure_usd - target_exposure) <= (1.0 * target_exposure) THEN
+                          score = score + 0.25
+                      END,
+                      @@candidates += CASE_MATCH(c.case_id, c.pattern, c.outcome, c.exposure_usd, score);
+
+    // Sort and return top candidates
+    RETURN (@@candidates);
+}

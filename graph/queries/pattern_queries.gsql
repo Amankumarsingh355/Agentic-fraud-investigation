@@ -1,0 +1,266 @@
+// ============================================================================
+// TigerGraph GSQL: Pattern Detection Queries for 5 Canonical Typologies
+// Hackathon: TigerGraph Agentic Fraud Investigation (Hacker House Goa 2026)
+// ============================================================================
+
+USE GRAPH FraudGraph
+
+// ----------------------------------------------------------------------------
+// 1. Pattern 1: Card Testing (card_testing)
+// Signature: 3+ micro authorizations (<$5) online within 1 hour, then large purchase
+// Policy Rule: R5
+// ----------------------------------------------------------------------------
+CREATE QUERY detect_card_testing(
+    VERTEX<Card> target_card,
+    DATETIME anchor_time,
+    INT lookback_hours = 24
+) FOR GRAPH FraudGraph RETURNS (BOOL is_card_testing, DOUBLE confidence, DOUBLE exposure, SET<STRING> micro_txns, STRING large_txn) {
+    
+    TYPEDEF TUPLE<STRING txn_id, DOUBLE amount, DATETIME ts, STRING channel> TXN_RECORD;
+    ListAccum<TXN_RECORD> @@card_txns;
+    SetAccum<STRING> @@micro_set;
+    MaxAccum<DOUBLE> @@max_large_amt = 0.0;
+    STRING @@large_txn_id = "";
+    SumAccum<DOUBLE> @@total_exposure = 0.0;
+    BOOL @@flagged = FALSE;
+    DOUBLE @@conf = 0.0;
+
+    Start = { target_card };
+
+    // Fetch transactions on target card in lookback window
+    Txns = SELECT t FROM Start:c -(PERFORMED:e)-> Transaction:t
+           WHERE t.ts BETWEEN datetime_sub(anchor_time, INTERVAL lookback_hours HOUR) AND anchor_time
+           ACCUM @@card_txns += TXN_RECORD(t.txn_id, t.amount, t.ts, t.channel);
+
+    // Analyze sequential pairs and micro-authorizations
+    FOREACH tx IN @@card_txns DO
+        IF tx.amount <= 5.0 AND tx.channel == "online" THEN
+            @@micro_set += tx.txn_id;
+            @@total_exposure += tx.amount;
+        ELSE IF tx.amount >= 50.0 THEN
+            IF tx.amount > @@max_large_amt THEN
+                @@max_large_amt += tx.amount;
+                @@large_txn_id = tx.txn_id;
+            END;
+        END;
+    END;
+
+    // Pattern confirmation: >= 3 micro authorizations online
+    IF @@micro_set.size() >= 3 THEN
+        @@flagged = TRUE;
+        IF @@large_txn_id != "" THEN
+            @@conf = 0.92;
+            @@total_exposure += @@max_large_amt;
+        ELSE
+            @@conf = 0.75;
+        END;
+    END;
+
+    RETURN (@@flagged, @@conf, @@total_exposure, @@micro_set, @@large_txn_id);
+}
+
+
+// ----------------------------------------------------------------------------
+// 2. Pattern 2: Card-Not-Present Fraud (card_not_present_fraud)
+// Signature: Online transactions burst (2-4 within 48h) with unusual amounts/products
+// Policy Rules: R1 to R4
+// ----------------------------------------------------------------------------
+CREATE QUERY detect_cnp_fraud(
+    VERTEX<Card> target_card,
+    DATETIME anchor_time,
+    INT window_hours = 48
+) FOR GRAPH FraudGraph RETURNS (BOOL is_cnp, DOUBLE confidence, DOUBLE exposure, SET<STRING> affected_txns) {
+    
+    SetAccum<STRING> @@burst_txns;
+    SumAccum<DOUBLE> @@burst_exposure = 0.0;
+    SumAccum<INT> @@online_count = 0;
+    MaxAccum<DOUBLE> @@max_risk = 0.0;
+    BOOL @@flagged = FALSE;
+    DOUBLE @@conf = 0.0;
+
+    Start = { target_card };
+
+    Txns = SELECT t FROM Start:c -(PERFORMED:e)-> Transaction:t
+           WHERE t.ts BETWEEN datetime_sub(anchor_time, INTERVAL window_hours HOUR) AND anchor_time
+             AND t.channel == "online"
+           ACCUM 
+               @@burst_txns += t.txn_id,
+               @@burst_exposure += t.amount,
+               @@online_count += 1,
+               @@max_risk += t.risk_score;
+
+    // Burst detection: 2 to 4 transactions online within window
+    IF @@online_count >= 2 THEN
+        @@flagged = TRUE;
+        IF @@max_risk >= 0.70 THEN
+            @@conf = 0.82;
+        ELSE
+            @@conf = 0.65; // Weak signal under Rule R1
+        END;
+    ELSE IF @@online_count == 1 AND @@max_risk >= 0.75 THEN
+        @@flagged = TRUE;
+        @@conf = 0.60;
+    END;
+
+    RETURN (@@flagged, @@conf, @@burst_exposure, @@burst_txns);
+}
+
+
+// ----------------------------------------------------------------------------
+// 3. Pattern 3: CNP from New Device (card_not_present_new_device)
+// Signature: CNP online burst with Device marked New (id_15) or proxy (id_23)
+// Policy Rules: R1, R2, R6
+// ----------------------------------------------------------------------------
+CREATE QUERY detect_cnp_new_device(
+    VERTEX<Card> target_card,
+    DATETIME anchor_time,
+    INT window_hours = 48
+) FOR GRAPH FraudGraph RETURNS (BOOL is_cnp_new_device, DOUBLE confidence, DOUBLE exposure, STRING device_id, BOOL has_proxy, SET<STRING> affected_txns) {
+    
+    SetAccum<STRING> @@affected;
+    SumAccum<DOUBLE> @@total_exp = 0.0;
+    OrAccum @@found_new_device = FALSE;
+    OrAccum @@found_proxy = FALSE;
+    STRING @@dev_id = "";
+    BOOL @@flagged = FALSE;
+    DOUBLE @@conf = 0.0;
+
+    Start = { target_card };
+
+    Txns = SELECT t FROM Start:c -(PERFORMED:e)-> Transaction:t
+           WHERE t.ts BETWEEN datetime_sub(anchor_time, INTERVAL window_hours HOUR) AND anchor_time
+             AND t.channel == "online";
+
+    Devices = SELECT d FROM Txns:t -(USED_DEVICE:e)-> Device:d
+              ACCUM 
+                  @@affected += t.txn_id,
+                  @@total_exp += t.amount,
+                  IF d.is_new == TRUE THEN
+                      @@found_new_device += TRUE,
+                      @@dev_id = d.device_id
+                  END,
+                  IF d.proxy_rating != "" THEN
+                      @@found_proxy += TRUE
+                  END;
+
+    IF @@found_new_device THEN
+        @@flagged = TRUE;
+        IF @@found_proxy THEN
+            @@conf = 0.90; // Strong signal: new device + proxy
+        ELSE
+            @@conf = 0.78; // New device CNP
+        END;
+    END;
+
+    RETURN (@@flagged, @@conf, @@total_exp, @@dev_id, @@found_proxy, @@affected);
+}
+
+
+// ----------------------------------------------------------------------------
+// 4. Pattern 4: Out of Region Use (out_of_region_use)
+// Signature: In-person purchase in novel addr1 concurrent with home activity
+// Policy Rules: R2, R3
+// ----------------------------------------------------------------------------
+CREATE QUERY detect_out_of_region(
+    VERTEX<Card> target_card,
+    DATETIME anchor_time,
+    INT window_hours = 72
+) FOR GRAPH FraudGraph RETURNS (BOOL is_out_of_region, DOUBLE confidence, DOUBLE exposure, STRING novel_region, STRING home_region, SET<STRING> suspicious_txns) {
+    
+    MapAccum<STRING, INT> @@region_counts;
+    SetAccum<STRING> @@suspicious_set;
+    SumAccum<DOUBLE> @@suspicious_exp = 0.0;
+    STRING @@dominant_home = "";
+    STRING @@foreign_reg = "";
+    BOOL @@dual_location = FALSE;
+    BOOL @@flagged = FALSE;
+    DOUBLE @@conf = 0.0;
+
+    Start = { target_card };
+
+    // Baseline historical regions (last 90 days)
+    AllTxns = SELECT t FROM Start:c -(PERFORMED:e)-> Transaction:t
+              WHERE t.addr1 > 0
+              ACCUM @@region_counts += (to_string(t.addr1) -> 1);
+
+    // Find dominant home region
+    INT max_c = 0;
+    FOREACH (reg, cnt) IN @@region_counts DO
+        IF cnt > max_c THEN
+            max_c = cnt;
+            @@dominant_home = reg;
+        END;
+    END;
+
+    // Recent in-person transactions
+    RecentTxns = SELECT t FROM Start:c -(PERFORMED:e)-> Transaction:t
+                 WHERE t.ts BETWEEN datetime_sub(anchor_time, INTERVAL window_hours HOUR) AND anchor_time
+                   AND t.channel == "in_person"
+                 ACCUM
+                     IF to_string(t.addr1) != @@dominant_home AND t.addr1 > 0 THEN
+                         @@suspicious_set += t.txn_id,
+                         @@suspicious_exp += t.amount,
+                         @@foreign_reg = to_string(t.addr1)
+                     ELSE IF to_string(t.addr1) == @@dominant_home THEN
+                         @@dual_location += TRUE
+                     END;
+
+    IF @@suspicious_set.size() > 0 AND @@dual_location THEN
+        @@flagged = TRUE;
+        @@conf = 0.88; // Card cloning confirmed by impossible dual-location velocity
+    ELSE IF @@suspicious_set.size() > 0 THEN
+        @@flagged = TRUE;
+        @@conf = 0.65; // Novel region without dual location (possible travel)
+    END;
+
+    RETURN (@@flagged, @@conf, @@suspicious_exp, @@foreign_reg, @@dominant_home, @@suspicious_set);
+}
+
+
+// ----------------------------------------------------------------------------
+// 5. Pattern 5: Account Takeover (account_takeover)
+// Signature: Mixed channel anomalies, credential mismatch, foreign device
+// Policy Rules: R2, R10
+// ----------------------------------------------------------------------------
+CREATE QUERY detect_account_takeover(
+    VERTEX<Customer> target_customer,
+    DATETIME anchor_time,
+    INT window_hours = 48
+) FOR GRAPH FraudGraph RETURNS (BOOL is_ato, DOUBLE confidence, DOUBLE exposure, SET<STRING> affected_cards, SET<STRING> affected_txns) {
+    
+    SetAccum<STRING> @@cards;
+    SetAccum<STRING> @@txns;
+    SumAccum<DOUBLE> @@total_exp = 0.0;
+    SumAccum<INT> @@online_txns = 0;
+    SumAccum<INT> @@in_person_txns = 0;
+    OrAccum @@new_device_seen = FALSE;
+    BOOL @@flagged = FALSE;
+    DOUBLE @@conf = 0.0;
+
+    Start = { target_customer };
+
+    Cards = SELECT c FROM Start:cust -(OWNS:e)-> Card:c;
+
+    Txns = SELECT t FROM Cards:c -(PERFORMED:e)-> Transaction:t
+           WHERE t.ts BETWEEN datetime_sub(anchor_time, INTERVAL window_hours HOUR) AND anchor_time
+           ACCUM 
+               @@cards += c.card_id,
+               @@txns += t.txn_id,
+               @@total_exp += t.amount,
+               IF t.channel == "online" THEN @@online_txns += 1 END,
+               IF t.channel == "in_person" THEN @@in_person_txns += 1 END;
+
+    Devices = SELECT d FROM Txns:t -(USED_DEVICE:e)-> Device:d
+              ACCUM IF d.is_new == TRUE THEN @@new_device_seen += TRUE END;
+
+    // ATO: Multi-card activity from new device or sudden mixed-channel spike
+    IF @@new_device_seen AND (@@cards.size() >= 2 OR (@@online_txns >= 2 AND @@in_person_txns >= 1)) THEN
+        @@flagged = TRUE;
+        @@conf = 0.89;
+    ELSE IF @@new_device_seen AND @@online_txns >= 2 THEN
+        @@flagged = TRUE;
+        @@conf = 0.72;
+    END;
+
+    RETURN (@@flagged, @@conf, @@total_exp, @@cards, @@txns);
+}

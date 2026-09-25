@@ -1,0 +1,467 @@
+{
+  "case_id": "TEST-03",
+  "opened_at": "2026-09-21T11:21:30.411577",
+  "closed_at": "2026-09-21T11:21:30.434860",
+  "status": "CLOSED",
+  "trigger": {
+    "type": "risk_score",
+    "text": "Real-time model scored transaction 3001018 ($49.04) at 0.84. Review and decide.",
+    "flagged_txn_id": 3001018,
+    "card_id": "C03667-K1",
+    "customer_id": "C03667",
+    "risk_score": 0.84,
+    "timestamp": "2026-09-21T11:21:30.411577"
+  },
+  "risk_assessment": {
+    "fraud_probability": 0.02,
+    "uncertainty_score": 0.02,
+    "confidence_level": "HIGH",
+    "has_sufficient_evidence": true,
+    "criteria_breakdown": {
+      "base_signals": [
+        {
+          "signal": "Bank Risk Model Score (0.84)",
+          "delta": 0.64,
+          "detail": "Real-time automated transaction scoring model."
+        }
+      ],
+      "corroborating_signals": [],
+      "mitigating_signals": [
+        {
+          "signal": "Home Region In-Person Activity",
+          "delta": -0.15,
+          "detail": "Transaction took place in established home billing region 123.0."
+        },
+        {
+          "signal": "Explicit Customer Confirmation (Rule R3)",
+          "delta": -0.9,
+          "detail": "Cardholder confirmed initiating this transaction."
+        }
+      ],
+      "evidence_gaps": []
+    },
+    "evidence_gaps": [],
+    "updated_at": "2026-09-21T11:21:30.434808"
+  },
+  "findings": [],
+  "actions": [
+    {
+      "action_id": "ACT-01",
+      "action_name": "CLOSE_NO_FRAUD",
+      "route": "auto",
+      "status": "EXECUTED",
+      "reason": "Cardholder verified initiating transaction. Close case without fraud.",
+      "policy_rule": "Rule R3",
+      "side_effects": {
+        "case_id": "TEST-03",
+        "status": "CLOSED",
+        "resolution": "CLEARED_LEGITIMATE",
+        "customer_friction": "NONE"
+      },
+      "timestamp": "2026-09-21T11:21:30.434844"
+    }
+  ],
+  "evidence_summary": [
+    {
+      "evidence_id": "EV-001",
+      "type": "customer_baseline",
+      "title": "Cardholder Profile for C03667",
+      "score": null
+    },
+    {
+      "evidence_id": "EV-002",
+      "type": "target_transaction",
+      "title": "Flagged Transaction 3001018 ($ 49.04)",
+      "score": 0.84
+    },
+    {
+      "evidence_id": "EV-003",
+      "type": "velocity_timeline",
+      "title": "Rolling 72-Hour Timeline (1 events)",
+      "score": null
+    },
+    {
+      "evidence_id": "EV-004",
+      "type": "pattern_signals",
+      "title": "Typology Pattern Recognition Checks",
+      "score": null
+    },
+    {
+      "evidence_id": "EV-005",
+      "type": "hardware_rings",
+      "title": "Shared Hardware Syndicate Ring Discovery",
+      "score": null
+    },
+    {
+      "evidence_id": "EV-006",
+      "type": "policy_citation",
+      "title": "**Rule R1: Verify Before You Block on a Weak Signal**",
+      "score": 0.2616
+    },
+    {
+      "evidence_id": "EV-007",
+      "type": "policy_citation",
+      "title": "Closed Case CC-1564 (confirmed_fraud, account_takeover)",
+      "score": 0.1784
+    },
+    {
+      "evidence_id": "EV-008",
+      "type": "case_precedent",
+      "title": "Precedent Case CC-1564 (confirmed_fraud)",
+      "score": 0.4651
+    },
+    {
+      "evidence_id": "EV-009",
+      "type": "case_precedent",
+      "title": "Precedent Case CC-0008 (confirmed_fraud)",
+      "score": 0.464
+    },
+    {
+      "evidence_id": "EV-010",
+      "type": "customer_verification_response",
+      "title": "Customer Verification Response: confirmed_authorized",
+      "score": null
+    }
+  ],
+  "evidence_list": [
+    {
+      "evidence_id": "EV-001",
+      "type": "customer_baseline",
+      "source": "TigerGraph / Customer",
+      "title": "Cardholder Profile for C03667",
+      "details": {
+        "customer_id": "C03667",
+        "total_historical_txns": 2,
+        "total_historical_volume": 249.02,
+        "home_region": 123.0,
+        "first_seen": "2016-07-02 16:56:48",
+        "last_seen": "2016-09-02 16:41:59"
+      },
+      "score": null,
+      "recorded_at": "2026-09-21T11:21:30.411603"
+    },
+    {
+      "evidence_id": "EV-002",
+      "type": "target_transaction",
+      "source": "TigerGraph / Transaction",
+      "title": "Flagged Transaction 3001018 ($ 49.04)",
+      "details": {
+        "txn_id": 3001018,
+        "customer_id": "C03667",
+        "card_id": "C03667-K1",
+        "amount": 49.04,
+        "ts": "2016-07-02 16:56:48",
+        "channel": "in_person",
+        "product_cd": "W",
+        "risk_score": 0.84,
+        "addr1": 123.0,
+        "addr2": 87.0,
+        "card_network": "mastercard",
+        "card_type": "debit",
+        "purchaser_email": "gmail.com"
+      },
+      "score": 0.84,
+      "recorded_at": "2026-09-21T11:21:30.411615"
+    },
+    {
+      "evidence_id": "EV-003",
+      "type": "velocity_timeline",
+      "source": "TigerGraph / Card History",
+      "title": "Rolling 72-Hour Timeline (1 events)",
+      "details": [
+        {
+          "txn_id": 3001018,
+          "ts": "2016-07-02 16:56:48",
+          "amount": 49.04,
+          "channel": "in_person",
+          "product_cd": "W",
+          "risk_score": 0.84,
+          "addr1": 123.0,
+          "delta_s": 0.0
+        }
+      ],
+      "score": null,
+      "recorded_at": "2026-09-21T11:21:30.411622"
+    },
+    {
+      "evidence_id": "EV-004",
+      "type": "pattern_signals",
+      "source": "Pattern Engine",
+      "title": "Typology Pattern Recognition Checks",
+      "details": {
+        "card_testing": {
+          "flagged": false,
+          "micro_count": 0,
+          "large_count": 0
+        },
+        "card_not_present": {
+          "flagged": false,
+          "online_count": 0
+        },
+        "cnp_new_device": {
+          "flagged": false,
+          "is_new": false
+        },
+        "out_of_region": {
+          "flagged": false,
+          "current_region": 123.0,
+          "home_region": 123.0
+        },
+        "account_takeover": {
+          "flagged": false,
+          "mixed_channels": false
+        }
+      },
+      "score": null,
+      "recorded_at": "2026-09-21T11:21:30.411632"
+    },
+    {
+      "evidence_id": "EV-005",
+      "type": "hardware_rings",
+      "source": "Graph Ring Algorithms",
+      "title": "Shared Hardware Syndicate Ring Discovery",
+      "details": {
+        "has_shared_ring": false,
+        "connected_customers": [],
+        "ring_size": 1
+      },
+      "score": null,
+      "recorded_at": "2026-09-21T11:21:30.411638"
+    },
+    {
+      "evidence_id": "EV-006",
+      "type": "policy_citation",
+      "source": "Bank Fraud Policy Store",
+      "title": "**Rule R1: Verify Before You Block on a Weak Signal**",
+      "details": "- **Rule R1: Verify Before You Block on a Weak Signal**\n  If an investigation rests on a single signal (such as a model risk score alone) and assessed fraud probability is below 0.70, recommend `VERIFY_WITH_CUSTOMER` or `STEP_UP_AUTH` prior to any card block. Blocking a legitimate customer on uncorr...",
+      "score": 0.2616,
+      "recorded_at": "2026-09-21T11:21:30.423119"
+    },
+    {
+      "evidence_id": "EV-007",
+      "type": "policy_citation",
+      "source": "Bank Fraud Policy Store",
+      "title": "Closed Case CC-1564 (confirmed_fraud, account_takeover)",
+      "details": "Case CC-1564: cardholder C04105 reported unrecognized activity on card C04105-K2. 1 transaction(s) between 2016-08-01 and 2016-08-01 totaling $49.04 were confirmed fraudulent. Mixed-channel activity inconsistent with the cardholder; credentials and card data both used. Card blocked and reissued. Cus...",
+      "score": 0.1784,
+      "recorded_at": "2026-09-21T11:21:30.423131"
+    },
+    {
+      "evidence_id": "EV-008",
+      "type": "case_precedent",
+      "source": "TigerGraph Case Memory (Historical)",
+      "title": "Precedent Case CC-1564 (confirmed_fraud)",
+      "details": "Case CC-1564: cardholder C04105 reported unrecognized activity on card C04105-K2. 1 transaction(s) between 2016-08-01 and 2016-08-01 totaling $49.04 were confirmed fraudulent. Mixed-channel activity inconsistent with the cardholder; credentials and card data both used. Card blocked and reissued. Cus...",
+      "score": 0.4651,
+      "recorded_at": "2026-09-21T11:21:30.434758"
+    },
+    {
+      "evidence_id": "EV-009",
+      "type": "case_precedent",
+      "source": "TigerGraph Case Memory (Historical)",
+      "title": "Precedent Case CC-0008 (confirmed_fraud)",
+      "details": "Case CC-0008: cardholder C03667 reported unrecognized activity on card C03667-K1. 1 transaction(s) between 2016-07-02 and 2016-07-02 totaling $49.04 were confirmed fraudulent. Mixed-channel activity inconsistent with the cardholder; credentials and card data both used. Card blocked and reissued. Cus...",
+      "score": 0.464,
+      "recorded_at": "2026-09-21T11:21:30.434766"
+    },
+    {
+      "evidence_id": "EV-010",
+      "type": "customer_verification_response",
+      "source": "Cardholder SMS/Push Channel",
+      "title": "Customer Verification Response: confirmed_authorized",
+      "details": {
+        "status": "confirmed_authorized",
+        "response_received_at": "2026-09-21T11:21:30.434796"
+      },
+      "score": null,
+      "recorded_at": "2026-09-21T11:21:30.434798"
+    }
+  ],
+  "decision_explanation": "### Investigation Summary for Case TEST-03\n**Transaction**: `3001018` | **Amount**: `$49.04` | **Trigger**: `risk_score`\n\n**Assessed Fraud Probability**: `0.02` | **Confidence**: `HIGH` (Uncertainty: `0.02`)\n\n#### Traceable Evidence & Reasoning\n- **Trigger Prior**: Bank Risk Model Score (0.84) (+0.64): Real-time automated transaction scoring model.\n- **Mitigating Signal**: Home Region In-Person Activity (-0.15): Transaction took place in established home billing region 123.0.\n- **Mitigating Signal**: Explicit Customer Confirmation (Rule R3) (-0.90): Cardholder confirmed initiating this transaction.\n\n#### Policy Gated Actions & Next Steps\n- **CLOSE_NO_FRAUD** (`auto` - EXECUTED): Cardholder verified initiating transaction. Close case without fraud. (Governing: *Rule R3*)",
+  "audit_trail": [
+    {
+      "index": 1,
+      "timestamp": "2026-09-21T11:21:30.411588",
+      "stage": "TRIGGER",
+      "event_type": "CASE_OPENED",
+      "description": "Case TEST-03 initialized via risk_score for Txn 3001018 (Customer C03667, Card C03667-K1).",
+      "actor": "SYSTEM_TRIGGER_HANDLER"
+    },
+    {
+      "index": 2,
+      "timestamp": "2026-09-21T11:21:30.411596",
+      "stage": "LIFECYCLE",
+      "event_type": "STATUS_CHANGED",
+      "description": "Status transitioned from OPEN to INVESTIGATING. Initiated graph traversal and entity resolution.",
+      "actor": "AGENT_CORE"
+    },
+    {
+      "index": 3,
+      "timestamp": "2026-09-21T11:21:30.411607",
+      "stage": "GATHER_EVIDENCE",
+      "event_type": "EVIDENCE_ADDED",
+      "description": "Added evidence [EV-001] (customer_baseline): Cardholder Profile for C03667",
+      "actor": "EVIDENCE_COLLECTOR"
+    },
+    {
+      "index": 4,
+      "timestamp": "2026-09-21T11:21:30.411618",
+      "stage": "GATHER_EVIDENCE",
+      "event_type": "EVIDENCE_ADDED",
+      "description": "Added evidence [EV-002] (target_transaction): Flagged Transaction 3001018 ($ 49.04)",
+      "actor": "EVIDENCE_COLLECTOR"
+    },
+    {
+      "index": 5,
+      "timestamp": "2026-09-21T11:21:30.411624",
+      "stage": "GATHER_EVIDENCE",
+      "event_type": "EVIDENCE_ADDED",
+      "description": "Added evidence [EV-003] (velocity_timeline): Rolling 72-Hour Timeline (1 events)",
+      "actor": "EVIDENCE_COLLECTOR"
+    },
+    {
+      "index": 6,
+      "timestamp": "2026-09-21T11:21:30.411628",
+      "stage": "LIFECYCLE",
+      "event_type": "STATUS_CHANGED",
+      "description": "Status transitioned from INVESTIGATING to GATHER_EVIDENCE. Extracting pattern typologies, syndicate rings, and precedents.",
+      "actor": "AGENT_CORE"
+    },
+    {
+      "index": 7,
+      "timestamp": "2026-09-21T11:21:30.411634",
+      "stage": "GATHER_EVIDENCE",
+      "event_type": "EVIDENCE_ADDED",
+      "description": "Added evidence [EV-004] (pattern_signals): Typology Pattern Recognition Checks",
+      "actor": "EVIDENCE_COLLECTOR"
+    },
+    {
+      "index": 8,
+      "timestamp": "2026-09-21T11:21:30.411640",
+      "stage": "GATHER_EVIDENCE",
+      "event_type": "EVIDENCE_ADDED",
+      "description": "Added evidence [EV-005] (hardware_rings): Shared Hardware Syndicate Ring Discovery",
+      "actor": "EVIDENCE_COLLECTOR"
+    },
+    {
+      "index": 9,
+      "timestamp": "2026-09-21T11:21:30.423127",
+      "stage": "GATHER_EVIDENCE",
+      "event_type": "EVIDENCE_ADDED",
+      "description": "Added evidence [EV-006] (policy_citation): **Rule R1: Verify Before You Block on a Weak Signal**",
+      "actor": "EVIDENCE_COLLECTOR"
+    },
+    {
+      "index": 10,
+      "timestamp": "2026-09-21T11:21:30.423133",
+      "stage": "GATHER_EVIDENCE",
+      "event_type": "EVIDENCE_ADDED",
+      "description": "Added evidence [EV-007] (policy_citation): Closed Case CC-1564 (confirmed_fraud, account_takeover)",
+      "actor": "EVIDENCE_COLLECTOR"
+    },
+    {
+      "index": 11,
+      "timestamp": "2026-09-21T11:21:30.434764",
+      "stage": "GATHER_EVIDENCE",
+      "event_type": "EVIDENCE_ADDED",
+      "description": "Added evidence [EV-008] (case_precedent): Precedent Case CC-1564 (confirmed_fraud)",
+      "actor": "EVIDENCE_COLLECTOR"
+    },
+    {
+      "index": 12,
+      "timestamp": "2026-09-21T11:21:30.434767",
+      "stage": "GATHER_EVIDENCE",
+      "event_type": "EVIDENCE_ADDED",
+      "description": "Added evidence [EV-009] (case_precedent): Precedent Case CC-0008 (confirmed_fraud)",
+      "actor": "EVIDENCE_COLLECTOR"
+    },
+    {
+      "index": 13,
+      "timestamp": "2026-09-21T11:21:30.434790",
+      "stage": "ASSESS_UNCERTAINTY",
+      "event_type": "RISK_ASSESSMENT_UPDATED",
+      "description": "Assessed Fraud Probability=0.69, Confidence=LOW (Uncertainty=0.80). Sufficient Evidence to Act=False.",
+      "actor": "UNCERTAINTY_ENGINE"
+    },
+    {
+      "index": 14,
+      "timestamp": "2026-09-21T11:21:30.434793",
+      "stage": "LIFECYCLE",
+      "event_type": "STATUS_CHANGED",
+      "description": "Status transitioned from GATHER_EVIDENCE to EVIDENCE_PENDING. Uncertainty exceeds threshold; initiating controlled evidence gathering.",
+      "actor": "AGENT_CORE"
+    },
+    {
+      "index": 15,
+      "timestamp": "2026-09-21T11:21:30.434794",
+      "stage": "GATHER_MORE_EVIDENCE",
+      "event_type": "DISPATCH_CUSTOMER_VERIFICATION",
+      "description": "Triggered autonomous VERIFY_WITH_CUSTOMER (Rule R1: Verify Before You Block).",
+      "actor": "AGENT_CORE"
+    },
+    {
+      "index": 16,
+      "timestamp": "2026-09-21T11:21:30.434799",
+      "stage": "GATHER_EVIDENCE",
+      "event_type": "EVIDENCE_ADDED",
+      "description": "Added evidence [EV-010] (customer_verification_response): Customer Verification Response: confirmed_authorized",
+      "actor": "EVIDENCE_COLLECTOR"
+    },
+    {
+      "index": 17,
+      "timestamp": "2026-09-21T11:21:30.434810",
+      "stage": "ASSESS_UNCERTAINTY",
+      "event_type": "RISK_ASSESSMENT_UPDATED",
+      "description": "Assessed Fraud Probability=0.02, Confidence=HIGH (Uncertainty=0.02). Sufficient Evidence to Act=True.",
+      "actor": "UNCERTAINTY_ENGINE"
+    },
+    {
+      "index": 18,
+      "timestamp": "2026-09-21T11:21:30.434812",
+      "stage": "LIFECYCLE",
+      "event_type": "STATUS_CHANGED",
+      "description": "Status transitioned from EVIDENCE_PENDING to RECOMMENDING_ACTIONS. Evaluating policy rules and assigning authority routes.",
+      "actor": "AGENT_CORE"
+    },
+    {
+      "index": 19,
+      "timestamp": "2026-09-21T11:21:30.434846",
+      "stage": "EXECUTE_ACTIONS",
+      "event_type": "ACTION_RECORDED",
+      "description": "Action CLOSE_NO_FRAUD [EXECUTED] via route 'auto'. Rule: Rule R3. Reason: Cardholder verified initiating transaction. Close case without fraud.",
+      "actor": "POLICY_ROUTER"
+    },
+    {
+      "index": 20,
+      "timestamp": "2026-09-21T11:21:30.434847",
+      "stage": "LIFECYCLE",
+      "event_type": "STATUS_CHANGED",
+      "description": "Status transitioned from RECOMMENDING_ACTIONS to EXPLAINING_DECISION. Generating comprehensive policy-grounded rationale.",
+      "actor": "AGENT_CORE"
+    },
+    {
+      "index": 21,
+      "timestamp": "2026-09-21T11:21:30.434857",
+      "stage": "EXPLAIN_DECISION",
+      "event_type": "EXPLANATION_GENERATED",
+      "description": "Generated full audit-compliant rationale for case adjudication.",
+      "actor": "EXPLANATION_ENGINE"
+    },
+    {
+      "index": 22,
+      "timestamp": "2026-09-21T11:21:30.434861",
+      "stage": "LIFECYCLE",
+      "event_type": "STATUS_CHANGED",
+      "description": "Status transitioned from EXPLAINING_DECISION to CLOSED. Investigation closed as cleared/no fraud upon cardholder verification.",
+      "actor": "AGENT_CORE"
+    },
+    {
+      "index": 23,
+      "timestamp": "2026-09-21T11:21:30.434862",
+      "stage": "UPDATE_CASE_MEMORY",
+      "event_type": "CASE_PERSISTED",
+      "description": "Case TEST-03 state committed to memory (Namespace: case_memory).",
+      "actor": "CASE_MEMORY_MANAGER"
+    }
+  ]
+}

@@ -1,0 +1,282 @@
+{
+  "case_id": "HHG-010",
+  "investigation_source": "local_index_fallback",
+  "graph_status": "degraded",
+  "fallback_used": true,
+  "fallback_reason": "workspace_paused",
+  "case": {
+    "status": "closed_fraud",
+    "verdict": "fraud",
+    "fraud_probability": 0.98,
+    "pattern": "card_not_present_new_device",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3506725"
+    ],
+    "first_suspicious_txn_id": "3506725",
+    "connected_card_ids": [
+      "C11485-K1",
+      "C01982-K1",
+      "C03019-K1",
+      "C04776-K1",
+      "C09165-K1"
+    ],
+    "connected_device_profiles": [
+      "Windows | Windows 10 | edge 16.0 | 1366x768"
+    ],
+    "exposure_usd": 1000.03,
+    "investigation_source": "local_index_fallback",
+    "graph_status": "degraded",
+    "fallback_used": true,
+    "fallback_reason": "workspace_paused",
+    "graph_forensic_chain": {
+      "query_executed": "find_shared_devices_hybrid",
+      "source": "local_index_fallback",
+      "nodes_discovered": [
+        "Customer:C10434",
+        "Card:C10434-K1",
+        "Device:Windows | Windows 10 | edge 16.0 | 1366x768",
+        "Customer:C11485",
+        "Customer:C01982",
+        "Customer:C03019",
+        "Customer:C04776",
+        "Customer:C09165"
+      ],
+      "edges_discovered": [
+        "OWNS(Customer:C10434 -> Card:C10434-K1)",
+        "PERFORMED(Card:C10434-K1 -> Txn:3506725)",
+        "USED_DEVICE(Txn:3506725 -> Device:Windows | Windows 10 | edge 16.0 | 1366x768)",
+        "SHARED_HARDWARE(Device -> Customer:C11485)",
+        "SHARED_HARDWARE(Device -> Customer:C01982)",
+        "SHARED_HARDWARE(Device -> Customer:C03019)",
+        "SHARED_HARDWARE(Device -> Customer:C04776)",
+        "SHARED_HARDWARE(Device -> Customer:C09165)"
+      ],
+      "relationship": "SHARED_HARDWARE_RING",
+      "fraud_implication": "Multi-card syndicate nexus detected across 208 distinct cardholder accounts.",
+      "decision_impact": "Escalates fraud probability and activates Bank Fraud Policy Rule R6."
+    },
+    "evidence": [
+      {
+        "claim": "Graph data sourced via local_index_fallback (Status: degraded, Fallback used: True, Reason: workspace_paused).",
+        "source": "graph",
+        "ref": "telemetry:graph_data_strategy(local_index_fallback)",
+        "entity_ids": [
+          "3506725",
+          "C10434"
+        ]
+      },
+      {
+        "claim": "Cardholder Profile for C10434",
+        "source": "customer",
+        "ref": "evidence_request:1",
+        "entity_ids": [
+          "3506725",
+          "C10434-K1",
+          "Windows | Windows 10 | edge 16.0 | 1366x768"
+        ]
+      },
+      {
+        "claim": "Flagged Transaction 3506725 ($ 1000.03)",
+        "source": "graph",
+        "ref": "query:target_transaction(txn_id=3506725)",
+        "entity_ids": [
+          "3506725",
+          "C10434-K1",
+          "Windows | Windows 10 | edge 16.0 | 1366x768"
+        ]
+      },
+      {
+        "claim": "Rolling 72-Hour Timeline (1 events)",
+        "source": "graph",
+        "ref": "query:velocity_timeline(txn_id=3506725)",
+        "entity_ids": [
+          "3506725",
+          "C10434-K1",
+          "Windows | Windows 10 | edge 16.0 | 1366x768"
+        ]
+      },
+      {
+        "claim": "Authenticated device: Windows | Windows 10 | edge 16.0 | 1366x768 (New: True)",
+        "source": "graph",
+        "ref": "query:hardware_profile(txn_id=3506725)",
+        "entity_ids": [
+          "3506725",
+          "C10434-K1",
+          "Windows | Windows 10 | edge 16.0 | 1366x768"
+        ]
+      },
+      {
+        "claim": "Typology Pattern Recognition Checks",
+        "source": "graph",
+        "ref": "query:pattern_signals(txn_id=3506725)",
+        "entity_ids": [
+          "3506725",
+          "C10434-K1",
+          "Windows | Windows 10 | edge 16.0 | 1366x768"
+        ]
+      },
+      {
+        "claim": "Shared Hardware Syndicate Ring Discovery",
+        "source": "graph",
+        "ref": "query:hardware_rings(txn_id=3506725)",
+        "entity_ids": [
+          "3506725",
+          "C10434-K1",
+          "Windows | Windows 10 | edge 16.0 | 1366x768"
+        ]
+      },
+      {
+        "claim": "Recurring Entity Matched Prior Case HHG-010",
+        "source": "graph",
+        "ref": "query:recurring_entity_memory(txn_id=3506725)",
+        "entity_ids": [
+          "3506725",
+          "C10434-K1",
+          "Windows | Windows 10 | edge 16.0 | 1366x768"
+        ]
+      },
+      {
+        "claim": "**Rule R1: Verify Before You Block on a Weak Signal**",
+        "source": "document",
+        "ref": "document:bank_fraud_policy",
+        "entity_ids": [
+          "3506725",
+          "C10434-K1",
+          "Windows | Windows 10 | edge 16.0 | 1366x768"
+        ]
+      },
+      {
+        "claim": "Closed Case CC-1000 (cleared, none)",
+        "source": "document",
+        "ref": "document:bank_fraud_policy",
+        "entity_ids": [
+          "3506725",
+          "C10434-K1",
+          "Windows | Windows 10 | edge 16.0 | 1366x768"
+        ]
+      },
+      {
+        "claim": "Precedent Case CC-3501 (confirmed_fraud, card_not_present_new_device)",
+        "source": "graph",
+        "ref": "query:similar_prior_cases",
+        "entity_ids": [
+          "3506725",
+          "C10434-K1",
+          "Windows | Windows 10 | edge 16.0 | 1366x768"
+        ]
+      },
+      {
+        "claim": "Precedent Case CC-1000 (cleared, none)",
+        "source": "graph",
+        "ref": "query:similar_prior_cases",
+        "entity_ids": [
+          "3506725",
+          "C10434-K1",
+          "Windows | Windows 10 | edge 16.0 | 1366x768"
+        ]
+      },
+      {
+        "claim": "[DYNAMIC MEMORY] Precedent Case CC-0001 (confirmed_fraud, out_of_region_use)",
+        "source": "graph",
+        "ref": "query:similar_prior_cases",
+        "entity_ids": [
+          "3506725",
+          "C10434-K1",
+          "Windows | Windows 10 | edge 16.0 | 1366x768"
+        ]
+      },
+      {
+        "claim": "Customer Verification Response: denied_fraud: denied_fraud",
+        "source": "customer",
+        "ref": "evidence_request:1",
+        "entity_ids": [
+          "3506725",
+          "C10434-K1",
+          "Windows | Windows 10 | edge 16.0 | 1366x768"
+        ]
+      }
+    ],
+    "similar_prior_cases": [
+      "CC-3501",
+      "CC-1000",
+      "CC-0001"
+    ],
+    "summary": "Investigation of transaction 3506725 ($1000.03) on card C10434-K1 concluded with verdict 'fraud'. Assessed fraud probability is 0.98 based on card not present new device indicators and bank baseline metrics. Graph traversal confirmed hardware profile sharing across 208 distinct customer accounts. Precedent case memory retrieval drew upon prior historical cases CC-3501, CC-1000. Next best actions were formulated under Bank Fraud Policy v1.0 with appropriate approval authority routes.",
+    "written_to_graph": true,
+    "graph_case_id": "CASE-3506725"
+  },
+  "evidence_requests": [
+    {
+      "type": "customer_validation",
+      "asked_after_step": 4,
+      "assumed_response": "Customer states they did not make this purchase of $1000.03 and still has physical possession of the card."
+    }
+  ],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Syndicate fraud ring detected: hardware profile shared across 208 distinct accounts."
+      },
+      {
+        "action": "FILE_REPORT",
+        "route": "L2",
+        "reason": "Mandatory SAR filing for organized cross-account syndicate (208 connected customers)."
+      },
+      {
+        "action": "MONITOR_CONNECTED_CARDS",
+        "route": "auto",
+        "reason": "Heighten monitoring on all 5 peer cards sharing this hardware."
+      },
+      {
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "Block compromised target card identified in confirmed syndicate."
+      }
+    ],
+    "final": [
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Customer explicitly denied transaction. Open formal fraud case."
+      },
+      {
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "Compromised card replacement required for customer-reported fraud ($1000.03 exposure)."
+      },
+      {
+        "action": "FILE_REPORT",
+        "route": "L2",
+        "reason": "Mandatory FinCEN SAR filing: unauthorized charge exceeds $1,000 threshold or links to shared ring."
+      }
+    ],
+    "what_changed": "Customer denial raised fraud probability from 0.98 to 0.98, confirming the need for permanent card block and fraud case creation. Financial exposure and graph ring connections triggered regulatory SAR filing."
+  },
+  "sar": {
+    "file": true,
+    "reason": "Rule R6 / FinCEN SAR Filing: Organised multi-card syndicate detected. Hardware profile is shared across 208 distinct accounts.",
+    "narrative": "This Suspicious Activity Report pertains to customer C10434 and debit/credit card C10434-K1. Graph analytics identified a shared hardware syndicate linking this account to multiple other customer profiles including C11485, C01982, C03019. Between 2016-12-02 and 2016-12-02, transaction activity totaling $1,000.03 USD was flagged for anomalous risk indicators, initiated via the online channel under merchant product category R. The primary flagged transaction 3506725 occurred on 2016-12-02 15:18:27 for an amount of $1000.03. Online authentication originated from digital hardware profile 'Windows | Windows 10 | edge 16.0 | 1366x768' with proxy routing classified as 'Direct/None'. The modus operandi involved credential capture and card-not-present exploitation originating from an unrecognized new device profile without prior account history. Upon formal bank outreach, the cardholder explicitly denied initiating or authorizing the transactions and confirmed physical possession of the original card. The financial institution has permanently blocked card C10434-K1 to prevent further financial exposure, staged appropriate fraud chargebacks, and placed all connected cards under heightened surveillance.",
+    "subjects": [
+      "C10434",
+      "C10434-K1",
+      "C11485",
+      "C01982",
+      "C03019",
+      "C04776",
+      "C09165",
+      "Windows | Windows 10 | edge 16.0 | 1366x768"
+    ],
+    "total_amount_usd": 1000.03,
+    "activity_dates": [
+      "2016-12-02",
+      "2016-12-02"
+    ]
+  },
+  "stop_reason": "Policy actions formulated and staged for required human approval; case saved to graph memory.",
+  "tool_calls": 9,
+  "tokens": 11200,
+  "latency_s": 0.1
+}

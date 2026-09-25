@@ -1,0 +1,157 @@
+// ============================================================================
+// TigerGraph GSQL: Graph Algorithms & Structural Analysis Queries
+// Hackathon: TigerGraph Agentic Fraud Investigation (Hacker House Goa 2026)
+// ============================================================================
+
+USE GRAPH FraudGraph
+
+// ----------------------------------------------------------------------------
+// 1. Shared Device / IP Ring Detection (find_shared_device_rings)
+// Explores 2-hop traversal: Card -> Transaction -> Device -> Transaction -> Card
+// Identifies syndicates sharing hardware or proxy endpoints across customers
+// ----------------------------------------------------------------------------
+CREATE QUERY find_shared_device_rings(
+    VERTEX<Card> target_card
+) FOR GRAPH FraudGraph RETURNS (BOOL has_shared_ring, SET<STRING> shared_devices, SET<STRING> connected_cards, SET<STRING> connected_customers, INT ring_size) {
+    
+    SetAccum<STRING> @@devices;
+    SetAccum<STRING> @@connected_cards;
+    SetAccum<STRING> @@connected_custs;
+    STRING target_card_id;
+
+    Start = { target_card };
+    target_card_id = target_card.card_id;
+
+    // 1-hop: Transactions from this card
+    Txns = SELECT t FROM Start:c -(PERFORMED:e)-> Transaction:t;
+
+    // 2-hop: Devices used by these transactions
+    Devs = SELECT d FROM Txns:t -(USED_DEVICE:e)-> Device:d
+           ACCUM @@devices += d.device_id;
+
+    // 3-hop: Other transactions using these devices
+    OtherTxns = SELECT t2 FROM Devs:d -(DEVICE_USED_IN:e)-> Transaction:t2;
+
+    // 4-hop: Connected cards using these same devices
+    PeerCards = SELECT c2 FROM OtherTxns:t2 -(PERFORMED_BY:e)-> Card:c2
+                WHERE c2.card_id != target_card_id
+                ACCUM 
+                    @@connected_cards += c2.card_id,
+                    @@connected_custs += c2.customer_id;
+
+    BOOL is_ring = @@connected_cards.size() > 0;
+    INT total_size = @@connected_cards.size() + 1;
+
+    RETURN (is_ring, @@devices, @@connected_cards, @@connected_custs, total_size);
+}
+
+
+// ----------------------------------------------------------------------------
+// 2. Transaction Velocity Anomalies (find_transaction_velocity_anomalies)
+// Computes rolling transaction frequency, sum of amounts, and velocity spikes
+// ----------------------------------------------------------------------------
+CREATE QUERY find_transaction_velocity_anomalies(
+    VERTEX<Card> target_card,
+    DATETIME anchor_time,
+    INT window_hours = 24
+) FOR GRAPH FraudGraph RETURNS (INT recent_count, DOUBLE recent_sum, DOUBLE baseline_hourly_rate, DOUBLE velocity_ratio, BOOL is_anomaly) {
+    
+    SumAccum<INT> @@window_count = 0;
+    SumAccum<DOUBLE> @@window_sum = 0.0;
+    SumAccum<INT> @@baseline_count = 0;
+    DOUBLE @@hourly_baseline = 0.0;
+    DOUBLE @@ratio = 0.0;
+    BOOL @@anomaly = FALSE;
+
+    Start = { target_card };
+
+    // Window activity
+    Recent = SELECT t FROM Start:c -(PERFORMED:e)-> Transaction:t
+             WHERE t.ts BETWEEN datetime_sub(anchor_time, INTERVAL window_hours HOUR) AND anchor_time
+             ACCUM 
+                 @@window_count += 1,
+                 @@window_sum += t.amount;
+
+    // Historical 30-day baseline (excluding recent window)
+    Baseline = SELECT t FROM Start:c -(PERFORMED:e)-> Transaction:t
+               WHERE t.ts BETWEEN datetime_sub(anchor_time, INTERVAL 30 DAY) AND datetime_sub(anchor_time, INTERVAL window_hours HOUR)
+               ACCUM @@baseline_count += 1;
+
+    // Baseline rate per window_hours
+    IF @@baseline_count > 0 THEN
+        @@hourly_baseline = (@@baseline_count / (29.0 * 24.0)) * window_hours;
+        IF @@hourly_baseline > 0.0 THEN
+            @@ratio = @@window_count / @@hourly_baseline;
+        ELSE
+            @@ratio = @@window_count;
+        END;
+    ELSE
+        @@ratio = @@window_count;
+    END;
+
+    IF @@ratio >= 3.0 AND @@window_count >= 3 THEN
+        @@anomaly = TRUE;
+    END;
+
+    RETURN (@@window_count, @@window_sum, @@hourly_baseline, @@ratio, @@anomaly);
+}
+
+
+// ----------------------------------------------------------------------------
+// 3. Account Hopping Velocity (find_account_hopping_velocity)
+// Detects rapid cross-card transactions under the same customer
+// ----------------------------------------------------------------------------
+CREATE QUERY find_account_hopping_velocity(
+    VERTEX<Customer> target_customer,
+    DATETIME anchor_time,
+    INT window_hours = 12
+) FOR GRAPH FraudGraph RETURNS (INT active_cards, INT total_txns, DOUBLE total_amount, BOOL is_hopping_anomaly) {
+    
+    SetAccum<STRING> @@cards_used;
+    SumAccum<INT> @@txn_count = 0;
+    SumAccum<DOUBLE> @@sum_amt = 0.0;
+    BOOL @@hopping = FALSE;
+
+    Start = { target_customer };
+
+    Cards = SELECT c FROM Start:cust -(OWNS:e)-> Card:c;
+
+    Txns = SELECT t FROM Cards:c -(PERFORMED:e)-> Transaction:t
+           WHERE t.ts BETWEEN datetime_sub(anchor_time, INTERVAL window_hours HOUR) AND anchor_time
+           ACCUM 
+               @@cards_used += c.card_id,
+               @@txn_count += 1,
+               @@sum_amt += t.amount;
+
+    IF @@cards_used.size() >= 2 AND @@txn_count >= 3 THEN
+        @@hopping = TRUE;
+    END;
+
+    RETURN (@@cards_used.size(), @@txn_count, @@sum_amt, @@hopping);
+}
+
+
+// ----------------------------------------------------------------------------
+// 4. Community Detection for Fraud Rings (detect_fraud_communities)
+// Identifies clusters of cards densely connected via shared hardware/device nodes
+// ----------------------------------------------------------------------------
+CREATE QUERY detect_fraud_communities(
+    INT min_cards = 2
+) FOR GRAPH FraudGraph RETURNS (MapAccum<STRING, SET<STRING>> ring_clusters) {
+    
+    MapAccum<STRING, SET<STRING>> @@device_to_cards;
+    MapAccum<STRING, SET<STRING>> @@result_rings;
+
+    // Aggregate cards per device
+    Devs = SELECT d FROM Device:d -(DEVICE_USED_IN:e)-> Transaction:t -(PERFORMED_BY:e)-> Card:c
+           ACCUM @@device_to_cards += (d.device_id -> c.card_id);
+
+    // Filter for devices shared across multiple cards (rings)
+    FOREACH (dev, cards) IN @@device_to_cards DO
+        IF cards.size() >= min_cards THEN
+            @@result_rings += (dev -> cards);
+        END;
+    END;
+
+    RETURN (@@result_rings);
+}

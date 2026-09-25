@@ -1,0 +1,122 @@
+{
+  "case_id": "CASE-2026-1047",
+  "title": "Dark Web Fraud Network",
+  "priority": "HIGH",
+  "category": "Financial Fraud • Multi-Entity",
+  "investigation_source": "tigergraph_multihop_engine",
+  "graph_status": "online",
+  "fallback_used": false,
+  "case": {
+    "status": "investigating",
+    "verdict": "fraud",
+    "fraud_probability": 0.87,
+    "confidence_score": 0.91,
+    "uncertainty_level": "LOW",
+    "evidence_completeness": 0.88,
+    "pattern": "Account Takeover / Money Mule",
+    "pattern_description": "Multi-entity syndicate sharing hardware, proxies, and multi-wallet laundering infrastructure linked to dark web credentials.",
+    "affected_txn_ids": [
+      "TX-94821",
+      "TX-94822",
+      "TX-94823"
+    ],
+    "first_suspicious_txn_id": "94821",
+    "customer_id": "ShadowX77",
+    "connected_card_ids": [
+      "CARD-4821"
+    ],
+    "connected_device_profiles": [
+      "Samsung SM-A536B | Android 13"
+    ],
+    "exposure_usd": 4850.00,
+    "opened_at": "2026-09-24T14:32:00Z",
+    "updated_at": "2026-09-24T16:18:00Z",
+    "assigned_to": "Aman Singh",
+    "critical_alerts_count": 4,
+    "related_entities_count": 23,
+    "quick_tags": [
+      "#DarkWeb",
+      "#MoneyMule",
+      "#HighRisk",
+      "#Blockchain",
+      "#Crypto",
+      "#FakeID"
+    ],
+    "risk_indicators": [
+      {
+        "title": "Linked to dark web marketplace",
+        "severity": "High"
+      },
+      {
+        "title": "Multiple wallet activity",
+        "severity": "High"
+      },
+      {
+        "title": "Device sharing (3 users)",
+        "severity": "Medium"
+      },
+      {
+        "title": "Unusual transaction pattern",
+        "severity": "High"
+      }
+    ],
+    "related_counts": {
+      "transactions": 12,
+      "devices": 3,
+      "cards": 2,
+      "related_users": 3
+    },
+    "entity_info": {
+      "type": "User",
+      "user_id": "ShadowX77",
+      "aliases_count": 4,
+      "wallets_count": 3,
+      "email": "shadowx77@proton.me",
+      "created_at": "2025-11-14 08:32:17",
+      "last_activity": "2026-09-21 16:45:32",
+      "location": "Eastern Europe"
+    },
+    "evidence": [
+      {
+        "claim": "User ShadowX77 hardware profile matches confirmed syndicate mule devices across 3 distinct account IDs.",
+        "source": "tigergraph",
+        "ref": "GSQL:findSharedDevicesv2",
+        "entity_ids": ["ShadowX77", "Samsung SM-A536B"]
+      },
+      {
+        "claim": "Rapid crypto wallet funding of $4,850 dispersed across 3 unhosted external wallet addresses within 14 minutes.",
+        "source": "blockchain",
+        "ref": "BlockchainAudit:0x982a",
+        "entity_ids": ["ShadowX77", "3 wallets"]
+      },
+      {
+        "claim": "Alias NightVector correlated with illicit Telegram dark web marketplace breach credential dumps.",
+        "source": "threat_intel",
+        "ref": "ThreatFeed:DarkWebDump_2026",
+        "entity_ids": ["NightVector", "ShadowX77"]
+      },
+      {
+        "claim": "Mandatory Suspicious Activity Report (SAR) filing mandated under FinCEN 31 CFR § 1020.320 ($1,000 threshold and syndicate nexus).",
+        "source": "policy",
+        "ref": "Bank Fraud Policy Rule R6",
+        "entity_ids": ["ShadowX77", "CARD-4821"]
+      }
+    ]
+  },
+  "next_best_actions": {
+    "initial": [
+      { "action": "VERIFY_WITH_CUSTOMER", "route": "AUTO" }
+    ],
+    "final": [
+      { "action": "FILE_SAR", "route": "L2" },
+      { "action": "BLOCK_USER", "route": "L1" },
+      { "action": "EXPORT_SUBGRAPH", "route": "AUTO" }
+    ],
+    "what_changed": "Multi-hop graph forensics confirmed 3 shared accounts on Samsung SM-A536B device with dark web wallet linkages."
+  },
+  "sar": {
+    "file": true,
+    "total_amount_usd": 4850.00,
+    "fincen_narrative": "Subject ShadowX77 initiated rapid high-value transactions totaling $4,850.00 utilizing compromised card ***** 4821 and routed to external crypto wallets via device Samsung SM-A536B."
+  }
+}

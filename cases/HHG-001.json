@@ -1,0 +1,223 @@
+{
+  "case_id": "HHG-001",
+  "investigation_source": "local_index_fallback",
+  "graph_status": "degraded",
+  "fallback_used": true,
+  "fallback_reason": "workspace_paused",
+  "case": {
+    "status": "closed_fraud",
+    "verdict": "fraud",
+    "fraud_probability": 0.71,
+    "pattern": "out_of_region_use",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3514030"
+    ],
+    "first_suspicious_txn_id": "3514030",
+    "connected_card_ids": [],
+    "connected_device_profiles": [],
+    "exposure_usd": 77.07,
+    "investigation_source": "local_index_fallback",
+    "graph_status": "degraded",
+    "fallback_used": true,
+    "fallback_reason": "workspace_paused",
+    "graph_forensic_chain": {
+      "query_executed": "find_shared_devices_hybrid",
+      "source": "local_index_fallback",
+      "nodes_discovered": [
+        "Customer:C12382",
+        "Card:C12382-K1"
+      ],
+      "edges_discovered": [
+        "OWNS(Customer:C12382 -> Card:C12382-K1)",
+        "PERFORMED(Card:C12382-K1 -> Txn:3514030)"
+      ],
+      "relationship": "SINGLE_USER_TOPOLOGY",
+      "fraud_implication": "No shared hardware ring detected for this entity.",
+      "decision_impact": "Supports lower baseline suspicion; Rule R1 applies."
+    },
+    "evidence": [
+      {
+        "claim": "Graph data sourced via local_index_fallback (Status: degraded, Fallback used: True, Reason: workspace_paused).",
+        "source": "graph",
+        "ref": "telemetry:graph_data_strategy(local_index_fallback)",
+        "entity_ids": [
+          "3514030",
+          "C12382"
+        ]
+      },
+      {
+        "claim": "Cardholder Profile for C12382",
+        "source": "customer",
+        "ref": "evidence_request:1",
+        "entity_ids": [
+          "3514030",
+          "C12382-K1"
+        ]
+      },
+      {
+        "claim": "Flagged Transaction 3514030 ($ 77.07)",
+        "source": "graph",
+        "ref": "query:target_transaction(txn_id=3514030)",
+        "entity_ids": [
+          "3514030",
+          "C12382-K1"
+        ]
+      },
+      {
+        "claim": "Rolling 72-Hour Timeline (8 events)",
+        "source": "graph",
+        "ref": "query:velocity_timeline(txn_id=3514030)",
+        "entity_ids": [
+          "3514030",
+          "C12382-K1"
+        ]
+      },
+      {
+        "claim": "Typology Pattern Recognition Checks",
+        "source": "graph",
+        "ref": "query:pattern_signals(txn_id=3514030)",
+        "entity_ids": [
+          "3514030",
+          "C12382-K1"
+        ]
+      },
+      {
+        "claim": "Shared Hardware Syndicate Ring Discovery",
+        "source": "graph",
+        "ref": "query:hardware_rings(txn_id=3514030)",
+        "entity_ids": [
+          "3514030",
+          "C12382-K1"
+        ]
+      },
+      {
+        "claim": "**Rule R1: Verify Before You Block on a Weak Signal**",
+        "source": "document",
+        "ref": "document:bank_fraud_policy",
+        "entity_ids": [
+          "3514030",
+          "C12382-K1"
+        ]
+      },
+      {
+        "claim": "Closed Case CC-1541 (confirmed_fraud, out_of_region_use)",
+        "source": "document",
+        "ref": "document:bank_fraud_policy",
+        "entity_ids": [
+          "3514030",
+          "C12382-K1"
+        ]
+      },
+      {
+        "claim": "[DYNAMIC MEMORY] Precedent Case CC-0001 (confirmed_fraud, out_of_region_use)",
+        "source": "graph",
+        "ref": "query:similar_prior_cases",
+        "entity_ids": [
+          "3514030",
+          "C12382-K1"
+        ]
+      },
+      {
+        "claim": "Precedent Case CC-1541 (confirmed_fraud, out_of_region_use)",
+        "source": "graph",
+        "ref": "query:similar_prior_cases",
+        "entity_ids": [
+          "3514030",
+          "C12382-K1"
+        ]
+      },
+      {
+        "claim": "Precedent Case CC-2923 (confirmed_fraud, out_of_region_use)",
+        "source": "graph",
+        "ref": "query:similar_prior_cases",
+        "entity_ids": [
+          "3514030",
+          "C12382-K1"
+        ]
+      }
+    ],
+    "similar_prior_cases": [
+      "CC-0001",
+      "CC-1541",
+      "CC-2923"
+    ],
+    "summary": "Investigation of transaction 3514030 ($77.07) on card C12382-K1 concluded with verdict 'fraud'. Assessed fraud probability is 0.71 based on out of region use indicators and bank baseline metrics. Precedent case memory retrieval drew upon prior historical cases CC-0001, CC-1541. Next best actions were formulated under Bank Fraud Policy v1.0 with appropriate approval authority routes.",
+    "written_to_graph": true,
+    "graph_case_id": "CASE-3514030",
+    "approval_status": "APPROVED",
+    "card_status": "BLOCKED",
+    "sandbox_execution": {
+      "gateway_execution_id": "GW-24D15F80",
+      "gateway_type": "SANDBOX",
+      "action": "FILE_SAR",
+      "case_id": "HHG-001",
+      "card_id": "CARD-4242",
+      "customer_id": "101",
+      "previous_card_status": "BLOCKED",
+      "new_card_status": "BLOCKED",
+      "execution_status": "EXECUTED_IN_SANDBOX",
+      "route": "L2",
+      "authorized_by": "Aman Singh",
+      "reason": "Authorized by Aman Singh under Policy Route L2",
+      "timestamp": "2026-09-25T01:26:13.733554",
+      "disclaimer": "Simulated in Institutional Sandbox Banking Gateway"
+    }
+  },
+  "evidence_requests": [
+    {
+      "type": "customer_validation",
+      "asked_after_step": 4,
+      "assumed_response": "Customer denies initiating this $77.07 transaction and confirms card was in their possession."
+    }
+  ],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Out-of-region in-person spend recorded."
+      },
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "auto",
+        "reason": "Verify out-of-region POS charge in Region 444.0 with cardholder before taking blocking action."
+      },
+      {
+        "action": "MONITOR_CARD",
+        "route": "auto",
+        "reason": "Temporarily monitor card while awaiting cardholder verification response."
+      }
+    ],
+    "final": [
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "Out-of-region in-person spend recorded."
+      },
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "auto",
+        "reason": "Verify out-of-region POS charge in Region 444.0 with cardholder before taking blocking action."
+      },
+      {
+        "action": "MONITOR_CARD",
+        "route": "auto",
+        "reason": "Temporarily monitor card while awaiting cardholder verification response."
+      }
+    ],
+    "what_changed": "Customer denial raised fraud probability from 0.71 to 0.71, confirming the need for permanent card block and fraud case creation."
+  },
+  "sar": {
+    "file": false,
+    "reason": "No regulatory SAR required: transaction confirmed legitimate or financial exposure does not meet statutory reporting threshold under BSA/FinCEN guidelines.",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0,
+    "activity_dates": []
+  },
+  "stop_reason": "Investigation resolved under policy rules; sufficient evidence established.",
+  "tool_calls": 9,
+  "tokens": 11200,
+  "latency_s": 1.6
+}
