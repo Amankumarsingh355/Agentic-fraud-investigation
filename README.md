@@ -526,50 +526,6 @@ flowchart LR
 
 ---
 
-
----
-
-# 👨‍⚖️ Hackathon Judge Addendum: Verifiable Implementation Proofs
-
-We received feedback that our documentation needed to **prove** our implementation depth, rather than just describing concepts. Below are direct answers to the technical judge questions, pointing exactly to where the code lives in this repository.
-
-### 1. Where is the actual orchestrator implementation?
-The orchestrator is fully implemented in **`agent/strict_eleven_pipeline.py`**. It is not a basic prompt wrapper; it is a hardened, zero-hallucination pipeline that routes the investigation state through 11 specialized roles (Ingestion, Graph Evidence, Pattern Analysis, Case Lifecycle, Case Memory, Risk Engine, Output Formatter, Policy Enforcement, SAR Generation, Human-in-the-Loop, and Uncertainty Engine).
-
-### 2. How does the Graph Agent query TigerGraph?
-Graph queries are executed dynamically via a Model Context Protocol (MCP) server.
-- The MCP server implementation is in **`graph/mcp_server.py`**.
-- The core integration tools (fetching schemas, running GSQL, traversing edges) are in **`graph/tigergraph_tools.py`**.
-- The agents autonomously decide which GSQL queries to run based on the entities they discover during the investigation.
-
-### 3. What makes this agentic rather than a fixed pipeline?
-Our system dynamically adapts to the evidence it uncovers:
-- **`agent/uncertainty_engine.py`**: Evaluates if the current evidence is sufficient to make a ruling, or if it needs to trigger a secondary search.
-- **`graph/similar_cases_engine.py` (GraphRAG)**: Dynamically fetches historically similar cases to guide the current investigation's logic.
-
-### 4. How are hallucinations controlled?
-We strictly enforce output structures and evidence traceability:
-- **`tests/validate_schema.py`**: A rigorous test suite that verifies outputs against the official schema, ensuring 100% compliance.
-- The pipeline forces agents to cite the exact `investigation_id` and `case_id` from the TigerGraph database. If an entity is not in the graph, it cannot be added to the final JSON.
-
-### 5. What happens when TigerGraph or the LLM fails?
-We built robust retry mechanisms and fallback logic into **`agent/action_gateway.py`**. If a database connection drops or the LLM outputs malformed JSON, the pipeline catches the exception, reformats the prompt with the error trace, and retries the generation.
-
-### 6. How do you evaluate the output?
-We successfully ran our system against the official benchmark dataset.
-- The **`cases/`** directory contains the 20 perfectly generated JSON output files (`HHG-001.json` through `HHG-020.json`).
-- Our automated validators (`tests/validate_cases.py`) prove that 100% of the financial exposure calculations are mathematically accurate based on the graph data.
-
----
-
-# 💻 UI & User Experience
-
-We have built a fully functional, real-time investigation dashboard that investigators can actually use:
-- **React 18 + Vite + Tailwind CSS** frontend (`src/` directory).
-- **Python FastAPI Backend** (`ui/serve.py`) that streams the agent's thought processes and actions in real-time.
-- Features include: Interactive Graph Visualization (TigerGraph Canvas), Agent Activity Pipeline, Evidence Drawer, and a Chat Interface.
-
-
 # Challenges and Learnings
 
 ## Graph Schema Design
@@ -708,17 +664,22 @@ Our team consists of three members with responsibilities spanning leadership, de
 
 # Project Demonstration
 
-### Demo Video
+### (https://drive.google.com/drive/folders/1unPR3prVp_2O-hYqtIjmtmnDU1viu1Ko)
 
-<span style="color:red">[Add project demonstration video link]</span>
+<span style="color:red"></span>
 
 ### Screenshots
 
-<span style="color:red">[Add project screenshots here]</span>
+<span style="color:red"><img width="208" height="426" alt="image" src="https://github.com/user-attachments/assets/847a991e-c0ca-404b-8aa2-fec261f92b7d" />
 
-### Live Demo
+<img width="233" height="424" alt="image" src="https://github.com/user-attachments/assets/eb31a176-f7f0-4ea6-9196-f06e2fa0922d" />
 
-<span style="color:red">[Add live demo link if available]</span>
+<img width="248" height="431" alt="image" src="https://github.com/user-attachments/assets/e48f93e5-440c-4ad5-ad0b-85674e2d7974" />
+
+<img width="800" height="358" alt="image" src="https://github.com/user-attachments/assets/399b627e-c29f-4f31-90ad-9a4b04cd88e2" />
+</span>
+
+
 
 ---
 
@@ -726,62 +687,56 @@ Our team consists of three members with responsibilities spanning leadership, de
 
 ```text
 project-root/
-│
-├── agent/                  # 🧠 Core AI Agent Logic
-│   ├── agents/             # Individual agent definitions
-│   ├── strict_eleven_pipeline.py # 11-Agent zero-hallucination orchestrator
-│   ├── policy_engine.py    # Policy and compliance enforcement
-│   └── sar_generator.py    # Suspicious Activity Report (SAR) generation
-│
-├── graph/                  # 🕸️ TigerGraph Database Integration
-│   ├── queries/            # GSQL queries (pattern matching, similarity)
-│   ├── mcp_server.py       # Model Context Protocol (MCP) server for GraphRAG
-│   ├── schema.gsql         # TigerGraph database schema definitions
-│   └── tigergraph_tools.py # TigerGraph API helper functions
-│
-├── src/                    # 💻 React Frontend (Vite + Tailwind CSS)
-│   ├── components/         # UI components (AgentCard, FraudGraph, etc.)
-│   ├── styles/             # Global CSS and Tailwind directives
-│   └── App.jsx             # Main React application and layout
-│
-├── ui/                     # 🔌 Python Backend Server
-│   └── serve.py            # FastAPI backend (streams LLM responses)
-│
-├── cases/                  # 📂 Final Output Cases (Submission)
-│   └── HHG-001.json ... HHG-020.json # 20 structured benchmark JSON outputs
-│
-├── tests/                  # 🧪 Validation & Testing
-│   ├── validate_schema.py  # JSON output schema validation
-│   └── judge_readiness.py  # Final submission readiness checks
-│
-├── docs/                   # 📚 Project Documentation
-│   ├── ARCHITECTURE.md     # System architecture design
-│   └── PROJECT_REPORT.md   # Final comprehensive project report
-│
-├── package.json            # Node.js dependencies
-└── tailwind.config.js      # Tailwind CSS configuration
+|
+|-- agent/                  # Core AI Agent Logic
+|   |-- agents/             # Individual agent definitions (Policy Agent, etc.)
+|   |-- strict_eleven_pipeline.py # 11-Agent zero-hallucination orchestrator
+|   |-- policy_engine.py    # Policy and compliance enforcement
+|   |-- sar_generator.py    # Suspicious Activity Report (SAR) generation
+|
+|-- graph/                  # TigerGraph Database Integration
+|   |-- queries/            # GSQL queries (pattern matching, similarity, etc.)
+|   |-- mcp_server.py       # Model Context Protocol (MCP) server for GraphRAG
+|   |-- schema.gsql         # TigerGraph database schema definitions
+|   |-- tigergraph_tools.py # TigerGraph API helper functions
+|   |-- graphrag_synthesizer.py # Graph-based retrieval augmented generation
+|
+|-- src/                    # React Frontend (Vite + Tailwind CSS)
+|   |-- components/         # UI components (AgentCard, FraudGraph, ChatInterface)
+|   |-- data/               # Frontend mock data and configurations
+|   |-- styles/             # Global CSS and Tailwind directives (index.css)
+|   |-- App.jsx             # Main React application and layout
+|   |-- main.jsx            # Frontend entry point
+|
+|-- ui/                     # Python Backend Server
+|   |-- serve.py            # FastAPI backend (handles streaming LLM responses)
+|
+|-- cases/                  # Final Output Cases (Submission)
+|   |-- HHG-001.json ... HHG-020.json # 20 structured benchmark JSON outputs
+|
+|-- data/                   # Datasets & Graph State
+|   |-- pattern_registry.json # Known fraud pattern typologies
+|   |-- dynamic_case_memory.json # Case history and knowledge base
+|   |-- analyst_approvals.jsonl  # Human-in-the-loop (HITL) approval logs
+|
+|-- tests/                  # Validation & Testing
+|   |-- test_11_agents_comprehensive.py # Agent integration tests
+|   |-- validate_schema.py  # JSON output schema validation
+|   |-- judge_readiness.py  # Final submission readiness checks
+|
+|-- docs/                   # Project Documentation
+|   |-- ARCHITECTURE.md     # System architecture design
+|   |-- PROJECT_REPORT.md   # Final comprehensive project report
+|   |-- AGENT_RESPONSIBILITIES.md # Agent roles and capabilities
+|
+|-- public/                 # Static Assets
+|   |-- savanna-logo.png    # Custom system logo and branding
+|
+|-- package.json            # Node.js dependencies and scripts
+|-- tailwind.config.js      # Tailwind CSS configuration and themes
+|-- vite.config.js          # Vite frontend bundler configuration
+|-- README.md               # Main project documentation
 ```
-
----
-
-# License
-
-This project is licensed under the **MIT License**.
-
-See the [`LICENSE`](https://github.com/Amankumarsingh355/UNMASK-DarkWeb-Threat-Actor-Intelligence/blob/main/LICENSE) file for details.
-
----
-
-# Project Philosophy
-
-The central idea behind the project is simple:
-
-```text
-A suspicious transaction is a starting point,
-not the complete investigation.
-```
-
-By combining graph relationships with specialized AI agents, the project explores how investigation workflows can move from isolated transaction information toward connected evidence, historical context, and structured next actions.
 
 ---
 
